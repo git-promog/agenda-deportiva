@@ -1,0 +1,30 @@
+name: Actualizar Agenda Automáticamente
+
+on:
+  schedule:
+    # Se ejecuta cada 6 horas (puedes ajustarlo)
+    - cron: '0 */6 * * *'
+  workflow_dispatch: # Permite ejecutarlo manualmente desde GitHub
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v3
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Instalar librerías
+        run: |
+          pip install -r agenda-deportiva/requirements.txt
+
+      - name: Ejecutar Scraper
+        env:
+          # Aquí el robot lee las llaves secretas que guardaste en el paso 2
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: python agenda-deportiva/subir_agenda.py

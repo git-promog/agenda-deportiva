@@ -1,10 +1,8 @@
 import os
-from supabase import create_client, Client
-from scraper import obtener_agenda_real
 
-# --- CONFIGURACIÓN ---
-SUPABASE_URL = "https://dmutaluipvmrxuvxtluq.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtdXRhbHVpcHZtcnh1dnh0bHVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzMjg5ODIsImV4cCI6MjA4OTkwNDk4Mn0.X97I7C-5Ap4XfpJNd3xKg5EJCoqgyS1pqeOZSglYe0E"
+# Intenta leer de los secretos de GitHub, si no, usa lo que tengas local (opcional)
+SUPABASE_URL = os.getenv("SUPABASE_URL", "TU_URL_LOCAL_AQUÍ")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY", "TU_LLAVE_LOCAL_AQUÍ")
 
 def actualizar_base_de_datos():
     try:

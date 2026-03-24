@@ -1,8 +1,11 @@
 import os
+from supabase import create_client, Client
+from scraper import obtener_agenda_real
 
-# Intenta leer de los secretos de GitHub, si no, usa lo que tengas local (opcional)
-SUPABASE_URL = os.getenv("SUPABASE_URL", "TU_URL_LOCAL_AQUÍ")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY", "TU_LLAVE_LOCAL_AQUÍ")
+# Intentar leer desde las variables de entorno (GitHub Actions)
+# Si no existen (estás en local), usa tus llaves directas como respaldo
+SUPABASE_URL = os.environ.get("SUPABASE_URL") or "TU_URL_DE_SUPABASE_AQUÍ"
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY") or "TU_LLAVE_ANON_AQUÍ"
 
 def actualizar_base_de_datos():
     try:

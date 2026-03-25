@@ -98,22 +98,26 @@ export default function Home() {
             </div>
           </div>
 
-          {/* BUSCADOR */}
-          <div className="relative mb-6">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
-            <input 
-              type="text"
-              placeholder="Busca equipos (Ej: América, Real Madrid, Lakers...)"
-              className="w-full bg-slate-900/50 border border-slate-800 rounded-2xl py-3 pl-11 pr-4 text-sm focus:outline-none focus:border-blue-500 transition-all text-slate-200 placeholder:text-slate-600"
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-            />
-            {busqueda && (
-              <button onClick={() => setBusqueda("")} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
+          {/* BUSCADOR CORREGIDO */}
+<div className="relative mb-6 w-full px-1"> {/* Añadí px-1 para margen interno */}
+  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
+  <input 
+    type="text"
+    placeholder="Busca equipos o ligas..."
+    className="w-full bg-slate-900/50 border border-slate-800 rounded-2xl py-3 pl-11 pr-10 text-base focus:outline-none focus:border-blue-500 transition-all text-slate-200 placeholder:text-slate-600 shadow-inner"
+    /* Nota: text-base (16px) evita que iOS haga zoom automático al dar clic */
+    value={busqueda}
+    onChange={(e) => setBusqueda(e.target.value)}
+  />
+  {busqueda && (
+    <button 
+      onClick={() => setBusqueda("")} 
+      className="absolute right-3 top-1/2 -translate-y-1/2 bg-slate-800 p-1 rounded-full text-slate-400 hover:text-white"
+    >
+      <X className="w-4 h-4" />
+    </button>
+  )}
+</div>
 
           {/* FILTRO DE DEPORTES */}
           <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide">
@@ -144,10 +148,10 @@ export default function Home() {
             <h2 className="text-[10px] font-black text-yellow-500 uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
               <Star className="w-3 h-3 fill-yellow-500" /> Imperdibles de Hoy
             </h2>
-            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
               {destacados.map((e) => (
-                <div key={e.id} className="min-w-[280px] bg-gradient-to-br from-blue-600 to-blue-900 p-[1px] rounded-3xl">
-                  <div className="bg-[#020617] p-5 rounded-[23px] h-full flex flex-col justify-between">
+                <div key={e.id} className="min-w-[85vw] sm:min-w-[300px] bg-gradient-to-br from-blue-600 to-blue-900 p-[1px] rounded-3xl shadow-lg">
+      <div className="bg-[#020617] p-5 rounded-[23px] h-full flex flex-col justify-between italic">
                     <div>
                       <div className="text-[9px] font-black text-blue-400 uppercase mb-2">{e.competicion}</div>
                       <div className="text-lg font-black leading-tight mb-4 italic uppercase">{e.evento}</div>

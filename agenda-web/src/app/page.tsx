@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Tv, Calendar, Trophy, Clock, Zap } from 'lucide-react';
+import { Tv, Calendar, Trophy, Clock, Zap, Filter } from 'lucide-react'; // <-- IMPORTANTE: Filter agregado aquí
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,

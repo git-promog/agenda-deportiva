@@ -17,7 +17,7 @@ export default function AdminPanel() {
 
   const login = () => {
     // CAMBIA "GUIA2024" POR TU CONTRASEÑA REAL
-    if (password === "GUIA2024") setAutenticado(true);
+    if (password === "gs@007") setAutenticado(true);
     else alert("Contraseña incorrecta");
   };
 

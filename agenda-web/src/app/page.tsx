@@ -39,19 +39,28 @@ export default function Home() {
     cargarDatos();
   }, []);
 
-  const hoyStr = new Date().toISOString().split('T')[0];
+  // Obtener fecha de hoy en formato YYYY-MM-DD según la zona local
+  const hoyStr = new Date().toLocaleDateString('sv-SE'); 
+  
   const deportesUnicos = ["Todos", ...new Set(eventos.map(e => e.deporte))];
   const fechasUnicas = ["Todos", ...new Set(eventos.map(e => e.fecha))];
 
-  // LÓGICA HÍBRIDA DE DESTACADOS
+  // LÓGICA HÍBRIDA DE DESTACADOS MEJORADA
   const destacados = eventos.filter(e => {
-    if (e.destacado === true && e.fecha === hoyStr) return true;
+    const esDeHoy = e.fecha === hoyStr;
+    
+    // 1. Prioridad Manual (True)
+    if (e.destacado === true && esDeHoy) return true;
+    
+    // 2. Oculto Manual (False)
     if (e.destacado === false) return false;
+    
+    // 3. Automático (Null)
     if (e.destacado === null || e.destacado === undefined) {
-      return e.fecha === hoyStr && TOP_TEAMS.some(t => e.evento.includes(t));
+      return esDeHoy && TOP_TEAMS.some(t => e.evento.toLowerCase().includes(t.toLowerCase()));
     }
     return false;
-  }).slice(0, 5);
+  }).slice(0, 6);
 
   const eventosFiltrados = eventos.filter(e => {
     const coincideDeporte = filtroDeporte === "Todos" || e.deporte === filtroDeporte;
@@ -88,7 +97,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto px-4 pt-4">
           <div className="flex justify-between items-center mb-6">
             <Link href="/" className="transition-transform hover:scale-105 active:scale-95">
-              <Image src="/GuiaSports-logo.svg" alt="GuíaSports" width={200} height={50} className="h-10 w-auto" priority />
+              <Image src="/logo.png" alt="GuíaSports" width={200} height={50} className="h-10 w-auto" priority />
             </Link>
             <div className="flex flex-col items-end">
               <div className="text-[10px] font-black text-[#a3e635] bg-[#a3e635]/10 px-2 py-1 rounded border border-[#a3e635]/20 uppercase tracking-widest italic mb-1">México</div>
@@ -130,13 +139,13 @@ export default function Home() {
             <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
               {destacados.map((e) => (
                 <div key={e.id} className="min-w-[85vw] sm:min-w-[300px] bg-gradient-to-br from-blue-600 to-blue-900 p-[1px] rounded-3xl">
-                  <div className="bg-[#020617] p-5 rounded-[23px] h-full flex flex-col justify-between italic">
+                  <div className="bg-[#020617] p-5 rounded-[23px] h-full flex flex-col justify-between italic text-white">
                     <div>
                       <div className="text-[9px] font-black text-blue-400 uppercase mb-2">{e.competicion}</div>
                       <div className="text-lg font-black leading-tight mb-4 uppercase">{e.evento}</div>
                     </div>
                     <div className="flex justify-between items-center mt-4">
-                       <div className="flex items-center gap-2 text-white font-mono font-bold"><Clock className="w-4 h-4 text-blue-400" /> {e.hora}</div>
+                       <div className="flex items-center gap-2 font-mono font-bold"><Clock className="w-4 h-4 text-blue-400" /> {e.hora}</div>
                        <div className="text-[10px] font-black text-[#a3e635] bg-[#a3e635]/10 px-3 py-1 rounded-lg border border-[#a3e635]/20">{e.canales}</div>
                     </div>
                   </div>

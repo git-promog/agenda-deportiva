@@ -97,7 +97,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto px-4 pt-4">
           <div className="flex justify-between items-center mb-6">
             <Link href="/" className="transition-transform hover:scale-105 active:scale-95">
-              <Image src="/logo.png" alt="GuíaSports" width={200} height={50} className="h-10 w-auto" priority />
+              <Image src="/GuiaSports-logo.svg" alt="GuíaSports" width={200} height={50} className="h-10 w-auto" priority />
             </Link>
             <div className="flex flex-col items-end">
               <div className="text-[10px] font-black text-[#a3e635] bg-[#a3e635]/10 px-2 py-1 rounded border border-[#a3e635]/20 uppercase tracking-widest italic mb-1">México</div>
@@ -163,22 +163,42 @@ export default function Home() {
                 <div className="h-px w-full bg-slate-800/30"></div>
               </div>
               <div className="grid gap-3">
-                {eventosAgrupados[fecha].map((evento: any) => (
-                  <div key={evento.id} className="group bg-slate-900/30 border border-slate-800/50 rounded-2xl p-4 hover:border-blue-500/30 transition-all">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div className="flex items-center gap-4 min-w-[90px] text-blue-400 font-mono font-black text-xl"><Clock className="w-4 h-4 opacity-30" /> {evento.hora}</div>
-                      <div className="flex-1">
-                        <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">{emojis[evento.deporte] || "🏆"} {evento.competicion}</div>
-                        <h3 className="text-[15px] font-bold text-slate-200 leading-tight">{evento.evento}</h3>
-                      </div>
-                      <div className="flex items-center gap-3 bg-[#020617] px-4 py-2.5 rounded-xl border border-slate-800 group-hover:border-[#a3e635]/50 transition-all">
-                        <Tv className="w-4 h-4 text-slate-600" />
-                        <span className="text-[11px] font-black text-[#a3e635] italic uppercase">{evento.canales}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+  {eventosAgrupados[fecha].map((evento: any) => (
+    <div key={evento.id} className="group bg-slate-900/30 border border-slate-800/50 rounded-2xl p-4 hover:border-blue-500/30 transition-all duration-300">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        
+        {/* HORA */}
+        <div className="flex items-center gap-4 min-w-[90px] text-blue-400 font-mono font-black text-xl">
+          <Clock className="w-4 h-4 opacity-30" /> {evento.hora}
+        </div>
+
+        {/* INFO DEL EVENTO CON ICONO MÁS GRANDE */}
+        <div className="flex-1 flex items-center gap-4">
+          <span className="text-3xl sm:text-4xl opacity-80 group-hover:opacity-100 transition-opacity">
+            {emojis[evento.deporte] || "🏆"}
+          </span>
+          <div>
+            <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">
+              {evento.competicion}
+            </div>
+            <h3 className="text-[15px] font-bold text-slate-200 leading-tight group-hover:text-white">
+              {evento.evento}
+            </h3>
+          </div>
+        </div>
+
+        {/* CANALES */}
+        <div className="flex items-center gap-3 bg-[#020617] px-4 py-2.5 rounded-xl border border-slate-800 group-hover:border-[#a3e635]/50 transition-all">
+          <Tv className="w-4 h-4 text-slate-600" />
+          <span className="text-[11px] font-black text-[#a3e635] italic uppercase">
+            {evento.canales}
+          </span>
+        </div>
+
+      </div>
+    </div>
+  ))}
+</div>
             </section>
           ))
         ) : (

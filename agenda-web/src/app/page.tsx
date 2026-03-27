@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { Tv, Calendar, Trophy, Clock, Zap, Filter, Star, Search, X, CalendarDays } from 'lucide-react';
+import Link from 'next/link';
+import Image from 'next/image'; // <-- ESTA LÍNEA ES NUEVA
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -78,60 +80,83 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-20">
       <header className="border-b border-slate-800 bg-[#020617]/95 backdrop-blur-md sticky top-0 z-30">
-        <div className="max-w-4xl mx-auto px-4 pt-6">
+        <div className="max-w-4xl mx-auto px-4 pt-4">
           
-          {/* LOGO Y STATUS */}
-          <div className="flex justify-between items-start mb-6">
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2">
-                <div className="bg-blue-600 p-1.5 rounded-lg shadow-lg">
-                  <Trophy className="text-white w-5 h-5" />
-                </div>
-                <h1 className="text-xl font-black tracking-tighter uppercase italic leading-none">
-                  Agenda <span className="text-blue-500">Deportiva</span>
-                </h1>
+          {/* LOGO E IDENTIDAD FINAL */}
+          <div className="flex justify-between items-center mb-6">
+            <Link href="/" className="transition-transform hover:scale-105 active:scale-95">
+              <Image 
+                src="/GuiaSports-logo.svg" 
+                alt="GuíaSports Logo" 
+                width={200} 
+                height={50} 
+                className="h-10 w-auto"
+                priority
+              />
+            </Link>
+            
+            <div className="flex flex-col items-end">
+              <div className="text-[10px] font-black text-[#a3e635] bg-[#a3e635]/10 px-2 py-1 rounded border border-[#a3e635]/20 uppercase tracking-widest italic mb-1">
+                México
               </div>
-              <div className="flex items-center gap-1.5 mt-1 ml-1">
-                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
-                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Sincronizado: {ultimaAct}</span>
+              <div className="flex items-center gap-1.5 mr-1">
+                <div className="w-1.5 h-1.5 bg-[#a3e635] rounded-full animate-pulse shadow-[0_0_8px_rgba(163,230,53,0.6)]"></div>
+                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">
+                  Sincronizado: {ultimaAct}
+                </span>
               </div>
             </div>
           </div>
 
-          {/* BUSCADOR CORREGIDO */}
-<div className="relative mb-6 w-full px-1"> {/* Añadí px-1 para margen interno */}
-  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
-  <input 
-    type="text"
-    placeholder="Busca equipos o ligas..."
-    className="w-full bg-slate-900/50 border border-slate-800 rounded-2xl py-3 pl-11 pr-10 text-base focus:outline-none focus:border-blue-500 transition-all text-slate-200 placeholder:text-slate-600 shadow-inner"
-    /* Nota: text-base (16px) evita que iOS haga zoom automático al dar clic */
-    value={busqueda}
-    onChange={(e) => setBusqueda(e.target.value)}
-  />
-  {busqueda && (
-    <button 
-      onClick={() => setBusqueda("")} 
-      className="absolute right-3 top-1/2 -translate-y-1/2 bg-slate-800 p-1 rounded-full text-slate-400 hover:text-white"
-    >
-      <X className="w-4 h-4" />
-    </button>
-  )}
-</div>
+          {/* BUSCADOR */}
+          <div className="relative mb-6 w-full px-1">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
+            <input 
+              type="text"
+              placeholder="Busca equipos o ligas..."
+              className="w-full bg-slate-900/50 border border-slate-800 rounded-2xl py-3 pl-11 pr-10 text-base focus:outline-none focus:border-[#a3e635] transition-all text-slate-200 placeholder:text-slate-600 shadow-inner"
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+            />
+            {busqueda && (
+              <button 
+                onClick={() => setBusqueda("")} 
+                className="absolute right-3 top-1/2 -translate-y-1/2 bg-slate-800 p-1 rounded-full text-slate-400 hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
 
           {/* FILTRO DE DEPORTES */}
           <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide">
             {deportesUnicos.map((dep: any) => (
-              <button key={dep} onClick={() => setFiltroDeporte(dep)} className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap border uppercase tracking-wider ${filtroDeporte === dep ? "bg-blue-600 border-blue-500 text-white" : "bg-slate-900 border-slate-800 text-slate-400 hover:text-white"}`}>
+              <button 
+                key={dep} 
+                onClick={() => setFiltroDeporte(dep)} 
+                className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap border uppercase tracking-wider ${
+                  filtroDeporte === dep 
+                  ? "bg-blue-600 border-blue-500 text-white" 
+                  : "bg-slate-900 border-slate-800 text-slate-400 hover:text-white"
+                }`}
+              >
                 {emojis[dep] || "🏆"} {dep}
               </button>
             ))}
           </div>
 
-          {/* SELECTOR DE FECHAS (TABS) */}
+          {/* SELECTOR DE FECHAS */}
           <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide border-t border-slate-900 pt-4">
             {fechasUnicas.map((f: any) => (
-              <button key={f} onClick={() => setFiltroFecha(f)} className={`px-4 py-1.5 rounded-lg text-[10px] font-black transition-all whitespace-nowrap uppercase tracking-widest ${filtroFecha === f ? "text-blue-400 bg-blue-500/10 border-blue-500/30 border" : "text-slate-500 border border-transparent hover:text-slate-300"}`}>
+              <button 
+                key={f} 
+                onClick={() => setFiltroFecha(f)} 
+                className={`px-4 py-1.5 rounded-lg text-[10px] font-black transition-all whitespace-nowrap uppercase tracking-widest ${
+                  filtroFecha === f 
+                  ? "text-[#a3e635] bg-[#a3e635]/10 border-[#a3e635]/30 border" 
+                  : "text-slate-500 border border-transparent hover:text-slate-300"
+                }`}
+              >
                 {formatearBotonFecha(f)}
               </button>
             ))}

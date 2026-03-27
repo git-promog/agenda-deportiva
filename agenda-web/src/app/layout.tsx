@@ -6,8 +6,8 @@ import Footer from "@/components/Footer"; // <-- IMPORTANTE: Importar el footer
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Agenda Deportiva MX - Dónde ver tus partidos hoy",
-  description: "Guía de canales y streaming para eventos deportivos en México",
+  title: "GuíaSports - Dónde ver deportes hoy en México",
+  description: "La guía definitiva de canales y streaming para fútbol, NBA, MLB, F1, tenis, box y más en México. ¡No te pierdas ningún partido!",
 };
 
 export default function RootLayout({

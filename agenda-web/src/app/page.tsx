@@ -15,9 +15,9 @@ const supabase = createClient(
 const emojis: { [key: string]: string } = {
   "Fútbol": "⚽️", "Básquetbol": "🏀", "Béisbol": "⚾️", "Básquet": "🏀",
   "Fórmula 1": "🏎️", "F1": "🏎️", "Tenis": "🎾", "Fútbol Americano": "🏈",
-  "NFL": "🏈", "Ciclismo": "🚴", "Boxeo": "🥊", "Golf": "⛳️",
-  "Rugby": "🏉", "Hockey": "🏒", "Fútbol Sala": "👟", "Voleibol": "🏐",
-  "Motorismo": "🏍️", "Natación": "🏊", "Artes Marciales": "🥋", "Bádminton": "🏸"
+  "NFL": "🏈", "Ciclismo": "🚴", "Combate": "🥊", "Boxeo": "🥊", "MMA": "🥊", 
+  "Golf": "⛳️", "Rugby": "🏉", "Hockey": "🏒", "ISHOCKEY": "🏒",
+  "Fútbol Sala": "👟", "Futsal": "👟", "Voleibol": "🏐", "Otros": "🏆"
 };
 
 const TOP_TEAMS = ["América", "Chivas", "Real Madrid", "Barcelona", "México", "F1", "NBA", "Champions", "Cruz Azul", "Pumas", "Selección", "Jamaica"];

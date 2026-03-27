@@ -14,14 +14,11 @@ const emojis: { [key: string]: string } = {
   "Fútbol": "⚽️", 
   "Básquetbol": "🏀", 
   "Béisbol": "⚾️", 
-  "Básquet": "🏀",
-  "Fórmula 1": "🏎️", 
-  "F1": "🏎️", 
-  "Tenis": "🎾", 
   "Fútbol Americano": "🏈",
-  "NFL": "🏈", 
+  "Fórmula 1": "🏎️", 
+  "Tenis": "🎾", 
+  "Combate": "🥊", 
   "Ciclismo": "🚴", 
-  "Boxeo": "🥊", 
   "Golf": "⛳️",
   "Rugby": "🏉",
   "Hockey": "🏒",
@@ -29,8 +26,7 @@ const emojis: { [key: string]: string } = {
   "Voleibol": "🏐",
   "Motorismo": "🏍️",
   "Natación": "🏊",
-  "Artes Marciales": "🥋",
-  "Bádminton": "🏸"
+  "Otros": "🏆"
 };
 
 export default function AdminPanel() {

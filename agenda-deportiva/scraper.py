@@ -81,3 +81,20 @@ def obtener_agenda_real():
     except Exception as e:
         print(f"Error en Scraper: {e}")
         return []
+
+def normalizar_deporte(txt):
+    t = txt.upper()
+    if "FUTBOL" in t or "SOCCER" in t: return "Fútbol"
+    if "SALA" in t or "FUTSAL" in t: return "Fútbol Sala"
+    if "BASKET" in t or "BALONCESTO" in t or "NBA" in t or "EUROLIGA" in t: return "Básquetbol"
+    if "BEISBOL" in t or "BASEBALL" in t or "MLB" in t: return "Béisbol"
+    if "F1" in t or "FORMULA 1" in t or "MOTOR" in t: return "Fórmula 1"
+    if "TENIS" in t or "ATP" in t or "WTA" in t: return "Tenis"
+    if "AMERICANO" in t or "NFL" in t or "NCAA" in t: return "Fútbol Americano"
+    if "RUGBY" in t: return "Rugby"
+    if "HOCKEY" in t or "ISHOCKEY" in t: return "Hockey"
+    if "MMA" in t or "UFC" in t or "ARTES MARCIALES" in t or "BOX" in t: return "Combate"
+    if "VOLEI" in t: return "Voleibol"
+    if "GOLF" in t: return "Golf"
+    if "CICLIS" in t or "VUELTA" in t or "TOUR" in t: return "Ciclismo"
+    return txt.capitalize() # Si no conoce el deporte, deja el nombre original bonito        

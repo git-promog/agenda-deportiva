@@ -11,10 +11,13 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+// BIBLIOTECA DE EMOJIS AMPLIADA (IDÉNTICA AL ADMIN)
 const emojis: { [key: string]: string } = {
   "Fútbol": "⚽️", "Básquetbol": "🏀", "Béisbol": "⚾️", "Básquet": "🏀",
   "Fórmula 1": "🏎️", "F1": "🏎️", "Tenis": "🎾", "Fútbol Americano": "🏈",
-  "NFL": "🏈", "Ciclismo": "🚴", "Boxeo": "🥊", "Golf": "⛳️"
+  "NFL": "🏈", "Ciclismo": "🚴", "Boxeo": "🥊", "Golf": "⛳️",
+  "Rugby": "🏉", "Hockey": "🏒", "Fútbol Sala": "👟", "Voleibol": "🏐",
+  "Motorismo": "🏍️", "Natación": "🏊", "Artes Marciales": "🥋", "Bádminton": "🏸"
 };
 
 const TOP_TEAMS = ["América", "Chivas", "Real Madrid", "Barcelona", "México", "F1", "NBA", "Champions", "Cruz Azul", "Pumas", "Selección", "Jamaica"];
@@ -39,23 +42,14 @@ export default function Home() {
     cargarDatos();
   }, []);
 
-  // Obtener fecha de hoy en formato YYYY-MM-DD según la zona local
   const hoyStr = new Date().toLocaleDateString('sv-SE'); 
-  
   const deportesUnicos = ["Todos", ...new Set(eventos.map(e => e.deporte))];
   const fechasUnicas = ["Todos", ...new Set(eventos.map(e => e.fecha))];
 
-  // LÓGICA HÍBRIDA DE DESTACADOS MEJORADA
   const destacados = eventos.filter(e => {
     const esDeHoy = e.fecha === hoyStr;
-    
-    // 1. Prioridad Manual (True)
     if (e.destacado === true && esDeHoy) return true;
-    
-    // 2. Oculto Manual (False)
     if (e.destacado === false) return false;
-    
-    // 3. Automático (Null)
     if (e.destacado === null || e.destacado === undefined) {
       return esDeHoy && TOP_TEAMS.some(t => e.evento.toLowerCase().includes(t.toLowerCase()));
     }
@@ -97,7 +91,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto px-4 pt-4">
           <div className="flex justify-between items-center mb-6">
             <Link href="/" className="transition-transform hover:scale-105 active:scale-95">
-              <Image src="/GuiaSports-logo.svg" alt="GuíaSports" width={200} height={50} className="h-10 w-auto" priority />
+              <Image src="/logo.png" alt="GuíaSports" width={200} height={50} className="h-10 w-auto" priority />
             </Link>
             <div className="flex flex-col items-end">
               <div className="text-[10px] font-black text-[#a3e635] bg-[#a3e635]/10 px-2 py-1 rounded border border-[#a3e635]/20 uppercase tracking-widest italic mb-1">México</div>
@@ -108,7 +102,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="relative mb-6 w-full px-1">
+          <div className="relative mb-6 w-full px-1 text-black">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
             <input type="text" placeholder="Busca equipos o ligas..." className="w-full bg-slate-900/50 border border-slate-800 rounded-2xl py-3 pl-11 pr-10 text-base focus:outline-none focus:border-[#a3e635] transition-all text-slate-200 placeholder:text-slate-600 shadow-inner" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
             {busqueda && <button onClick={() => setBusqueda("")} className="absolute right-3 top-1/2 -translate-y-1/2 bg-slate-800 p-1 rounded-full text-slate-400"><X className="w-4 h-4" /></button>}
@@ -163,42 +157,30 @@ export default function Home() {
                 <div className="h-px w-full bg-slate-800/30"></div>
               </div>
               <div className="grid gap-3">
-  {eventosAgrupados[fecha].map((evento: any) => (
-    <div key={evento.id} className="group bg-slate-900/30 border border-slate-800/50 rounded-2xl p-4 hover:border-blue-500/30 transition-all duration-300">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        
-        {/* HORA */}
-        <div className="flex items-center gap-4 min-w-[90px] text-blue-400 font-mono font-black text-xl">
-          <Clock className="w-4 h-4 opacity-30" /> {evento.hora}
-        </div>
+                {eventosAgrupados[fecha].map((evento: any) => (
+                  <div key={evento.id} className="group bg-slate-900/30 border border-slate-800/50 rounded-2xl p-4 hover:border-blue-500/30 transition-all">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="flex items-center gap-4 min-w-[90px] text-blue-400 font-mono font-black text-xl"><Clock className="w-4 h-4 opacity-30" /> {evento.hora}</div>
+                      
+                      {/* ICONOS GRANDES MEJORADOS */}
+                      <div className="flex-1 flex items-center gap-4">
+                        <span className="text-4xl opacity-80 group-hover:opacity-100 transition-opacity">
+                          {emojis[evento.deporte] || "🏆"}
+                        </span>
+                        <div>
+                          <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">{evento.competicion}</div>
+                          <h3 className="text-[15px] font-bold text-slate-200 leading-tight">{evento.evento}</h3>
+                        </div>
+                      </div>
 
-        {/* INFO DEL EVENTO CON ICONO MÁS GRANDE */}
-        <div className="flex-1 flex items-center gap-4">
-          <span className="text-3xl sm:text-4xl opacity-80 group-hover:opacity-100 transition-opacity">
-            {emojis[evento.deporte] || "🏆"}
-          </span>
-          <div>
-            <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">
-              {evento.competicion}
-            </div>
-            <h3 className="text-[15px] font-bold text-slate-200 leading-tight group-hover:text-white">
-              {evento.evento}
-            </h3>
-          </div>
-        </div>
-
-        {/* CANALES */}
-        <div className="flex items-center gap-3 bg-[#020617] px-4 py-2.5 rounded-xl border border-slate-800 group-hover:border-[#a3e635]/50 transition-all">
-          <Tv className="w-4 h-4 text-slate-600" />
-          <span className="text-[11px] font-black text-[#a3e635] italic uppercase">
-            {evento.canales}
-          </span>
-        </div>
-
-      </div>
-    </div>
-  ))}
-</div>
+                      <div className="flex items-center gap-3 bg-[#020617] px-4 py-2.5 rounded-xl border border-slate-800 group-hover:border-[#a3e635]/50 transition-all">
+                        <Tv className="w-4 h-4 text-slate-600" />
+                        <span className="text-[11px] font-black text-[#a3e635] italic uppercase">{evento.canales}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </section>
           ))
         ) : (

@@ -9,10 +9,28 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+// BIBLIOTECA DE EMOJIS AMPLIADA
 const emojis: { [key: string]: string } = {
-  "Fútbol": "⚽️", "Básquetbol": "🏀", "Béisbol": "⚾️", "Básquet": "🏀",
-  "Fórmula 1": "🏎️", "F1": "🏎️", "Tenis": "🎾", "Fútbol Americano": "🏈",
-  "NFL": "🏈", "Ciclismo": "🚴", "Boxeo": "🥊", "Golf": "⛳️"
+  "Fútbol": "⚽️", 
+  "Básquetbol": "🏀", 
+  "Béisbol": "⚾️", 
+  "Básquet": "🏀",
+  "Fórmula 1": "🏎️", 
+  "F1": "🏎️", 
+  "Tenis": "🎾", 
+  "Fútbol Americano": "🏈",
+  "NFL": "🏈", 
+  "Ciclismo": "🚴", 
+  "Boxeo": "🥊", 
+  "Golf": "⛳️",
+  "Rugby": "🏉",
+  "Hockey": "🏒",
+  "Fútbol Sala": "👟",
+  "Voleibol": "🏐",
+  "Motorismo": "🏍️",
+  "Natación": "🏊",
+  "Artes Marciales": "🥋",
+  "Bádminton": "🏸"
 };
 
 export default function AdminPanel() {
@@ -34,7 +52,6 @@ export default function AdminPanel() {
   }, [autenticado]);
 
   async function cargarEventos() {
-    // CAMBIO A ORDEN ASCENDENTE (true)
     const { data } = await supabase
       .from('eventos')
       .select('*')
@@ -95,7 +112,7 @@ export default function AdminPanel() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
           <h1 className="text-3xl font-black italic uppercase">Panel de <span className="text-blue-500">Control</span></h1>
           <div className="flex gap-3">
-            <button onClick={() => setEditando({ evento: "", hora: "", canales: "", competicion: "", deporte: "Fútbol", fecha: new Date().toLocaleDateString('sv-SE'), destacado: null })} className="bg-blue-600 p-4 rounded-2xl font-black uppercase italic flex items-center gap-2"><Plus size={20} /> Nuevo Evento</button>
+            <button onClick={() => setEditando({ evento: "", hora: "", canales: "", competicion: "", deporte: "Fútbol", fecha: new Date().toLocaleDateString('sv-SE'), destacado: null })} className="bg-blue-600 p-4 rounded-2xl font-black uppercase italic flex items-center gap-2 transition-transform active:scale-95"><Plus size={20} /> Nuevo Evento</button>
             <button onClick={() => setAutenticado(false)} className="bg-slate-800 p-4 rounded-2xl text-slate-400"><LogOut size={20} /></button>
           </div>
         </div>
@@ -104,23 +121,23 @@ export default function AdminPanel() {
         <div className="bg-slate-900/50 p-6 rounded-[32px] border border-slate-800 mb-8 space-y-4">
            <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
-              <input type="text" placeholder="Filtrar por nombre..." className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 pl-11 pr-4 text-sm" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+              <input type="text" placeholder="Filtrar por nombre..." className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 pl-11 pr-4 text-sm outline-none focus:border-blue-500" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
            </div>
            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
               {deportesUnicos.map(d => (
-                <button key={d} onClick={() => setFiltroDeporte(d)} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all ${filtroDeporte === d ? 'bg-blue-600 border-blue-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-500'}`}>
-                  {emojis[d] || ""} {d}
+                <button key={d} onClick={() => setFiltroDeporte(d)} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all whitespace-nowrap ${filtroDeporte === d ? 'bg-blue-600 border-blue-500 text-white shadow-lg' : 'bg-slate-800 border-slate-700 text-slate-500'}`}>
+                  {emojis[d] || "🏆"} {d}
                 </button>
               ))}
            </div>
            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
               {fechasUnicas.map(f => (
-                <button key={f} onClick={() => setFiltroFecha(f)} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all ${filtroFecha === f ? 'bg-emerald-600 border-emerald-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-500'}`}>{f === "Todos" ? "Todas las Fechas" : f}</button>
+                <button key={f} onClick={() => setFiltroFecha(f)} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all whitespace-nowrap ${filtroFecha === f ? 'bg-emerald-600 border-emerald-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-500'}`}>{f === "Todos" ? "Todas las Fechas" : f}</button>
               ))}
            </div>
         </div>
 
-        <div className="bg-slate-900/50 border border-slate-800 rounded-[32px] overflow-x-auto">
+        <div className="bg-slate-900/50 border border-slate-800 rounded-[32px] overflow-x-auto shadow-2xl">
           <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
               <tr className="bg-slate-950/50 text-[10px] uppercase tracking-widest text-slate-500 border-b border-slate-800">
@@ -140,8 +157,7 @@ export default function AdminPanel() {
                   </td>
                   <td className="p-5">
                     <div className="flex items-center gap-4">
-                      {/* ICONO DE DEPORTE MÁS GRANDE */}
-                      <span className="text-2xl" title={e.deporte}>{emojis[e.deporte] || "🏆"}</span>
+                      <span className="text-3xl" title={e.deporte}>{emojis[e.deporte] || "🏆"}</span>
                       <div>
                         <div className="font-bold text-sm leading-tight mb-1">{e.evento}</div>
                         <div className="text-[10px] text-slate-500 uppercase font-black">{e.competicion}</div>
@@ -171,23 +187,58 @@ export default function AdminPanel() {
         </div>
       </div>
 
-      {/* MODAL */}
+      {/* MODAL CON CAMPO DE DEPORTE AGREGADO */}
       {editando && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
-          <form onSubmit={guardarCambios} className="bg-slate-900 border border-slate-800 p-8 rounded-[40px] max-w-lg w-full">
+          <form onSubmit={guardarCambios} className="bg-slate-900 border border-slate-800 p-8 rounded-[40px] max-w-lg w-full shadow-2xl overflow-y-auto max-h-[90vh]">
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-2xl font-black italic uppercase">{editando.id ? 'Editar' : 'Nuevo'} Evento</h2>
               <button type="button" onClick={() => setEditando(null)}><X size={24} /></button>
             </div>
+            
             <div className="grid gap-5">
-              <input type="text" placeholder="Evento" className="bg-slate-950 border border-slate-800 p-4 rounded-2xl w-full outline-none focus:border-blue-500" value={editando.evento} onChange={(e) => setEditando({...editando, evento: e.target.value})} required />
-              <div className="grid grid-cols-2 gap-4">
-                <input type="date" className="bg-slate-950 border border-slate-800 p-4 rounded-2xl outline-none focus:border-blue-500" value={editando.fecha} onChange={(e) => setEditando({...editando, fecha: e.target.value})} required />
-                <input type="text" placeholder="Hora" className="bg-slate-950 border border-slate-800 p-4 rounded-2xl outline-none focus:border-blue-500" value={editando.hora} onChange={(e) => setEditando({...editando, hora: e.target.value})} required />
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase text-slate-500 ml-2">Nombre del Evento</label>
+                <input type="text" className="bg-slate-950 border border-slate-800 p-4 rounded-2xl w-full outline-none focus:border-blue-500" value={editando.evento} onChange={(e) => setEditando({...editando, evento: e.target.value})} required />
               </div>
-              <input type="text" placeholder="Canales" className="bg-slate-950 border border-slate-800 p-4 rounded-2xl w-full outline-none focus:border-blue-500 text-emerald-500 font-bold" value={editando.canales} onChange={(e) => setEditando({...editando, canales: e.target.value})} required />
-              <input type="text" placeholder="Competición" className="bg-slate-950 border border-slate-800 p-4 rounded-2xl w-full outline-none focus:border-blue-500" value={editando.competicion} onChange={(e) => setEditando({...editando, competicion: e.target.value})} required />
-              <button type="submit" className="bg-[#a3e635] text-black font-black p-5 rounded-2xl uppercase italic mt-4 shadow-lg shadow-lime-900/20"><Check size={20} /> Guardar Cambios</button>
+
+              {/* CAMPO DE DEPORTE (SELECT) */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase text-slate-500 ml-2">Tipo de Deporte</label>
+                <select 
+                  className="bg-slate-950 border border-slate-800 p-4 rounded-2xl w-full outline-none focus:border-blue-500 text-white appearance-none"
+                  value={editando.deporte}
+                  onChange={(e) => setEditando({...editando, deporte: e.target.value})}
+                >
+                  {Object.keys(emojis).sort().map(d => (
+                    <option key={d} value={d}>{emojis[d]} {d}</option>
+                  ))}
+                  <option value="Otros">🏆 Otros</option>
+                </select>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase text-slate-500 ml-2">Fecha</label>
+                  <input type="date" className="bg-slate-950 border border-slate-800 p-4 rounded-2xl w-full outline-none focus:border-blue-500" value={editando.fecha} onChange={(e) => setEditando({...editando, fecha: e.target.value})} required />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase text-slate-500 ml-2">Hora</label>
+                  <input type="text" className="bg-slate-950 border border-slate-800 p-4 rounded-2xl w-full outline-none focus:border-blue-500" value={editando.hora} onChange={(e) => setEditando({...editando, hora: e.target.value})} required />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase text-slate-500 ml-2">Canales</label>
+                <input type="text" className="bg-slate-950 border border-slate-800 p-4 rounded-2xl w-full outline-none focus:border-blue-500 text-emerald-500 font-bold" value={editando.canales} onChange={(e) => setEditando({...editando, canales: e.target.value})} required />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase text-slate-500 ml-2">Liga / Competición</label>
+                <input type="text" className="bg-slate-950 border border-slate-800 p-4 rounded-2xl w-full outline-none focus:border-blue-500" value={editando.competicion} onChange={(e) => setEditando({...editando, competicion: e.target.value})} required />
+              </div>
+              
+              <button type="submit" className="bg-[#a3e635] text-black font-black p-5 rounded-2xl uppercase italic mt-4 shadow-lg active:scale-95 transition-transform"><Check size={20} /> Guardar Cambios</button>
             </div>
           </form>
         </div>

@@ -73,6 +73,41 @@ export default function Home() {
     return false;
   }).slice(0, 6);
 
+  {/* SECCIÓN DE PREVIAS / NOTICIAS (SEO) */}
+<div className="mb-12">
+  <div className="flex justify-between items-end mb-6">
+    <h2 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] flex items-center gap-2">
+      <Zap className="w-3 h-3 fill-blue-500" /> Previas y Análisis
+    </h2>
+    <Link href="/noticias" className="text-[9px] font-black text-slate-500 uppercase hover:text-blue-400 transition-colors">
+      Ver todas →
+    </Link>
+  </div>
+  
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    {/* Este es un ejemplo estático, luego lo conectamos a la tabla 'noticias' */}
+    <div className="bg-slate-900/50 border border-slate-800 p-4 rounded-[32px] flex gap-4 items-center hover:bg-slate-800/50 transition-all cursor-pointer group">
+      <div className="w-20 h-20 bg-blue-600/20 rounded-2xl flex-shrink-0 flex items-center justify-center border border-blue-500/20 group-hover:scale-105 transition-transform">
+        <Trophy className="text-blue-500" size={32} />
+      </div>
+      <div>
+        <h3 className="text-sm font-black uppercase italic leading-tight mb-2">Jamaica vs Nueva Caledonia: ¿Por qué hay tanto morbo por este partido?</h3>
+        <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Lectura de 3 min • Fútbol</p>
+      </div>
+    </div>
+    
+    <div className="bg-slate-900/50 border border-slate-800 p-4 rounded-[32px] flex gap-4 items-center hover:bg-slate-800/50 transition-all cursor-pointer group">
+      <div className="w-20 h-20 bg-[#a3e635]/10 rounded-2xl flex-shrink-0 flex items-center justify-center border border-[#a3e635]/20 group-hover:scale-105 transition-transform">
+        <Star className="text-[#a3e635]" size={32} />
+      </div>
+      <div>
+        <h3 className="text-sm font-black uppercase italic leading-tight mb-2">F1: Guía completa para el Gran Premio de este fin de semana</h3>
+        <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Lectura de 5 min • Fórmula 1</p>
+      </div>
+    </div>
+  </div>
+</div>
+
   const eventosFiltrados = eventos.filter(e => {
     const coincideDeporte = filtroDeporte === "Todos" || e.deporte === filtroDeporte;
     const coincideFecha = filtroFecha === "Todos" || e.fecha === filtroFecha;

@@ -148,13 +148,34 @@ export default function Home() {
             {busqueda && <button onClick={() => setBusqueda("")} className="absolute right-3 top-1/2 -translate-y-1/2 bg-slate-800 p-1 rounded-full text-slate-400"><X className="w-4 h-4" /></button>}
           </div>
 
-          <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide">
-            {deportesUnicos.map((dep: any) => (
-              <button key={dep} onClick={() => setFiltroDeporte(dep)} className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap border uppercase tracking-wider ${filtroDeporte === dep ? "bg-blue-600 border-blue-500 text-white shadow-lg" : "bg-slate-900 border-slate-800 text-slate-400"}`}>
-                {emojis[dep] || "🏆"} {dep}
-              </button>
-            ))}
-          </div>
+          {/* FILTRO DE DEPORTES CON INDICADORES DE SCROLL */}
+<div className="relative group mb-4">
+  {/* Flecha discreta Izquierda (solo aparece si el usuario scrollea) */}
+  <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#020617] to-transparent z-10 pointer-events-none transition-opacity opacity-0 group-hover:opacity-100" />
+  
+  <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide relative px-1">
+    {deportesUnicos.map((dep: any) => (
+      <button 
+        key={dep} 
+        onClick={() => setFiltroDeporte(dep)} 
+        className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap border uppercase tracking-wider ${
+          filtroDeporte === dep 
+          ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-900/40" 
+          : "bg-slate-900 border-slate-800 text-slate-400 hover:text-white"
+        }`}
+      >
+        {emojis[dep] || "🏆"} {dep}
+      </button>
+    ))}
+  </div>
+
+  {/* Flecha discreta Derecha */}
+  <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-[#020617] via-[#020617]/80 to-transparent z-10 pointer-events-none flex items-center justify-end pr-1">
+    <div className="bg-slate-800/50 rounded-full p-1 backdrop-blur-sm border border-slate-700">
+      <Filter className="w-3 h-3 text-slate-500 rotate-90" />
+    </div>
+  </div>
+</div>
 
           <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide border-t border-slate-900 pt-4">
             {fechasUnicas.map((f: any) => (

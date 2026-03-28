@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { Trash2, Star, Plus, Edit3, Check, X, LogIn, Zap, LogOut, Search, AlertCircle } from 'lucide-react';
-import NextImage from 'next/image'; // <-- USAMOS NEXTIMAGE SIEMPRE
+import NextImage from 'next/image';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -22,6 +22,7 @@ export default function AdminPanel() {
   const [password, setPassword] = useState("");
   const [eventos, setEventos] = useState<any[]>([]);
   const [editando, setEditando] = useState<any>(null);
+  
   const [filtroDeporte, setFiltroDeporte] = useState("Todos");
   const [filtroFecha, setFiltroFecha] = useState("Todos");
   const [busqueda, setBusqueda] = useState("");
@@ -36,7 +37,11 @@ export default function AdminPanel() {
   }, [autenticado]);
 
   async function cargarEventos() {
-    const { data } = await supabase.from('eventos').select('*').order('fecha', { ascending: true }).order('hora', { ascending: true });
+    const { data } = await supabase
+      .from('eventos')
+      .select('*')
+      .order('fecha', { ascending: true }) 
+      .order('hora', { ascending: true });
     if (data) setEventos(data);
   }
 
@@ -50,20 +55,17 @@ export default function AdminPanel() {
     return coincideDeporte && coincideFecha && coincideBusqueda;
   });
 
-  // --- ACCIÓN MASIVA (Bulk Update) ---
   async function actualizarMasivo(valor: boolean | null) {
     const ids = eventosFiltrados.map(e => e.id);
     if (ids.length === 0) return;
-    
-    const confirmacion = confirm(`¿Quieres actualizar los ${ids.length} eventos filtrados a este estado?`);
-    if (confirmacion) {
+    if (confirm(`¿Aplicar este estado a los ${ids.length} eventos filtrados?`)) {
       await supabase.from('eventos').update({ destacado: valor }).in('id', ids);
       cargarEventos();
     }
   }
 
   async function eliminarEvento(id: string) {
-    if (confirm("¿Borrar evento?")) {
+    if (confirm("¿Borrar este evento?")) {
       await supabase.from('eventos').delete().eq('id', id);
       cargarEventos();
     }
@@ -85,13 +87,13 @@ export default function AdminPanel() {
   if (!autenticado) {
     return (
       <div className="min-h-screen bg-[#020617] flex items-center justify-center p-6 text-white">
-        <NextImage 
-  src="/GuiaSports-logo.svg" 
-  alt="GuíaSports" 
-  width={120} 
-  height={40} 
-  className="mx-auto mb-6" 
-/>
+        <div className="max-w-md w-full bg-slate-900 border border-slate-800 p-10 rounded-[40px] text-center shadow-2xl">
+          <NextImage src="/GuiaSports-logo.svg" alt="GuíaSports" width={180} height={60} className="mx-auto mb-8" />
+          <h1 className="text-xl font-black italic uppercase mb-2">Panel de Control</h1>
+          <p className="text-slate-500 text-[10px] uppercase tracking-[0.3em] mb-8">Acceso Restringido</p>
+          <input type="password" placeholder="Contraseña" className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 mb-4 text-center outline-none focus:border-[#a3e635] text-white" onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && login()} />
+          <button onClick={login} className="w-full bg-[#a3e635] text-black font-black p-4 rounded-2xl uppercase italic hover:bg-[#b4f346] transition-all">Entrar</button>
+        </div>
       </div>
     );
   }
@@ -102,40 +104,76 @@ export default function AdminPanel() {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-black italic uppercase leading-none">Panel de <span className="text-blue-500">Control</span></h1>
           <div className="flex gap-3">
-            <button onClick={() => setEditando({ evento: "", hora: "", canales: "", competicion: "", deporte: "Fútbol", fecha: new Date().toLocaleDateString('sv-SE'), destacado: null })} className="bg-blue-600 p-4 rounded-2xl font-black uppercase italic flex items-center gap-2 shadow-lg shadow-blue-900/30 transition-all active:scale-95"><Plus size={20} /> Nuevo</button>
+            <button onClick={() => setEditando({ evento: "", hora: "", canales: "", competicion: "", deporte: "Fútbol", fecha: new Date().toLocaleDateString('sv-SE'), destacado: null })} className="bg-blue-600 p-4 rounded-2xl font-black uppercase italic flex items-center gap-2 shadow-lg active:scale-95 transition-all"><Plus size={20} /> Nuevo Evento</button>
             <button onClick={() => setAutenticado(false)} className="bg-slate-800 p-4 rounded-2xl text-slate-400 hover:text-white transition-all"><LogOut size={20} /></button>
           </div>
         </div>
 
-        {/* HERRAMIENTAS DE FILTRO Y ACCIONES MASIVAS */}
+        {/* --- SECCIÓN DE HERRAMIENTAS CORREGIDA --- */}
         <div className="bg-slate-900/50 p-6 rounded-[32px] border border-slate-800 mb-8 space-y-6">
-           <div className="relative">
+           
+           {/* 1. BUSCADOR (Ancho completo y con botón X) */}
+           <div className="relative w-full">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
-              <input type="text" placeholder="Filtrar por nombre para aplicar cambios masivos..." className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 pl-11 pr-4 text-sm" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+              <input 
+                type="text" 
+                placeholder="Buscar equipo o liga..." 
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 pl-11 pr-12 text-sm outline-none focus:border-blue-500 transition-all" 
+                value={busqueda} 
+                onChange={(e) => setBusqueda(e.target.value)} 
+              />
+              {busqueda && (
+                <button 
+                  onClick={() => setBusqueda("")} 
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white bg-slate-800 p-1 rounded-full transition-colors"
+                >
+                  <X size={14} />
+                </button>
+              )}
            </div>
            
-           <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-2 border-t border-slate-800/50">
-              <div className="flex flex-col gap-2 w-full md:w-auto">
-                <span className="text-[9px] font-black uppercase text-slate-500 ml-1">Filtros de Vista</span>
-                <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-                   {deportesUnicos.map(d => (
-                     <button key={d} onClick={() => setFiltroDeporte(d)} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all whitespace-nowrap ${filtroDeporte === d ? 'bg-blue-600 border-blue-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-500'}`}>{d}</button>
-                   ))}
+           <div className="space-y-6 pt-2 border-t border-slate-800/50">
+              {/* 2. FILTROS (Ocupan todo el ancho disponible ahora) */}
+              <div className="space-y-4">
+                <div className="flex flex-col gap-2">
+                  <span className="text-[9px] font-black uppercase text-slate-500 ml-1">Deportes</span>
+                  <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 w-full">
+                    {deportesUnicos.map(d => (
+                      <button key={d} onClick={() => setFiltroDeporte(d)} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all whitespace-nowrap ${filtroDeporte === d ? 'bg-blue-600 border-blue-500 text-white shadow-lg' : 'bg-slate-800 border-slate-700 text-slate-500 hover:text-slate-300'}`}>
+                        {emojis[d] || ""} {d}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <span className="text-[9px] font-black uppercase text-slate-500 ml-1">Fechas</span>
+                  <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 w-full">
+                    {fechasUnicas.map(f => (
+                      <button key={f} onClick={() => setFiltroFecha(f)} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all whitespace-nowrap ${filtroFecha === f ? 'bg-emerald-600 border-emerald-500 text-white shadow-lg' : 'bg-slate-800 border-slate-700 text-slate-500 hover:text-slate-300'}`}>
+                        {f === "Todos" ? "📅 Todas las Fechas" : f}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              {/* BARRA DE ACCIONES MASIVAS */}
-              <div className="flex flex-col gap-2 w-full md:w-auto items-end">
-                <span className="text-[9px] font-black uppercase text-yellow-500 mr-1 flex items-center gap-1"><AlertCircle size={10}/> Acciones para {eventosFiltrados.length} items</span>
-                <div className="flex bg-slate-950/80 p-1 rounded-xl border border-yellow-500/20">
-                   <button onClick={() => actualizarMasivo(null)} className="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase text-slate-400 hover:bg-slate-800 flex items-center gap-1.5 transition-all"><Zap size={12}/> Auto</button>
-                   <button onClick={() => actualizarMasivo(true)} className="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase text-yellow-500 hover:bg-yellow-500/10 flex items-center gap-1.5 transition-all"><Star size={12} fill="currentColor"/> Forzar</button>
-                   <button onClick={() => actualizarMasivo(false)} className="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase text-red-500 hover:bg-red-500/10 flex items-center gap-1.5 transition-all"><X size={12}/> Ocultar</button>
+              {/* 3. ACCIONES MASIVAS (Ubicadas debajo de los filtros para evitar amontonamiento) */}
+              <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-950/30 p-4 rounded-2xl border border-slate-800/50">
+                <div className="flex items-center gap-2 text-yellow-500/80">
+                  <AlertCircle size={14}/>
+                  <span className="text-[10px] font-black uppercase tracking-widest">Acción masiva para {eventosFiltrados.length} resultados</span>
+                </div>
+                <div className="flex bg-slate-950 p-1 rounded-xl border border-yellow-500/20 shadow-inner">
+                   <button onClick={() => actualizarMasivo(null)} className="px-4 py-2 rounded-lg text-[9px] font-black uppercase text-slate-400 hover:bg-slate-800 flex items-center gap-1.5 transition-all"><Zap size={12}/> Auto</button>
+                   <button onClick={() => actualizarMasivo(true)} className="px-4 py-2 rounded-lg text-[9px] font-black uppercase text-yellow-500 hover:bg-yellow-500/10 flex items-center gap-1.5 transition-all"><Star size={12} fill="currentColor"/> Forzar</button>
+                   <button onClick={() => actualizarMasivo(false)} className="px-4 py-2 rounded-lg text-[9px] font-black uppercase text-red-500 hover:bg-red-500/10 flex items-center gap-1.5 transition-all"><X size={12}/> Ocultar</button>
                 </div>
               </div>
            </div>
         </div>
 
+        {/* TABLA SIN CAMBIOS (YA FUNCIONABA BIEN) */}
         <div className="bg-slate-900/50 border border-slate-800 rounded-[32px] overflow-x-auto shadow-2xl">
           <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
@@ -157,17 +195,20 @@ export default function AdminPanel() {
                   <td className="p-5">
                     <div className="flex items-center gap-4">
                       <span className="text-3xl" title={e.deporte}>{emojis[e.deporte] || "🏆"}</span>
-                      <div><div className="font-bold text-sm leading-tight mb-1">{e.evento}</div><div className="text-[10px] text-slate-500 uppercase font-black">{e.competicion}</div></div>
+                      <div>
+                        <div className="font-bold text-sm leading-tight mb-1">{e.evento}</div>
+                        <div className="text-[10px] text-slate-500 uppercase font-black">{e.competicion}</div>
+                      </div>
                     </div>
                   </td>
                   <td className="p-5">
                     <span className="text-xs text-emerald-500 italic font-black bg-emerald-500/10 px-2 py-1 rounded-md border border-emerald-500/10">{e.canales}</span>
                   </td>
-                  <td className="p-5">
-                    <div className="flex items-center justify-center bg-slate-950/50 rounded-xl p-1 w-fit mx-auto border border-slate-800 shadow-inner">
-                      <button onClick={() => actualizarDestacado(e.id, null)} className={`p-2 rounded-lg transition-all ${e.destacado === null ? 'bg-slate-700 text-white shadow-lg' : 'text-slate-600 hover:text-slate-400'}`} title="Automático"><Zap size={14} /></button>
-                      <button onClick={() => actualizarDestacado(e.id, true)} className={`p-2 rounded-lg transition-all ${e.destacado === true ? 'bg-yellow-500 text-black shadow-lg' : 'text-slate-600 hover:text-yellow-500'}`} title="Forzar ON"><Star size={14} fill={e.destacado === true ? "currentColor" : "none"} /></button>
-                      <button onClick={() => actualizarDestacado(e.id, false)} className={`p-2 rounded-lg transition-all ${e.destacado === false ? 'bg-red-500 text-white shadow-lg' : 'text-slate-600 hover:text-red-500'}`} title="Ocultar"><X size={14} /></button>
+                  <td className="p-5 text-center">
+                    <div className="flex items-center justify-center bg-slate-950/50 rounded-xl p-1 w-fit mx-auto border border-slate-800">
+                      <button onClick={() => actualizarDestacado(e.id, null)} className={`p-2 rounded-lg transition-all ${e.destacado === null ? 'bg-slate-700 text-white shadow-lg' : 'text-slate-600 hover:text-slate-400'}`}><Zap size={14} /></button>
+                      <button onClick={() => actualizarDestacado(e.id, true)} className={`p-2 rounded-lg transition-all ${e.destacado === true ? 'bg-yellow-500 text-black shadow-lg' : 'text-slate-600 hover:text-yellow-500'}`}><Star size={14} fill={e.destacado === true ? "currentColor" : "none"} /></button>
+                      <button onClick={() => actualizarDestacado(e.id, false)} className={`p-2 rounded-lg transition-all ${e.destacado === false ? 'bg-red-500 text-white shadow-lg' : 'text-slate-600 hover:text-red-500'}`}><X size={14} /></button>
                     </div>
                   </td>
                   <td className="p-5 text-right">
@@ -183,23 +224,44 @@ export default function AdminPanel() {
         </div>
       </div>
 
-      {/* MODAL */}
+      {/* MODAL EDITAR / CREAR */}
       {editando && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
-          <form onSubmit={guardarCambios} className="bg-slate-900 border border-slate-800 p-8 rounded-[40px] max-w-lg w-full shadow-2xl">
-            <div className="flex justify-between items-center mb-8"><h2 className="text-2xl font-black italic uppercase">Editar Evento</h2><button type="button" onClick={() => setEditando(null)}><X size={24} /></button></div>
+          <form onSubmit={guardarCambios} className="bg-slate-900 border border-slate-800 p-8 rounded-[40px] max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-2xl font-black italic uppercase">{editando.id ? 'Editar' : 'Nuevo'} Evento</h2>
+              <button type="button" onClick={() => setEditando(null)}><X size={24} /></button>
+            </div>
             <div className="grid gap-5">
-              <input type="text" className="bg-slate-950 border border-slate-800 p-4 rounded-2xl w-full outline-none focus:border-blue-500" value={editando.evento} onChange={(e) => setEditando({...editando, evento: e.target.value})} required />
-              <select className="bg-slate-950 border border-slate-800 p-4 rounded-2xl w-full outline-none focus:border-blue-500 text-white" value={editando.deporte} onChange={(e) => setEditando({...editando, deporte: e.target.value})}>
-                  {Object.keys(emojis).sort().map(d => (<option key={d} value={d}>{emojis[d]} {d}</option>))}
-              </select>
-              <div className="grid grid-cols-2 gap-4">
-                <input type="date" className="bg-slate-950 border border-slate-800 p-4 rounded-2xl w-full outline-none" value={editando.fecha} onChange={(e) => setEditando({...editando, fecha: e.target.value})} required />
-                <input type="text" className="bg-slate-950 border border-slate-800 p-4 rounded-2xl w-full outline-none" value={editando.hora} onChange={(e) => setEditando({...editando, hora: e.target.value})} required />
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase text-slate-500 ml-2">Evento</label>
+                <input type="text" className="bg-slate-950 border border-slate-800 p-4 rounded-2xl w-full outline-none focus:border-blue-500 text-white" value={editando.evento} onChange={(e) => setEditando({...editando, evento: e.target.value})} required />
               </div>
-              <input type="text" className="bg-slate-950 border border-slate-800 p-4 rounded-2xl w-full outline-none" value={editando.canales} onChange={(e) => setEditando({...editando, canales: e.target.value})} required />
-              <input type="text" className="bg-slate-950 border border-slate-800 p-4 rounded-2xl w-full outline-none" value={editando.competicion} onChange={(e) => setEditando({...editando, competicion: e.target.value})} required />
-              <button type="submit" className="bg-[#a3e635] text-black font-black p-5 rounded-2xl uppercase italic mt-4 hover:bg-[#b4f346] transition-all">Guardar Cambios</button>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase text-slate-500 ml-2">Deporte</label>
+                <select className="bg-slate-950 border border-slate-800 p-4 rounded-2xl w-full outline-none focus:border-blue-500 text-white appearance-none" value={editando.deporte} onChange={(e) => setEditando({...editando, deporte: e.target.value})}>
+                  {Object.keys(emojis).sort().map(d => (<option key={d} value={d}>{emojis[d]} {d}</option>))}
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase text-slate-500 ml-2">Fecha</label>
+                  <input type="date" className="bg-slate-950 border border-slate-800 p-4 rounded-2xl w-full outline-none focus:border-blue-500 text-white" value={editando.fecha} onChange={(e) => setEditando({...editando, fecha: e.target.value})} required />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase text-slate-500 ml-2">Hora</label>
+                  <input type="text" className="bg-slate-950 border border-slate-800 p-4 rounded-2xl w-full outline-none focus:border-blue-500 text-white" value={editando.hora} onChange={(e) => setEditando({...editando, hora: e.target.value})} required />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase text-slate-500 ml-2">Canales</label>
+                <input type="text" className="bg-slate-950 border border-slate-800 p-4 rounded-2xl w-full outline-none focus:border-blue-500 text-emerald-500 font-bold" value={editando.canales} onChange={(e) => setEditando({...editando, canales: e.target.value})} required />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase text-slate-500 ml-2">Liga</label>
+                <input type="text" className="bg-slate-950 border border-slate-800 p-4 rounded-2xl w-full outline-none focus:border-blue-500 text-white" value={editando.competicion} onChange={(e) => setEditando({...editando, competicion: e.target.value})} required />
+              </div>
+              <button type="submit" className="bg-[#a3e635] text-black font-black p-5 rounded-2xl uppercase italic mt-4 shadow-lg active:scale-95 transition-all">Guardar Cambios</button>
             </div>
           </form>
         </div>

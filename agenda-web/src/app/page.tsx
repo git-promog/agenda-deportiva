@@ -91,7 +91,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto px-4 pt-4">
           <div className="flex justify-between items-center mb-6">
             <Link href="/" className="transition-transform hover:scale-105 active:scale-95">
-              <Image src="/logo.png" alt="GuíaSports" width={200} height={50} className="h-10 w-auto" priority />
+              <Image src="/GuiaSports-logo.svg" alt="GuíaSports" width={200} height={50} className="h-10 w-auto" priority />
             </Link>
             <div className="flex flex-col items-end">
               <div className="text-[10px] font-black text-[#a3e635] bg-[#a3e635]/10 px-2 py-1 rounded border border-[#a3e635]/20 uppercase tracking-widest italic mb-1">México</div>

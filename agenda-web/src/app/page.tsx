@@ -13,11 +13,21 @@ const supabase = createClient(
 
 // BIBLIOTECA DE EMOJIS AMPLIADA (IDÉNTICA AL ADMIN)
 const emojis: { [key: string]: string } = {
-  "Fútbol": "⚽️", "Básquetbol": "🏀", "Béisbol": "⚾️", "Básquet": "🏀",
-  "Fórmula 1": "🏎️", "F1": "🏎️", "Tenis": "🎾", "Fútbol Americano": "🏈",
-  "NFL": "🏈", "Ciclismo": "🚴", "Combate": "🥊", "Boxeo": "🥊", "MMA": "🥊", 
-  "Golf": "⛳️", "Rugby": "🏉", "Hockey": "🏒", "ISHOCKEY": "🏒",
-  "Fútbol Sala": "👟", "Futsal": "👟", "Voleibol": "🏐", "Otros": "🏆"
+  "Fútbol": "⚽️",
+  "Básquetbol": "🏀",
+  "Béisbol": "⚾️",
+  "Fórmula 1": "🏎️",
+  "Motorismo": "🏍️",
+  "Tenis": "🎾",
+  "Fútbol Americano": "🏈",
+  "Rugby": "🏉",
+  "Hockey": "🏒",
+  "Combate": "🥊",
+  "Ciclismo": "🚴",
+  "Voleibol": "🏐",
+  "Golf": "⛳️",
+  "Natación": "🏊",
+  "Otros": "🏆"
 };
 
 const TOP_TEAMS = ["América", "Chivas", "Real Madrid", "Barcelona", "México", "F1", "NBA", "Champions", "Cruz Azul", "Pumas", "Selección", "Jamaica"];

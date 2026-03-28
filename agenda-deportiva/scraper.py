@@ -3,6 +3,39 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import re
 
+def extraer_deporte_de_url(img_tag):
+    if not img_tag: return "Fútbol"
+    # El usuario detectó que 'alt-img' contiene la clave del deporte
+    url = img_tag.get('alt-img') or img_tag.get('src') or ""
+    if not url: return "Fútbol"
+
+    try:
+        # Extraemos lo que hay después del último guion y antes del punto
+        # Ejemplo: .../20200729125932-rugby.png -> rugby
+        clave = url.split('-')[-1].split('.')[0].lower()
+        
+        # Mapeo de nombres de archivo a categorías de GuíaSports
+        mapeo = {
+            "futbol": "Fútbol",
+            "baloncesto": "Básquetbol",
+            "beisbol": "Béisbol",
+            "automovilismo": "Fórmula 1",
+            "motociclismo": "Motorismo",
+            "ciclismo": "Ciclismo",
+            "rugby": "Rugby",
+            "mma": "Combate",
+            "boxeo": "Combate",
+            "tenis": "Tenis",
+            "golf": "Golf",
+            "voleibol": "Voleibol",
+            "natacion": "Natación",
+            "balonmano": "Otros",
+            "futbol-sala": "Fútbol Sala"
+        }
+        return mapeo.get(clave, clave.capitalize())
+    except:
+        return "Fútbol"
+
 def obtener_agenda_real():
     url = "https://www.futbolenvivomexico.com/deporte"
     headers = {
@@ -15,13 +48,14 @@ def obtener_agenda_real():
         lista_eventos = []
         fecha_actual_db = datetime.now().strftime("%Y-%m-%d")
         
+        # Buscamos TODAS las filas de la tabla
         filas = soup.find_all('tr')
         print(f"Analizando {len(filas)} filas...")
 
         for fila in filas:
             clases = fila.get('class', [])
             
-            # Cambio de fecha
+            # 1. Detectar Fecha
             if 'cabeceraTabla' in clases:
                 match = re.search(r'(\d{2})/(\d{2})/(\d{4})', fila.get_text())
                 if match:
@@ -29,72 +63,52 @@ def obtener_agenda_real():
                     fecha_actual_db = f"{a}-{m}-{d}"
                 continue
 
-            # Identificar partido
+            # 2. Intentar extraer datos (sin importar la clase de la fila)
+            tds = fila.find_all('td')
+            
+            # Una fila válida debe tener al menos la hora y los equipos
+            # El sitio usa celdas con clases 'local' y 'visitante'
             celda_local = fila.find('td', class_='local')
             celda_visitante = fila.find('td', class_='visitante')
-            
-            if celda_local and celda_visitante:
-                # --- EXTRAER DEPORTE (Lógica mejorada) ---
-                txt_deporte = "Fútbol" # Valor por defecto
-                celda_detalles = fila.find('td', class_='detalles')
+            celda_hora = fila.find('td', class_='hora')
+            celda_detalles = fila.find('td', class_='detalles')
+            celda_canales = fila.find('td', class_='canales')
+
+            if celda_local and celda_visitante and celda_hora:
+                # EXTRAER DEPORTE DESDE EL NOMBRE DE LA IMAGEN (Tu descubrimiento)
+                img_deporte = celda_detalles.find('img') if celda_detalles else None
+                deporte_final = extraer_deporte_de_url(img_deporte)
+
+                hora = celda_hora.get_text(strip=True)
+                local = celda_local.get_text(strip=True)
+                visitante = celda_visitante.get_text(strip=True)
+                evento = f"{local} vs {visitante}"
                 
-                if celda_detalles:
-                    # Intento 1: Buscar en el alt/title de la imagen
-                    img_dep = celda_detalles.find('img')
-                    if img_dep:
-                        # Obtenemos el texto y quitamos espacios extras
-                        txt_deporte = (img_dep.get('title') or img_dep.get('alt') or "Fútbol").strip()
-                    
-                    # Intento 2: Si el deporte sigue siendo muy genérico, 
-                    # podrías buscar palabras clave en el texto (opcional)
+                # Competición
+                label = celda_detalles.find('label') if celda_detalles else None
+                competicion = label.get_text(strip=True) if label else "Varios"
 
-                # --- EXTRAER COMPETICIÓN ---
-                comp_label = celda_detalles.find('label') if celda_detalles else None
-                competicion = comp_label.get_text(strip=True) if comp_label else "Varios"
-
-                # --- RESTO DE DATOS ---
-                celda_hora = fila.find('td', class_='hora')
-                hora = celda_hora.get_text(strip=True) if celda_hora else "00:00"
-                evento = f"{celda_local.get_text(strip=True)} vs {celda_visitante.get_text(strip=True)}"
+                # Canales
+                canales_list = []
+                if celda_canales:
+                    for li in celda_canales.find_all('li'):
+                        canales_list.append(li.get('title') or li.get_text(strip=True))
+                    if not canales_list:
+                        for img in celda_canales.find_all('img'):
+                            canales_list.append(img.get('title') or img.get('alt'))
                 
-                celda_canales = fila.find('td', class_='canales')
-                canales = [li.get('title') or li.get_text(strip=True) for li in celda_canales.find_all('li')] if celda_canales else []
-                if not canales and celda_canales:
-                    canales = [img.get('title') or img.get('alt') for img in celda_canales.find_all('img')]
+                canales_final = ", ".join(list(dict.fromkeys(filter(None, canales_list))))
 
-                # IMPORTANTE: El nombre de la clave debe ser exactamente 'deporte'
-                # para que coincida con la columna en Supabase
                 lista_eventos.append({
                     "fecha": fecha_actual_db,
                     "hora": hora,
                     "evento": evento,
                     "competicion": competicion,
-                    "deporte": txt_deporte,
-                    "canales": ", ".join(list(dict.fromkeys(canales))) if canales else "Por confirmar"
+                    "deporte": deporte_final,
+                    "canales": canales_final if canales_final else "Por confirmar"
                 })
 
-        print(f"✅ Scraper terminó: {len(lista_eventos)} eventos encontrados.")
-        if lista_eventos:
-            print(f"DEBUG - Ejemplo primer deporte: {lista_eventos[0]['deporte']}")
-            
         return lista_eventos
     except Exception as e:
-        print(f"Error en Scraper: {e}")
+        print(f"Error: {e}")
         return []
-
-def normalizar_deporte(txt):
-    t = txt.upper()
-    if "FUTBOL" in t or "SOCCER" in t: return "Fútbol"
-    if "SALA" in t or "FUTSAL" in t: return "Fútbol Sala"
-    if "BASKET" in t or "BASKETBALL" in t or "BALONCESTO" in t or "NBA" in t or "EUROLIGA" in t: return "Básquetbol"
-    if "BEISBOL" in t or "BASEBALL" in t or "MLB" in t: return "Béisbol"
-    if "F1" in t or "FORMULA 1" in t or "MOTOR" in t: return "Fórmula 1"
-    if "TENIS" in t or "ATP" in t or "WTA" in t: return "Tenis"
-    if "AMERICANO" in t or "NFL" in t or "NCAA" in t: return "Fútbol Americano"
-    if "RUGBY" in t or "RUGBY U" in t: return "Rugby"
-    if "HOCKEY" in t or "ISHOCKEY" in t: return "Hockey"
-    if "MMA" in t or "UFC" in t or "ARTES MARCIALES" in t or "BOX" in t: return "Combate"
-    if "VOLEI" in t: return "Voleibol"
-    if "GOLF" in t: return "Golf"
-    if "CICLIS" in t or "VUELTA" in t or "TOUR" in t: return "Ciclismo"
-    return txt.capitalize() # Si no conoce el deporte, deja el nombre original bonito        

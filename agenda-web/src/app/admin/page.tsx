@@ -9,23 +9,23 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-// BIBLIOTECA DE EMOJIS AMPLIADA
+// DICCIONARIO DE EMOJIS ACTUALIZADO (Sincronizado con Scraper y Principal)
 const emojis: { [key: string]: string } = {
   "Fútbol": "⚽️", 
   "Básquetbol": "🏀", 
   "Béisbol": "⚾️", 
-  "Fútbol Americano": "🏈",
   "Fórmula 1": "🏎️", 
+  "Motorismo": "🏍️",
   "Tenis": "🎾", 
+  "Fútbol Americano": "🏈", 
+  "Rugby": "🏉", 
+  "Hockey": "🏒", 
   "Combate": "🥊", 
   "Ciclismo": "🚴", 
+  "Voleibol": "🏐", 
   "Golf": "⛳️",
-  "Rugby": "🏉",
-  "Hockey": "🏒",
-  "Fútbol Sala": "👟",
-  "Voleibol": "🏐",
-  "Motorismo": "🏍️",
   "Natación": "🏊",
+  "Fútbol Sala": "👟",
   "Otros": "🏆"
 };
 
@@ -39,6 +39,7 @@ export default function AdminPanel() {
   const [busqueda, setBusqueda] = useState("");
 
   const login = () => {
+    // RECUERDA CAMBIAR ESTO O USAR VARIABLES DE ENTORNO
     if (password === "GUIA2024") setAutenticado(true);
     else alert("Contraseña incorrecta");
   };
@@ -108,12 +109,12 @@ export default function AdminPanel() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
           <h1 className="text-3xl font-black italic uppercase">Panel de <span className="text-blue-500">Control</span></h1>
           <div className="flex gap-3">
-            <button onClick={() => setEditando({ evento: "", hora: "", canales: "", competicion: "", deporte: "Fútbol", fecha: new Date().toLocaleDateString('sv-SE'), destacado: null })} className="bg-blue-600 p-4 rounded-2xl font-black uppercase italic flex items-center gap-2 transition-transform active:scale-95"><Plus size={20} /> Nuevo Evento</button>
+            <button onClick={() => setEditando({ evento: "", hora: "", canales: "", competicion: "", deporte: "Fútbol", fecha: new Date().toLocaleDateString('sv-SE'), destacado: null })} className="bg-blue-600 p-4 rounded-2xl font-black uppercase italic flex items-center gap-2"><Plus size={20} /> Nuevo Evento</button>
             <button onClick={() => setAutenticado(false)} className="bg-slate-800 p-4 rounded-2xl text-slate-400"><LogOut size={20} /></button>
           </div>
         </div>
 
-        {/* FILTROS */}
+        {/* FILTROS ADMIN */}
         <div className="bg-slate-900/50 p-6 rounded-[32px] border border-slate-800 mb-8 space-y-4">
            <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
@@ -153,6 +154,7 @@ export default function AdminPanel() {
                   </td>
                   <td className="p-5">
                     <div className="flex items-center gap-4">
+                      {/* ICONO DE DEPORTE IGUAL QUE EN LA PRINCIPAL */}
                       <span className="text-3xl" title={e.deporte}>{emojis[e.deporte] || "🏆"}</span>
                       <div>
                         <div className="font-bold text-sm leading-tight mb-1">{e.evento}</div>
@@ -160,8 +162,8 @@ export default function AdminPanel() {
                       </div>
                     </div>
                   </td>
-                  <td className="p-5">
-                    <span className="text-xs text-emerald-500 italic font-black bg-emerald-500/10 px-2 py-1 rounded-md border border-emerald-500/10">{e.canales}</span>
+                  <td className="p-5 text-xs text-emerald-500 italic font-black">
+                     <span className="bg-emerald-500/10 px-2 py-1 rounded-md border border-emerald-500/10">{e.canales}</span>
                   </td>
                   <td className="p-5">
                     <div className="flex items-center justify-center bg-slate-950/50 rounded-xl p-1 w-fit mx-auto border border-slate-800">
@@ -183,7 +185,7 @@ export default function AdminPanel() {
         </div>
       </div>
 
-      {/* MODAL CON CAMPO DE DEPORTE AGREGADO */}
+      {/* MODAL CON SELECT DE DEPORTE ACTUALIZADO */}
       {editando && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
           <form onSubmit={guardarCambios} className="bg-slate-900 border border-slate-800 p-8 rounded-[40px] max-w-lg w-full shadow-2xl overflow-y-auto max-h-[90vh]">
@@ -198,18 +200,18 @@ export default function AdminPanel() {
                 <input type="text" className="bg-slate-950 border border-slate-800 p-4 rounded-2xl w-full outline-none focus:border-blue-500" value={editando.evento} onChange={(e) => setEditando({...editando, evento: e.target.value})} required />
               </div>
 
-              {/* CAMPO DE DEPORTE (SELECT) */}
+              {/* SELECT DE DEPORTE - REQUISITO CLAVE */}
               <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase text-slate-500 ml-2">Tipo de Deporte</label>
+                <label className="text-[10px] font-black uppercase text-slate-500 ml-2">Categoría de Deporte</label>
                 <select 
                   className="bg-slate-950 border border-slate-800 p-4 rounded-2xl w-full outline-none focus:border-blue-500 text-white appearance-none"
                   value={editando.deporte}
                   onChange={(e) => setEditando({...editando, deporte: e.target.value})}
                 >
+                  {/* Generamos las opciones basadas en nuestro diccionario de emojis */}
                   {Object.keys(emojis).sort().map(d => (
                     <option key={d} value={d}>{emojis[d]} {d}</option>
                   ))}
-                  <option value="Otros">🏆 Otros</option>
                 </select>
               </div>
               

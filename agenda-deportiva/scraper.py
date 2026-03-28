@@ -3,44 +3,27 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import re
 
-def extraer_deporte_de_url(img_tag):
-    if not img_tag: return "Fútbol"
-    # El usuario detectó que 'alt-img' contiene la clave del deporte
-    url = img_tag.get('alt-img') or img_tag.get('src') or ""
-    if not url: return "Fútbol"
-
-    try:
-        # Extraemos lo que hay después del último guion y antes del punto
-        # Ejemplo: .../20200729125932-rugby.png -> rugby
-        clave = url.split('-')[-1].split('.')[0].lower()
-        
-        # Mapeo de nombres de archivo a categorías de GuíaSports
-        mapeo = {
-            "futbol": "Fútbol",
-            "baloncesto": "Básquetbol",
-            "beisbol": "Béisbol",
-            "automovilismo": "Fórmula 1",
-            "motociclismo": "Motorismo",
-            "ciclismo": "Ciclismo",
-            "rugby": "Rugby",
-            "mma": "Combate",
-            "boxeo": "Combate",
-            "tenis": "Tenis",
-            "golf": "Golf",
-            "voleibol": "Voleibol",
-            "natacion": "Natación",
-            "balonmano": "Otros",
-            "futbol-sala": "Fútbol Sala"
-        }
-        return mapeo.get(clave, clave.capitalize())
-    except:
-        return "Fútbol"
+def extraer_deporte_limpio(celda_detalles):
+    if not celda_detalles: return "Otros"
+    
+    # Intentamos sacar el nombre del atributo 'alt' o 'title' de la imagen, que es lo más fiable
+    img = celda_detalles.find('img')
+    if img:
+        nombre = (img.get('alt') or img.get('title') or "").strip()
+        # Normalización rápida
+        if "fútbol sala" in nombre.lower() or "futsal" in nombre.lower(): return "Fútbol Sala"
+        if "hockey" in nombre.lower(): return "Hockey"
+        if "automovilismo" in nombre.lower() or "f1" in nombre.lower(): return "Fórmula 1"
+        if "motociclismo" in nombre.lower() or "motogp" in nombre.lower(): return "Motorismo"
+        if "ciclismo" in nombre.lower(): return "Ciclismo"
+        if "rugby" in nombre.lower(): return "Rugby"
+        if "mma" in nombre.lower() or "box" in nombre.lower(): return "Combate"
+        return nombre.capitalize()
+    return "Otros"
 
 def obtener_agenda_real():
     url = "https://www.futbolenvivomexico.com/deporte"
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
-    }
+    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)'}
     
     try:
         response = requests.get(url, headers=headers, timeout=20)
@@ -48,14 +31,12 @@ def obtener_agenda_real():
         lista_eventos = []
         fecha_actual_db = datetime.now().strftime("%Y-%m-%d")
         
-        # Buscamos TODAS las filas de la tabla
         filas = soup.find_all('tr')
-        print(f"Analizando {len(filas)} filas...")
 
         for fila in filas:
             clases = fila.get('class', [])
             
-            # 1. Detectar Fecha
+            # 1. Cambio de fecha
             if 'cabeceraTabla' in clases:
                 match = re.search(r'(\d{2})/(\d{2})/(\d{4})', fila.get_text())
                 if match:
@@ -63,28 +44,30 @@ def obtener_agenda_real():
                     fecha_actual_db = f"{a}-{m}-{d}"
                 continue
 
-            # 2. Intentar extraer datos (sin importar la clase de la fila)
-            tds = fila.find_all('td')
+            # 2. Identificar el nombre del evento (SOPORTE MULTIDEPORTE)
+            local = fila.find('td', class_='local')
+            visitante = fila.find('td', class_='visitante')
+            partido_gen = fila.find('td', class_='partido') # Para F1/Ciclismo
             
-            # Una fila válida debe tener al menos la hora y los equipos
-            # El sitio usa celdas con clases 'local' y 'visitante'
-            celda_local = fila.find('td', class_='local')
-            celda_visitante = fila.find('td', class_='visitante')
-            celda_hora = fila.find('td', class_='hora')
-            celda_detalles = fila.find('td', class_='detalles')
-            celda_canales = fila.find('td', class_='canales')
+            evento = ""
+            if local and visitante:
+                evento = f"{local.get_text(strip=True)} vs {visitante.get_text(strip=True)}"
+            elif partido_gen:
+                evento = partido_gen.get_text(strip=True)
+            else:
+                # Si no tiene esas clases, buscamos la segunda celda de la fila
+                tds = fila.find_all('td')
+                if len(tds) >= 3:
+                    evento = tds[1].get_text(strip=True)
 
-            if celda_local and celda_visitante and celda_hora:
-                # EXTRAER DEPORTE DESDE EL NOMBRE DE LA IMAGEN (Tu descubrimiento)
-                img_deporte = celda_detalles.find('img') if celda_detalles else None
-                deporte_final = extraer_deporte_de_url(img_deporte)
+            # Si encontramos un nombre de evento, procesamos
+            if evento and len(evento) > 3:
+                celda_hora = fila.find('td', class_='hora')
+                celda_detalles = fila.find('td', class_='detalles')
+                celda_canales = fila.find('td', class_='canales')
 
-                hora = celda_hora.get_text(strip=True)
-                local = celda_local.get_text(strip=True)
-                visitante = celda_visitante.get_text(strip=True)
-                evento = f"{local} vs {visitante}"
-                
-                # Competición
+                # Extraer deporte y liga
+                deporte_final = extraer_deporte_limpio(celda_detalles)
                 label = celda_detalles.find('label') if celda_detalles else None
                 competicion = label.get_text(strip=True) if label else "Varios"
 
@@ -101,7 +84,7 @@ def obtener_agenda_real():
 
                 lista_eventos.append({
                     "fecha": fecha_actual_db,
-                    "hora": hora,
+                    "hora": celda_hora.get_text(strip=True) if celda_hora else "--:--",
                     "evento": evento,
                     "competicion": competicion,
                     "deporte": deporte_final,

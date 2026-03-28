@@ -11,21 +11,21 @@ const supabase = createClient(
 
 // DICCIONARIO DE EMOJIS ACTUALIZADO (Sincronizado con Scraper y Principal)
 const emojis: { [key: string]: string } = {
-  "Fútbol": "⚽️", 
-  "Básquetbol": "🏀", 
-  "Béisbol": "⚾️", 
-  "Fórmula 1": "🏎️", 
+  "Fútbol": "⚽️",
+  "Básquetbol": "🏀",
+  "Béisbol": "⚾️",
+  "Fórmula 1": "🏎️",
   "Motorismo": "🏍️",
-  "Tenis": "🎾", 
-  "Fútbol Americano": "🏈", 
-  "Rugby": "🏉", 
-  "Hockey": "🏒", 
-  "Combate": "🥊", 
-  "Ciclismo": "🚴", 
-  "Voleibol": "🏐", 
+  "Tenis": "🎾",
+  "Fútbol Americano": "🏈",
+  "Rugby": "🏉",
+  "Hockey": "🏒",
+  "Combate": "🥊",
+  "Ciclismo": "🚴",
+  "Voleibol": "🏐",
   "Golf": "⛳️",
   "Natación": "🏊",
-  "Fútbol Sala": "👟",
+  "Fútbol Sala": "👟", // Asegúrate de que tenga el acento igual que en el scraper
   "Otros": "🏆"
 };
 

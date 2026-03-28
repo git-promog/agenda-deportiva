@@ -27,6 +27,7 @@ const emojis: { [key: string]: string } = {
   "Voleibol": "🏐",
   "Golf": "⛳️",
   "Natación": "🏊",
+  "Fútbol Sala": "👟", // Asegúrate de que tenga el acento igual que en el scraper
   "Otros": "🏆"
 };
 

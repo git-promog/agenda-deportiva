@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Footer from "@/components/Footer"; // <-- IMPORTANTE: Importar el footer
+import Footer from "@/components/Footer";
+import NavMobile from "@/components/NavMobile"; // <-- Importamos NavBar Móvil
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,9 +18,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body className={`${inter.className} bg-[#020617]`}>
+      <body className={`${inter.className} bg-[#020617] pb-16 md:pb-0`}>
         {children}
-        <Footer /> {/* <-- IMPORTANTE: Esto hará que aparezca en TODAS las páginas */}
+        <Footer />
+        <NavMobile /> {/* <-- Esto la fijará abajo en todo momento en teléfonos */}
       </body>
     </html>
   );

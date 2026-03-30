@@ -89,6 +89,15 @@ export default function AdminPanel() {
     cargarEventos();
   }
 
+  async function aplicarDestacadoAMuchos(valor: boolean | null) {
+    if (!confirm(`¿Aplicar estado a todos los ${eventosFiltrados.length} eventos visibles?`)) return;
+    const ids = eventosFiltrados.map(e => e.id);
+    for (const id of ids) {
+      await supabase.from('eventos').update({ destacado: valor }).eq('id', id);
+    }
+    cargarEventos();
+  }
+
   async function guardarEvento(e: React.FormEvent) {
     e.preventDefault();
     if (editando.id) await supabase.from('eventos').update(editando).eq('id', editando.id);
@@ -235,11 +244,16 @@ export default function AdminPanel() {
                     <button key={d} onClick={() => setFiltroDeporte(d)} className={`px-4 py-2 rounded-xl text-[10px] font-bold border transition-all whitespace-nowrap ${filtroDeporte === d ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-900/40' : 'bg-slate-800 border-slate-700 text-slate-500 hover:bg-slate-700'}`}>{emojis[d] || ""} {d}</button>
                   ))}
                </div>
-               <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                  {fechasUnicas.map(f => (
-                    <button key={f} onClick={() => setFiltroFecha(f)} className={`px-4 py-2 rounded-xl text-[10px] font-bold border transition-all whitespace-nowrap uppercase tracking-wider ${filtroFecha === f ? 'bg-[#a3e635] border-[#a3e635] text-black shadow-lg' : 'bg-[#020617] border-slate-800 text-slate-500 hover:bg-slate-800'}`}>{f === "Todos" ? "Todas" : f}</button>
-                  ))}
-               </div>
+                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                   {fechasUnicas.map(f => (
+                     <button key={f} onClick={() => setFiltroFecha(f)} className={`px-4 py-2 rounded-xl text-[10px] font-bold border transition-all whitespace-nowrap uppercase tracking-wider ${filtroFecha === f ? 'bg-[#a3e635] border-[#a3e635] text-black shadow-lg' : 'bg-[#020617] border-slate-800 text-slate-500 hover:bg-slate-800'}`}>{f === "Todos" ? "Todas" : f}</button>
+                   ))}
+                </div>
+                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                   <button onClick={() => aplicarDestacadoAMuchos(true)} className="px-4 py-2 rounded-xl text-[10px] font-bold border transition-all whitespace-nowrap flex items-center gap-1 bg-yellow-500 border-yellow-400 text-black hover:bg-yellow-400 shadow-lg"><Star size={12} /> Destacar todos ({eventosFiltrados.length})</button>
+                   <button onClick={() => aplicarDestacadoAMuchos(null)} className="px-4 py-2 rounded-xl text-[10px] font-bold border transition-all whitespace-nowrap flex items-center gap-1 bg-blue-600 border-blue-500 text-white hover:bg-blue-500 shadow-lg shadow-blue-900/40"><Zap size={12} /> Forzar todos ({eventosFiltrados.length})</button>
+                   <button onClick={() => aplicarDestacadoAMuchos(false)} className="px-4 py-2 rounded-xl text-[10px] font-bold border transition-all whitespace-nowrap flex items-center gap-1 bg-red-600 border-red-500 text-white hover:bg-red-500 shadow-lg shadow-red-900/40"><X size={12} /> Quitar todos ({eventosFiltrados.length})</button>
+                </div>
             </div>
 
             <div className="bg-slate-900/50 border border-slate-800 rounded-[32px] overflow-hidden shadow-2xl">

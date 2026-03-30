@@ -72,13 +72,14 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
 
       if (hasScrolledToLive || isSystemScrolling) return;
 
-      const sensorElement = document.getElementById('listado-eventos-principal');
+      // Definimos el "sensor" en el QUINTO evento para dar margen de exploración manual
+      const sensorElement = document.getElementById('sensor-scroll-profundo');
       if (!sensorElement) return;
 
       const rect = sensorElement.getBoundingClientRect();
       
-      // SOLO ACTIVAR SI EL USUARIO ESTÁ BAJANDO ACTIVAMENTE
-      const isVisible = rect.top < window.innerHeight * 0.7 && rect.top > 0 && scrollingDown; 
+      // SOLO ACTIVAR SI EL SENSOR ESTÁ ENTRANDO BIEN A LA PANTALLA
+      const isVisible = rect.top < window.innerHeight * 0.4 && rect.top > 0 && scrollingDown; 
 
       if (isVisible && !hasScrolledToLive) {
         const hoy = new Date();
@@ -313,6 +314,8 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
               <div className="grid gap-3">
                 {eventosAgrupados[fecha].map((evento: any, index: number) => (
                   <div key={evento.id} id={`evento-${evento.id}`}>
+                    {/* El sensor se coloca en el 5to evento (index 4) de hoy */}
+                    {fecha === hoyStr && index === 4 && <div id="sensor-scroll-profundo" className="absolute -translate-y-20"></div>}
                     <div className="group bg-slate-900/30 border border-slate-800/50 rounded-2xl p-4 hover:border-blue-500/30 hover:bg-slate-900/60 transition-all duration-300">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 overflow-hidden">
                         <div className="flex flex-row items-start sm:items-center gap-2 sm:gap-3 w-full">
@@ -359,7 +362,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
         onClick={() => {
           setIsSystemScrolling(true);
           window.scrollTo({ top: 0, behavior: 'smooth' });
-          setHasScrolledToLive(false); 
+          // No seteamos setHasScrolledToLive(false) aquí para que no se repita el scroll automático
           setTimeout(() => setIsSystemScrolling(false), 1500);
         }}
         className={`fixed bottom-28 right-6 p-4 bg-slate-900/95 backdrop-blur-2xl border border-slate-700/50 rounded-2xl text-[#a3e635] shadow-[0_20px_60px_rgba(0,0,0,0.8)] transition-all duration-500 z-[9999] md:bottom-10 md:right-10 ${showGoTop ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-24 opacity-0 scale-50 pointer-events-none'}`}

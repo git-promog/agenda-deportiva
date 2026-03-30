@@ -32,6 +32,10 @@ def obtener_agenda_real():
         fecha_actual_db = datetime.now().strftime("%Y-%m-%d")
         
         filas = soup.find_all('tr')
+        
+        if not filas or len(filas) < 5:
+            print("🚨 CRITICAL WARNING: No se encontraron suficientes filas '<tr/>' en el origen.")
+            print("🚨 Es posible que 'futbolenvivomexico.com' haya cambiado su diseño o esté bloqueando el scraper.")
 
         for fila in filas:
             clases = fila.get('class', [])

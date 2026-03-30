@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Mail, ArrowLeft, Send } from 'lucide-react';
+import NextImage from 'next/image';
 
 export default function Contacto() {
   return (
@@ -10,6 +11,10 @@ export default function Contacto() {
         </Link>
 
         <div className="bg-slate-900/50 border border-slate-800 p-10 rounded-[40px] text-center">
+          <div className="flex justify-center mb-10 w-full">
+            <NextImage src="/GuiaSports-logo.svg" alt="GuíaSports" width={220} height={55} priority className="h-10 w-auto opacity-90 hover:opacity-100 transition-opacity" />
+          </div>
+
           <div className="bg-blue-600 w-16 h-16 rounded-3xl flex items-center justify-center mb-8 mx-auto shadow-xl shadow-blue-900/40">
             <Mail className="text-white" size={32} />
           </div>
@@ -22,7 +27,7 @@ export default function Contacto() {
           </p>
 
           <a 
-            href="mailto:tu-correo@ejemplo.com" 
+            href="mailto:contacto@promographic.com.mx" 
             className="flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-500 text-white font-black py-5 px-8 rounded-2xl transition-all uppercase tracking-widest text-sm italic shadow-lg shadow-blue-900/40"
           >
             <Send size={18} /> Enviar un Correo

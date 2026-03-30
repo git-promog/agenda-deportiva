@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Trophy, ArrowLeft, Users } from 'lucide-react';
+import NextImage from 'next/image';
 
 export default function QuienesSomos() {
   return (
@@ -10,6 +11,10 @@ export default function QuienesSomos() {
         </Link>
 
         <header className="text-center mb-16">
+          <div className="flex justify-center mb-12 w-full">
+            <NextImage src="/GuiaSports-logo.svg" alt="GuíaSports" width={240} height={60} priority className="h-12 w-auto drop-shadow-2xl" />
+          </div>
+
           <div className="bg-blue-600 w-12 h-12 rounded-2xl flex items-center justify-center mb-6 mx-auto shadow-lg shadow-blue-900/40">
             <Users className="text-white" size={24} />
           </div>
@@ -28,10 +33,10 @@ export default function QuienesSomos() {
 
           <div className="space-y-6 text-slate-400 leading-relaxed px-4">
             <p>
-              Agenda Deportiva MX nació de la frustración de no saber en qué canal o aplicación pasaban los partidos de nuestra liga y deportes favoritos. Con la fragmentación de los derechos de transmisión en México, decidimos crear una herramienta simple, rápida y automática.
+              <strong className="text-white">GuíaSports</strong> nació de la necesidad y frustración de no saber en qué canal o aplicación pasaban los partidos de nuestra liga o deportes favoritos. Ante la fragmentación de los derechos de transmisión televisivos y plataformas de streaming en México, decidimos crear la herramienta definitiva: simple, rápida e intuitiva.
             </p>
             <p>
-              Nuestra tecnología de recolección de datos asegura que siempre tengas la información actualizada de más de 10 deportes, incluyendo Liga MX, NBA, MLB, F1 y mucho más.
+              A través de nuestra tecnología aseguramos que siempre tengas la cartelera conectada y actualizada al minuto, con coberturas para más de 10 disciplinas incluyendo Liga MX, Champions League, ligas europeas, NBA, MLB, Fórmula 1, NFL y eventos internacionales especiales.
             </p>
           </div>
 

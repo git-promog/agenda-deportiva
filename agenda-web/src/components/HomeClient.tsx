@@ -26,6 +26,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   const [noticias] = useState<any[]>(initialNoticias);
   const [filtroDeporte, setFiltroDeporte] = useState("Todos");
   const [filtroFecha, setFiltroFecha] = useState("Todos");
+  const [soloTvAbierta, setSoloTvAbierta] = useState(false);
   const [busqueda, setBusqueda] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -93,7 +94,13 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
     const coincideFecha = filtroFecha === "Todos" || e.fecha === filtroFecha;
     const coincideBusqueda = e.evento.toLowerCase().includes(busqueda.toLowerCase()) || 
                              e.competicion.toLowerCase().includes(busqueda.toLowerCase());
-    return coincideDeporte && coincideFecha && coincideBusqueda;
+    
+    // Lista básica de TV Abierta en México
+    const canalesLower = e.canales.toLowerCase();
+    const esTvAbierta = ["canal 5", "azteca 7", "las estrellas", "nu9ve", "imagen tv", "azteca uno", "canal 9"].some(c => canalesLower.includes(c));
+    const coincideTvAbierta = soloTvAbierta ? esTvAbierta : true;
+
+    return coincideDeporte && coincideFecha && coincideBusqueda && coincideTvAbierta;
   });
 
   const eventosAgrupados = eventosFiltrados.reduce((groups: any, evento) => {
@@ -110,10 +117,10 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   };
 
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-20">
+    <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-24 overflow-x-hidden w-full">
       
-      <header className="border-b border-slate-800 bg-[#020617]/95 backdrop-blur-md sticky top-0 z-30">
-        <div className="max-w-4xl mx-auto px-4 pt-4">
+      <header className="border-b border-slate-800 bg-[#020617]/95 backdrop-blur-md sticky top-0 z-30 w-full overflow-hidden">
+        <div className="max-w-4xl mx-auto px-4 pt-4 w-full">
           <div className="flex justify-between items-center mb-6">
             <Link href="/" className="transition-transform active:scale-95">
               <NextImage src="/GuiaSports-logo.svg" alt="GuíaSports" width={200} height={50} className="h-10 w-auto" priority />
@@ -132,23 +139,24 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
             {busqueda && <button onClick={() => setBusqueda("")} className="absolute right-3 top-1/2 -translate-y-1/2 bg-slate-800 p-1 rounded-full text-slate-400"><X className="w-4 h-4" /></button>}
           </div>
 
-          <div className="relative flex items-center mb-4 group">
-            <button aria-label="Desplazar izquierda" onClick={() => scrollDeportes('left')} className="absolute left-0 z-20 p-1.5 bg-slate-900/90 border border-slate-700 rounded-full shadow-xl text-[#a3e635] backdrop-blur-sm active:scale-90 transition-all">
-              <ChevronLeft size={18} strokeWidth={3} />
-            </button>
-            <div ref={scrollRef} className="flex gap-2 overflow-x-auto py-1 px-10 scrollbar-hide scroll-smooth w-full">
+          <div className="relative flex items-center mb-4 overflow-hidden">
+            <div ref={scrollRef} className="flex gap-2 overflow-x-auto py-1 px-1 scrollbar-hide scroll-smooth w-full">
               {deportesUnicos.map((dep: any) => (
-                <button key={dep} onClick={() => setFiltroDeporte(dep)} className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap border uppercase tracking-wider ${filtroDeporte === dep ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-900/20" : "bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800"}`}>
+                <button key={dep} onClick={() => setFiltroDeporte(dep)} className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap border uppercase tracking-wider ${filtroDeporte === dep ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-900/40" : "bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800"}`}>
                   {emojis[dep] || "🏆"} {dep}
                 </button>
               ))}
             </div>
-            <button aria-label="Desplazar derecha" onClick={() => scrollDeportes('right')} className="absolute right-0 z-20 p-1.5 bg-slate-900/90 border border-slate-700 rounded-full shadow-xl text-[#a3e635] backdrop-blur-sm active:scale-90 transition-all">
-              <ChevronRight size={18} strokeWidth={3} />
-            </button>
           </div>
 
-          <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide border-t border-slate-900 pt-4">
+          <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide border-t border-slate-900 pt-4 px-1">
+            <button
+              onClick={() => setSoloTvAbierta(!soloTvAbierta)}
+              className={`px-4 py-1.5 rounded-lg text-[10px] font-black transition-all whitespace-nowrap uppercase tracking-widest flex items-center gap-1 ${soloTvAbierta ? "bg-white text-black border border-white" : "text-slate-500 border border-slate-800 hover:text-slate-300 bg-slate-900/50"}`}
+            >
+              <Tv size={12} /> {soloTvAbierta ? "TV Abierta" : "Sólo TV Abierta"}
+            </button>
+            <div className="w-px h-6 bg-slate-800 mx-1"></div>
             {fechasUnicas.map((f: any) => (
               <button key={f} onClick={() => setFiltroFecha(f)} className={`px-4 py-1.5 rounded-lg text-[10px] font-black transition-all whitespace-nowrap uppercase tracking-widest ${filtroFecha === f ? "text-[#a3e635] bg-[#a3e635]/10 border-[#a3e635]/30 border" : "text-slate-500 border border-transparent hover:text-slate-300"}`}>
                 {formatearBotonFecha(f)}
@@ -173,8 +181,8 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
                 
                 <div className="absolute inset-0 z-20 flex flex-col justify-between p-8 md:p-12">
                   <div className="flex justify-between items-start">
-                    <div className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black tracking-widest uppercase border ${tipoHero === "EN VIVO AHORA" ? "bg-red-600/20 text-red-500 border-red-500/50" : "bg-blue-600/20 text-blue-400 border-blue-500/50"} backdrop-blur-md`}>
-                      {tipoHero === "EN VIVO AHORA" && <div className="w-2 h-2 bg-red-600 rounded-full animate-ping mr-1"></div>}
+                    <div className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black tracking-widest uppercase border ${tipoHero === "EN VIVO AHORA" ? "bg-red-600 border-red-500 text-white shadow-[0_0_20px_rgba(220,38,38,0.5)] animate-pulse" : "bg-blue-600/20 text-blue-400 border-blue-500/50"} backdrop-blur-md`}>
+                      {tipoHero === "EN VIVO AHORA" && <div className="w-2 h-2 bg-white rounded-full animate-ping mr-1"></div>}
                       {tipoHero}
                     </div>
                     <button aria-label="Compartir" onClick={() => compartirWhatsApp(eventoHero)} className="bg-white/10 p-3 rounded-full text-white backdrop-blur-md hover:bg-white/20 transition-all">
@@ -261,7 +269,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
         {/* LISTADO DE EVENTOS */}
         {Object.keys(eventosAgrupados).length > 0 ? (
           Object.keys(eventosAgrupados).sort().map((fecha) => (
-            <section key={fecha} className="mb-12">
+            <section key={fecha} className="mb-12 w-full">
               <div className="flex items-center gap-4 mb-6">
                 <h2 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] flex items-center gap-2"><CalendarDays className="w-4 h-4 text-blue-500" /> {new Date(fecha + 'T12:00:00').toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}</h2>
                 <div className="h-px w-full bg-slate-800/30"></div>
@@ -270,25 +278,43 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
                 {eventosAgrupados[fecha].map((evento: any, index: number) => (
                   <div key={evento.id}>
                     <div className="group bg-slate-900/30 border border-slate-800/50 rounded-2xl p-4 hover:border-blue-500/30 hover:bg-slate-900/60 transition-all duration-300">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div className="flex flex-col items-center min-w-[90px] text-blue-400 font-mono font-black text-xl">
-                          <Clock className="w-4 h-4 opacity-30" /> {evento.hora}
-                          {estaEnVivo(evento.fecha, evento.hora) && (
-                            <div className="flex items-center gap-1 mt-1"><div className="w-1.5 h-1.5 bg-red-600 rounded-full animate-ping"></div><span className="text-[8px] font-black text-red-500 uppercase">LIVE</span></div>
-                          )}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 overflow-hidden">
+                        
+                        {/* SECCIÓN IZQUIERDA: Hora y Nombres (Siempre en fila) */}
+                        <div className="flex flex-row items-start sm:items-center gap-2 sm:gap-3 w-full">
+                          
+                          {/* Columna de Hora */}
+                          <div className="flex flex-col justify-center min-w-[50px] sm:min-w-[65px] text-blue-400 font-mono font-black text-sm md:text-xl shrink-0 border-r border-slate-800/60 pr-2 sm:pr-3">
+                            {evento.hora}
+                            {estaEnVivo(evento.fecha, evento.hora) && (
+                              <div className="flex items-center gap-1 mt-1 justify-center"><div className="w-1.5 h-1.5 bg-red-600 rounded-full animate-ping"></div><span className="text-[7px] font-black text-red-500 uppercase">LIVE</span></div>
+                            )}
+                          </div>
+                          
+                          {/* Columna de Evento */}
+                          <div className="flex-1 flex items-start sm:items-center justify-start min-w-0 pr-1">
+                            <span className="text-xl sm:text-2xl md:text-4xl opacity-80 mr-2 sm:mr-3 shrink-0 pt-0.5 sm:pt-0">{emojis[evento.deporte] || "🏆"}</span>
+                            <div className="min-w-0 flex-1 overflow-hidden">
+                              <div className="text-[8px] sm:text-[9px] font-black text-slate-500 uppercase mb-0.5 truncate">{evento.competicion}</div>
+                              <h3 className="text-[12px] sm:text-[14px] md:text-[15px] font-bold text-slate-200 leading-snug break-words line-clamp-2 md:line-clamp-2">{evento.evento}</h3>
+                            </div>
+                          </div>
+
                         </div>
-                        <div className="flex-1 flex items-center gap-4">
-                          <span className="text-4xl opacity-80">{emojis[evento.deporte] || "🏆"}</span>
-                          <div><div className="text-[9px] font-black text-slate-500 uppercase mb-1">{evento.competicion}</div><h3 className="text-[15px] font-bold text-slate-200">{evento.evento}</h3></div>
+
+                        {/* SECCIÓN DERECHA: Canales y Botón (Abajo en móvil) */}
+                        <div className="flex flex-row items-center gap-2 shrink-0 w-full sm:w-auto overflow-hidden sm:overflow-visible border-t sm:border-t-0 border-slate-800/50 pt-2 sm:pt-0 mt-1 sm:mt-0">
+                          <div className="flex-1 sm:flex-none flex items-center justify-start sm:justify-start gap-2 bg-[#020617] px-3 md:px-4 py-2 rounded-xl border border-slate-800 min-w-0 overflow-hidden">
+                            <Tv className="w-3 h-3 sm:w-4 sm:h-4 text-slate-600 shrink-0" />
+                            <span className="text-[10px] md:text-[11px] font-black text-[#a3e635] italic uppercase whitespace-normal break-words py-0.5">{evento.canales}</span>
+                          </div>
+                          <button aria-label="Compartir" onClick={() => compartirWhatsApp(evento)} className="p-3 bg-slate-800 rounded-xl hover:bg-emerald-600 transition-colors text-slate-400 hover:text-white shrink-0"><Share2 className="w-4 h-4" /></button>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <div className="flex items-center gap-3 bg-[#020617] px-4 py-2.5 rounded-xl border border-slate-800"><Tv className="w-4 h-4 text-slate-600" /><span className="text-[11px] font-black text-[#a3e635] italic uppercase">{evento.canales}</span></div>
-                          <button aria-label="Compartir" onClick={() => compartirWhatsApp(evento)} className="p-3 bg-slate-800 rounded-xl hover:bg-emerald-600 transition-colors text-slate-400 hover:text-white"><Share2 className="w-4 h-4" /></button>
-                        </div>
+
                       </div>
                     </div>
-                    {/* Insertar Anuncio cada 5 eventos, evitando ponerlo al final absoluto de la lista si es el último */}
-                    {(index + 1) % 5 === 0 && index !== eventosAgrupados[fecha].length - 1 && (
+                    {/* Insertar Anuncio cada 8 eventos, evitando ponerlo al final absoluto de la lista si es el último */}
+                    {(index + 1) % 8 === 0 && index !== eventosAgrupados[fecha].length - 1 && (
                       <AdPlacement />
                     )}
                   </div>

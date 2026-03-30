@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Trash2, Star, Plus, Edit3, Check, X, LogIn, Zap, LogOut, Search, AlertCircle, Newspaper, CalendarDays, ImageIcon } from 'lucide-react';
+import { Trash2, Star, Plus, Edit3, Check, X, LogIn, Zap, LogOut, Search, AlertCircle, Newspaper, CalendarDays, ImageIcon, Bot, ActivitySquare, ArrowRight } from 'lucide-react';
 import NextImage from 'next/image';
 
 const supabase = createClient(
@@ -18,9 +18,10 @@ const emojis: { [key: string]: string } = {
 };
 
 export default function AdminPanel() {
+  const [mounted, setMounted] = useState(false);
   const [autenticado, setAutenticado] = useState(false);
   const [password, setPassword] = useState("");
-  const [tab, setTab] = useState<'eventos' | 'noticias'>('eventos');
+  const [tab, setTab] = useState<'eventos' | 'noticias' | 'ia'>('eventos');
   
   // Estados para Eventos
   const [eventos, setEventos] = useState<any[]>([]);
@@ -34,17 +35,29 @@ export default function AdminPanel() {
   const [isNoticiaModalOpen, setIsNoticiaModalOpen] = useState(false);
   const [editandoNoticia, setEditandoNoticia] = useState<any>({ titulo: "", contenido: "", imagen_url: "", fecha: "" });
 
+  // Estados para Generador IA
+  const [promptIA, setPromptIA] = useState("");
+  const [instruccionesIA, setInstruccionesIA] = useState("");
+  const [generandoIA, setGenerandoIA] = useState(false);
+  
+  const [eventoSugeridoFiltrado, setEventoSugeridoFiltrado] = useState<any[]>([]);
+  const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
+  const [eventoSeleccionadoIA, setEventoSeleccionadoIA] = useState<any>(null);
+
   const login = () => {
     if (password === "GUIA2024") setAutenticado(true);
     else alert("Contraseña incorrecta");
   };
 
   useEffect(() => {
+    setMounted(true);
     if (autenticado) {
       cargarEventos();
       cargarNoticias();
     }
   }, [autenticado]);
+
+  if (!mounted) return null;
 
   async function cargarEventos() {
     const { data } = await supabase.from('eventos').select('*').order('fecha', { ascending: true }).order('hora', { ascending: true });
@@ -123,6 +136,61 @@ export default function AdminPanel() {
     if (confirm("¿Borrar noticia permanentemente?")) { await supabase.from('noticias').delete().eq('id', id); cargarNoticias(); }
   }
 
+  // --- LOGICA GENERADOR IA ---
+  const sugerirEventos = (texto: string) => {
+    setPromptIA(texto);
+    if (!texto) {
+      setEventoSugeridoFiltrado([]);
+      setMostrarSugerencias(false);
+      return;
+    }
+    const filtrados = eventos.filter(e => 
+      e.evento.toLowerCase().includes(texto.toLowerCase()) || 
+      e.competicion.toLowerCase().includes(texto.toLowerCase())
+    ).slice(0, 5);
+    setEventoSugeridoFiltrado(filtrados);
+    setMostrarSugerencias(true);
+  };
+
+  const seleccionarEventoIA = (e: any) => {
+    setPromptIA(e.evento);
+    setEventoSeleccionadoIA(e);
+    setMostrarSugerencias(false);
+  };
+
+  async function dispararGeneracionIA() {
+    if (!promptIA) return alert("Escribe el nombre del evento");
+    
+    setGenerandoIA(true);
+    try {
+      const res = await fetch("/api/noticias/generar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          evento: promptIA, 
+          instrucciones: instruccionesIA,
+          metadatos: eventoSeleccionadoIA 
+        })
+      });
+
+      const data = await res.json();
+      
+      if (data.success) {
+        alert("¡Noticia generada y publicada con éxito!");
+        setPromptIA("");
+        setInstruccionesIA("");
+        setTab('noticias'); // Cambiar a la pestaña de noticias para verla
+        cargarNoticias();
+      } else {
+        alert("Error IA: " + (data.error || "No se pudo generar"));
+      }
+    } catch (e) {
+      alert("Error de conexión con el Robot");
+    } finally {
+      setGenerandoIA(false);
+    }
+  }
+
   if (!autenticado) {
     return (
       <div className="min-h-screen bg-[#020617] flex items-center justify-center p-6 text-white">
@@ -143,9 +211,10 @@ export default function AdminPanel() {
         {/* HEADER ADMIN */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-12">
           <NextImage src="/GuiaSports-logo.svg" alt="GuíaSports" width={140} height={40} />
-          <div className="flex bg-slate-900 overflow-hidden rounded-2xl border border-slate-800 shadow-xl">
-            <button onClick={() => setTab('eventos')} className={`px-8 py-3 text-xs font-black uppercase transition-all ${tab === 'eventos' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50'}`}>Agenda</button>
-            <button onClick={() => setTab('noticias')} className={`px-8 py-3 text-xs font-black uppercase transition-all ${tab === 'noticias' ? 'bg-[#a3e635] text-black' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50'}`}>Noticias (SEO)</button>
+          <div className="flex bg-slate-900 overflow-hidden rounded-2xl border border-slate-800 shadow-xl flex-wrap shrink-0">
+            <button onClick={() => setTab('eventos')} className={`px-4 sm:px-8 py-3 text-[10px] sm:text-xs font-black uppercase transition-all flex-1 ${tab === 'eventos' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50'}`}>Agenda</button>
+            <button onClick={() => setTab('noticias')} className={`px-4 sm:px-8 py-3 text-[10px] sm:text-xs font-black uppercase transition-all flex-1 ${tab === 'noticias' ? 'bg-[#a3e635] text-black' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50'}`}>Noticias (SEO)</button>
+            <button onClick={() => setTab('ia')} className={`px-4 sm:px-8 py-3 text-[10px] sm:text-xs font-black uppercase transition-all flex-1 flex items-center justify-center gap-2 ${tab === 'ia' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50'}`}><Bot size={14} className="hidden sm:block"/> Robot IA</button>
           </div>
           <button onClick={() => setAutenticado(false)} className="bg-slate-800 p-3 rounded-xl text-slate-400 hover:text-white hover:bg-red-600/80 transition-colors"><LogOut size={20} /></button>
         </div>
@@ -237,6 +306,96 @@ export default function AdminPanel() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* TAB IA PROMOM */}
+        {tab === 'ia' && (
+          <div className="bg-slate-900/50 border border-slate-800 rounded-[32px] p-8 md:p-12 mb-8 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 blur-3xl rounded-full transform translate-x-1/2 -translate-y-1/2"></div>
+            
+            <header className="mb-10 relative z-10 flex items-center gap-6">
+              <div className="bg-gradient-to-r from-indigo-600 to-purple-600 w-16 h-16 rounded-3xl flex items-center justify-center shadow-xl shadow-indigo-900/40 shrink-0">
+                <Bot className="text-white relative z-10" size={32} />
+              </div>
+              <div>
+                <h1 className="text-2xl md:text-3xl font-black italic uppercase tracking-tighter text-white">
+                  Generador <span className="text-indigo-400">IA Promom</span>
+                </h1>
+                <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px] md:text-xs mt-1">Automatiza la redacción SEO</p>
+              </div>
+            </header>
+
+            <div className="relative z-10 space-y-6">
+              <p className="text-slate-400 text-sm mb-8 leading-relaxed">
+                Ingresa el partido que deseas destacar. La Inteligencia Artificial del equipo redactará una noticia original, optimizada para Google, 
+                e insertará de inmediato la portada visual en tu base de datos.
+              </p>
+
+              <div className="relative">
+                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Evento / Partido Objetivo (Escribe para buscar)</label>
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-700" size={18} />
+                  <input 
+                    type="text" 
+                    placeholder="Ej. Mex o Amé..." 
+                    className="w-full bg-[#020617] border border-slate-800 rounded-xl px-4 py-4 pl-12 text-slate-200 focus:outline-none focus:border-indigo-500 transition-all font-bold shadow-inner"
+                    value={promptIA}
+                    onChange={(e) => sugerirEventos(e.target.value)}
+                    onFocus={() => promptIA && setMostrarSugerencias(true)}
+                    disabled={generandoIA}
+                  />
+                  {eventoSeleccionadoIA && (
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 bg-indigo-600/20 text-indigo-400 px-3 py-1 rounded-lg text-[9px] font-black uppercase flex items-center gap-2">
+                      <Check size={10} /> Vinculado a Agenda
+                    </div>
+                  )}
+                </div>
+
+                {mostrarSugerencias && eventoSugeridoFiltrado.length > 0 && (
+                  <div className="absolute left-0 right-0 top-full mt-2 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl z-50 p-2 space-y-1">
+                    {eventoSugeridoFiltrado.map(e => (
+                      <button 
+                        key={e.id}
+                        onClick={() => seleccionarEventoIA(e)}
+                        className="w-full text-left p-3 rounded-xl hover:bg-slate-800 transition-colors flex items-center gap-4 group"
+                      >
+                         <span className="text-xl shrink-0">{emojis[e.deporte] || "🏆"}</span>
+                         <div className="min-w-0">
+                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-wider mb-0.5 truncate">{e.competicion}</p>
+                            <p className="text-sm font-bold text-slate-200 group-hover:text-white truncate">{e.evento}</p>
+                            <p className="text-[9px] font-bold text-[#a3e635] italic uppercase">{e.canales}</p>
+                         </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              <div>
+                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Instrucciones Especiales (Opcional)</label>
+                <textarea 
+                  placeholder="Ej. Mencionar que es el torneo más importante..." 
+                  rows={3}
+                  className="w-full bg-[#020617] border border-slate-800 rounded-xl px-4 py-4 text-slate-200 focus:outline-none focus:border-indigo-500 transition-all text-sm resize-none shadow-inner"
+                  value={instruccionesIA}
+                  onChange={(e) => setInstruccionesIA(e.target.value)}
+                  disabled={generandoIA}
+                ></textarea>
+              </div>
+
+              <button 
+                type="button"
+                className={`w-full flex items-center justify-center gap-3 ${generandoIA ? 'bg-indigo-900 cursor-not-allowed opacity-50' : 'bg-indigo-600 hover:bg-indigo-500'} text-white font-black py-5 px-8 rounded-2xl transition-all uppercase tracking-widest text-sm italic shadow-lg shadow-indigo-900/40 relative overflow-hidden group mt-4`}
+                onClick={dispararGeneracionIA}
+                disabled={generandoIA}
+              >
+                <span className="relative z-10">{generandoIA ? 'Redactando con IA...' : 'Generar Al Instante'}</span>
+                {!generandoIA && <ArrowRight size={18} className="relative z-10 group-hover:translate-x-1 transition-transform" />}
+                {generandoIA && <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>}
+              </button>
+              <p className="text-center text-[10px] text-slate-600 font-bold uppercase tracking-widest mt-4">Tomará unos 15 segundos redactar y procesar</p>
+            </div>
           </div>
         )}
       </div>

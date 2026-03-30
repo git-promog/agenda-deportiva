@@ -55,11 +55,37 @@ export default async function Home() {
     console.error("Error cargando datos en servidor:", err);
   }
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "itemListElement": eventos.slice(0, 50).map((e: any, index: number) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "item": {
+        "@type": "SportsEvent",
+        "name": e.evento,
+        "startDate": `${e.fecha}T${e.hora}:00-06:00`,
+        "sport": e.deporte,
+        "description": `Transmisión de ${e.competicion}: ${e.evento} en vivo por ${e.canales}.`,
+        "location": {
+          "@type": "VirtualLocation",
+          "url": "https://guiasports.com"
+        }
+      }
+    }))
+  };
+
   return (
-    <HomeClient 
-      initialEventos={eventos} 
-      initialNoticias={noticias} 
-      initialUltimaAct={ultimaAct} 
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <HomeClient 
+        initialEventos={eventos} 
+        initialNoticias={noticias} 
+        initialUltimaAct={ultimaAct} 
+      />
+    </>
   );
 }

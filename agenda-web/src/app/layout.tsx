@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/Footer";
 import NavMobile from "@/components/NavMobile"; // <-- Importamos NavBar Móvil
+import StickyAd from "@/components/StickyAd"; // <-- Banner Flotante de Anuncios
+import CookieConsent from "@/components/CookieConsent";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,6 +23,8 @@ export default function RootLayout({
       <body className={`${inter.className} bg-[#020617] pb-16 md:pb-0`}>
         {children}
         <Footer />
+        <StickyAd />
+        <CookieConsent />
         <NavMobile /> {/* <-- Esto la fijará abajo en todo momento en teléfonos */}
       </body>
     </html>

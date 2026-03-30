@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Shield, ArrowLeft } from 'lucide-react';
+import NextImage from 'next/image';
 
 export default function Privacidad() {
   return (
@@ -10,6 +11,10 @@ export default function Privacidad() {
         </Link>
 
         <header className="mb-12">
+          <div className="flex justify-start mb-10 w-full">
+            <NextImage src="/GuiaSports-logo.svg" alt="GuíaSports" width={220} height={55} priority className="h-10 w-auto" />
+          </div>
+
           <div className="bg-blue-600 w-12 h-12 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-blue-900/40">
             <Shield className="text-white" size={24} />
           </div>
@@ -20,10 +25,10 @@ export default function Privacidad() {
         </header>
 
         <article className="prose prose-invert max-w-none bg-slate-900/30 border border-slate-800/60 rounded-3xl p-8 md:p-12 text-slate-400 leading-relaxed space-y-6">
-          {/* AQUÍ PEGARÁS TU TEXTO POSTERIORMENTE */}
+          {/* TEXTO DE USO */}
           <h2 className="text-xl font-bold text-white uppercase italic">1. Información que recolectamos</h2>
           <p>
-            En Agenda Deportiva MX, la privacidad de nuestros usuarios es prioridad. No solicitamos registros ni datos personales para consultar la programación deportiva.
+            En <strong className="text-white">GuíaSports</strong>, la privacidad de nuestros usuarios es una absoluta prioridad. No exigimos creación de perfiles, ni formularios de recolección de datos personales como correos o nombres para realizar la consulta gratuita de nuestra programación deportiva. Toda navegación es libre.
           </p>
           
           <h2 className="text-xl font-bold text-white uppercase italic">2. Uso de Cookies</h2>

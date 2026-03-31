@@ -1,11 +1,26 @@
 "use client";
 
-import { Home, Search, Newspaper, Settings } from 'lucide-react';
+import { Home, Search, Radio } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 export default function NavMobile() {
   const pathname = usePathname();
+
+  const scrollToSection = (id: string) => {
+    if (id === 'listado-eventos-principal') {
+      // Primero buscar el primer evento en vivo
+      const eventosEnVivo = document.querySelectorAll('[data-envivo="true"]');
+      if (eventosEnVivo.length > 0) {
+        eventosEnVivo[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+    }
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0f172a]/90 backdrop-blur-xl border-t border-slate-800 pb-safe pt-2 px-6 z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.3)]">
@@ -15,15 +30,15 @@ export default function NavMobile() {
           <span className="text-[9px] font-black uppercase tracking-widest">Inicio</span>
         </Link>
         
-        <button className="flex flex-col items-center gap-1 w-16 text-slate-500 hover:text-slate-300 transition-colors">
+        <button onClick={() => scrollToSection('buscar')} className="flex flex-col items-center gap-1 w-16 text-slate-500 hover:text-slate-300 transition-colors">
           <Search size={22} />
           <span className="text-[9px] font-black uppercase tracking-widest">Buscar</span>
         </button>
 
-        <Link href="/noticias" className={`flex flex-col items-center gap-1 w-16 transition-colors ${pathname.includes('/noticias') ? 'text-[#a3e635]' : 'text-slate-500 hover:text-slate-300'}`}>
-          <Newspaper size={22} className={pathname.includes('/noticias') ? 'fill-[#a3e635]/20' : ''} />
-          <span className="text-[9px] font-black uppercase tracking-widest">Previas</span>
-        </Link>
+        <button onClick={() => scrollToSection('listado-eventos-principal')} className="flex flex-col items-center gap-1 w-16 text-slate-500 hover:text-red-400 transition-colors">
+          <Radio size={22} className="animate-pulse" />
+          <span className="text-[9px] font-black uppercase tracking-widest text-red-400">En Vivo</span>
+        </button>
       </div>
     </div>
   );

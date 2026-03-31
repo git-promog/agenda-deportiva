@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Tv, Calendar, Trophy, Clock, Zap, Filter, Star, Search, X, CalendarDays, Share2, ChevronLeft, ChevronRight, Newspaper, ArrowUp } from 'lucide-react';
 import Link from 'next/link';
 import NextImage from 'next/image';
@@ -22,17 +23,39 @@ interface HomeClientProps {
 }
 
 export default function HomeClient({ initialEventos, initialNoticias, initialUltimaAct }: HomeClientProps) {
+  const searchParams = useSearchParams();
   const [eventos] = useState<any[]>(initialEventos);
   const [noticias] = useState<any[]>(initialNoticias);
   const [filtroDeporte, setFiltroDeporte] = useState("Todos");
   const [filtroFecha, setFiltroFecha] = useState("Todos");
   const [soloTvAbierta, setSoloTvAbierta] = useState(false);
   const [busqueda, setBusqueda] = useState("");
+  const [soloEnVivo, setSoloEnVivo] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const filtrosRef = useRef<HTMLDivElement>(null);
+  const [filtrosFixed, setFiltrosFixed] = useState(false);
+  const filtrosOffsetTop = useRef(0);
   const [hasScrolledToLive, setHasScrolledToLive] = useState(false);
   const [showGoTop, setShowGoTop] = useState(false);
   const [isSystemScrolling, setIsSystemScrolling] = useState(false);
   const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    if (searchParams.get('envivo') === '1') {
+      setSoloEnVivo(true);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    const originalOffsetTop = filtrosRef.current?.offsetTop || 0;
+    
+    const handleScroll = () => {
+      setFiltrosFixed(window.scrollY >= originalOffsetTop);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const scrollDeportes = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
@@ -157,7 +180,8 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
                              e.competicion.toLowerCase().includes(busqueda.toLowerCase());
     const canalesLower = e.canales.toLowerCase();
     const esTvAbierta = ["canal 5", "azteca 7", "las estrellas", "nu9ve", "imagen tv", "azteca uno", "canal 9"].some(c => canalesLower.includes(c));
-    return coincideDeporte && coincideFecha && coincideBusqueda && (soloTvAbierta ? esTvAbierta : true);
+    const esEnVivo = estaEnVivo(e.fecha, e.hora);
+    return coincideDeporte && coincideFecha && coincideBusqueda && (soloTvAbierta ? esTvAbierta : true) && (soloEnVivo ? esEnVivo : true);
   });
 
   const eventosAgrupados = eventosFiltrados.reduce((groups: any, evento) => {
@@ -174,9 +198,9 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   };
 
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-24 overflow-x-hidden w-full">
+    <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-24 w-full">
       
-      <header className="border-b border-slate-800 bg-[#020617]/95 backdrop-blur-md sticky top-0 z-30 w-full overflow-hidden">
+      <div className="border-b border-slate-800 bg-[#020617]/95 backdrop-blur-md w-full overflow-x-hidden">
         <div className="max-w-4xl mx-auto px-4 pt-4 w-full">
           <div className="flex justify-between items-center mb-6">
             <Link href="/" className="transition-transform active:scale-95">
@@ -190,28 +214,34 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
             </div>
           </div>
 
-          <div className="relative mb-6 w-full px-1">
+          <div className="relative mb-4 w-full px-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
-            <input type="text" placeholder="Busca equipos o ligas..." className="w-full bg-slate-900/50 border border-slate-800 rounded-2xl py-3 pl-11 pr-10 text-base focus:outline-none focus:border-[#a3e635] text-slate-200" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+            <input id="buscar" type="text" placeholder="Busca equipos o ligas..." className="w-full bg-slate-900/50 border border-slate-800 rounded-2xl py-3 pl-11 pr-10 text-base focus:outline-none focus:border-[#a3e635] text-slate-200" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
             {busqueda && <button onClick={() => setBusqueda("")} className="absolute right-3 top-1/2 -translate-y-1/2 bg-slate-800 p-1 rounded-full text-slate-400"><X className="w-4 h-4" /></button>}
           </div>
+        </div>
+      </div>
 
-          <div className="relative flex items-center mb-4 overflow-hidden">
-            <div ref={scrollRef} className="flex gap-2 overflow-x-auto py-1 px-1 scrollbar-hide scroll-smooth w-full text-center">
+      <div ref={filtrosRef} className="bg-[#020617] border-b border-slate-800 shadow-lg z-50" style={{ position: filtrosFixed ? 'fixed' : 'static', top: 0, left: 0, right: 0, width: filtrosFixed ? '100%' : undefined }}>
+        <div className="max-w-4xl mx-auto px-4 py-2">
+          <div className="relative flex items-center mb-2">
+            <button onClick={() => scrollDeportes('left')} className="absolute left-0 z-10 bg-slate-900/80 p-2 rounded-full shadow-lg"><ChevronLeft size={16} /></button>
+            <div ref={scrollRef} className="flex gap-2 overflow-x-auto py-1 px-8 scrollbar-hide scroll-smooth w-full text-center">
               {deportesUnicos.map((dep: any) => (
                 <button key={dep} onClick={() => setFiltroDeporte(dep)} className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap border uppercase tracking-wider ${filtroDeporte === dep ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-900/40" : "bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800"}`}>
                   {emojis[dep] || "🏆"} {dep}
                 </button>
               ))}
             </div>
+            <button onClick={() => scrollDeportes('right')} className="absolute right-0 z-10 bg-slate-900/80 p-2 rounded-full shadow-lg"><ChevronRight size={16} /></button>
           </div>
 
-          <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide border-t border-slate-900 pt-4 px-1">
+          <div className="relative flex gap-2 overflow-x-auto pb-2 scrollbar-hide px-1">
             <button
               onClick={() => setSoloTvAbierta(!soloTvAbierta)}
               className={`px-4 py-1.5 rounded-lg text-[10px] font-black transition-all whitespace-nowrap uppercase tracking-widest flex items-center gap-1 ${soloTvAbierta ? "bg-white text-black border border-white" : "text-slate-500 border border-slate-800 hover:text-slate-300 bg-slate-900/50"}`}
             >
-              <Tv size={12} /> {soloTvAbierta ? "TV Abierta" : "Sólo TV Abierta"}
+              <Tv size={12} /> {soloTvAbierta ? "TV Abierta" : "Só TV Abierta"}
             </button>
             <div className="w-px h-6 bg-slate-800 mx-1"></div>
             {fechasUnicas.map((f: any) => (
@@ -221,9 +251,10 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
             ))}
           </div>
         </div>
-      </header>
+      </div>
+      {filtrosFixed && <div style={{ height: filtrosRef.current?.offsetHeight }}></div>}
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
+      <main id="envivo" className="max-w-4xl mx-auto px-4 pt-24 pb-8">
         {!busqueda && (filtroFecha === "Todos" || filtroFecha === hoyStr) && (
           <>
             {eventoHero && (
@@ -313,7 +344,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
               </div>
               <div className="grid gap-3">
                 {eventosAgrupados[fecha].map((evento: any, index: number) => (
-                  <div key={evento.id} id={`evento-${evento.id}`}>
+                  <div key={evento.id} id={`evento-${evento.id}`} data-envivo={estaEnVivo(evento.fecha, evento.hora) ? 'true' : 'false'}>
                     {/* El sensor se coloca en el 5to evento (index 4) de hoy */}
                     {fecha === hoyStr && index === 4 && <div id="sensor-scroll-profundo" className="absolute -translate-y-20"></div>}
                     <div className="group bg-slate-900/30 border border-slate-800/50 rounded-2xl p-4 hover:border-blue-500/30 hover:bg-slate-900/60 transition-all duration-300">

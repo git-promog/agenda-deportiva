@@ -1,6 +1,22 @@
 import Link from 'next/link';
 import { Trophy, ArrowLeft, Users } from 'lucide-react';
 import NextImage from 'next/image';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Quiénes Somos | GuíaSports - La Guía Deportiva de México",
+  description: "Conoce la misión de GuíaSports: ayudar a los aficionados mexicanos a encontrar dónde ver sus deportes favoritos en TV y streaming.",
+  alternates: {
+    canonical: "https://www.guiasports.com/quienes_somos",
+  },
+  openGraph: {
+    title: "Quiénes Somos | GuíaSports",
+    description: "Conoce la misión de GuíaSports: la guía deportiva más rápida de México.",
+    type: "website",
+    locale: "es_MX",
+    url: "https://www.guiasports.com/quienes_somos",
+  },
+};
 
 export default function QuienesSomos() {
   return (

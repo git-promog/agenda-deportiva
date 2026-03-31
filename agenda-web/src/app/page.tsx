@@ -8,11 +8,15 @@ export const revalidate = 300;
 export const metadata: Metadata = {
   title: "GuíaSports - Agenda Deportiva y Dónde Ver Deportes Hoy en México",
   description: "Encuentra en qué canal de TV y plataformas de streaming ver fútbol, F1, MLB, NBA y más eventos deportivos en vivo desde México. La mejor guía deportiva.",
+  alternates: {
+    canonical: "https://www.guiasports.com",
+  },
   openGraph: {
     title: "GuíaSports - Dónde ver deportes en México",
     description: "La agenda deportiva más completa de México. Televisión abierta, de paga y streaming.",
     type: "website",
-    locale: "es_MX"
+    locale: "es_MX",
+    url: "https://www.guiasports.com",
   }
 };
 

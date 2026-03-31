@@ -6,6 +6,9 @@ import { Tv, Calendar, Trophy, Clock, Zap, Filter, Star, Search, X, CalendarDays
 import Link from 'next/link';
 import NextImage from 'next/image';
 import AdPlacement from '@/components/AdPlacement';
+import NavMobile from '@/components/NavMobile';
+import Footer from '@/components/Footer';
+import Header from '@/components/Header';
 
 const emojis: { [key: string]: string } = {
   "Fútbol": "⚽️", "Básquetbol": "🏀", "Béisbol": "⚾️", "Fórmula 1": "🏎️", 
@@ -28,6 +31,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   const [noticias] = useState<any[]>(initialNoticias);
   const [filtroDeporte, setFiltroDeporte] = useState("Todos");
   const [filtroFecha, setFiltroFecha] = useState("Todos");
+  const [filtroCompeticion, setFiltroCompeticion] = useState("Todos");
   const [soloTvAbierta, setSoloTvAbierta] = useState(false);
   const [busqueda, setBusqueda] = useState("");
   const [soloEnVivo, setSoloEnVivo] = useState(false);
@@ -76,6 +80,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   const hoyStr = getTodayStr();
   const deportesUnicos = ["Todos", ...new Set(eventos.map(e => e.deporte))];
   const fechasUnicas = ["Todos", ...new Set(eventos.map(e => (e.fecha || "")))].filter(f => f !== "");
+  const competicionesUnicas = ["Todos", ...new Set(eventos.map(e => e.competicion).filter(Boolean))];
 
   useEffect(() => {
     setHasScrolledToLive(false);
@@ -176,12 +181,13 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   const eventosFiltrados = eventos.filter(e => {
     const coincideDeporte = filtroDeporte === "Todos" || e.deporte === filtroDeporte;
     const coincideFecha = filtroFecha === "Todos" || e.fecha === filtroFecha;
+    const coincideCompeticion = filtroCompeticion === "Todos" || e.competicion === filtroCompeticion;
     const coincideBusqueda = e.evento.toLowerCase().includes(busqueda.toLowerCase()) || 
                              e.competicion.toLowerCase().includes(busqueda.toLowerCase());
     const canalesLower = e.canales.toLowerCase();
     const esTvAbierta = ["canal 5", "azteca 7", "las estrellas", "nu9ve", "imagen tv", "azteca uno", "canal 9"].some(c => canalesLower.includes(c));
     const esEnVivo = estaEnVivo(e.fecha, e.hora);
-    return coincideDeporte && coincideFecha && coincideBusqueda && (soloTvAbierta ? esTvAbierta : true) && (soloEnVivo ? esEnVivo : true);
+    return coincideDeporte && coincideFecha && coincideCompeticion && coincideBusqueda && (soloTvAbierta ? esTvAbierta : true) && (soloEnVivo ? esEnVivo : true);
   });
 
   const eventosAgrupados = eventosFiltrados.reduce((groups: any, evento) => {
@@ -200,27 +206,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   return (
     <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-24 w-full">
       
-      <div className="border-b border-slate-800 bg-[#020617]/95 backdrop-blur-md w-full overflow-x-hidden">
-        <div className="max-w-4xl mx-auto px-4 pt-4 w-full">
-          <div className="flex justify-between items-center mb-6">
-            <Link href="/" className="transition-transform active:scale-95">
-              <NextImage src="/GuiaSports-logo.svg" alt="GuíaSports" width={200} height={50} className="h-10 w-auto" priority />
-            </Link>
-            <div className="flex flex-col items-end">
-              <div className="text-[10px] font-black text-[#a3e635] bg-[#a3e635]/10 px-2 py-1 rounded border border-[#a3e635]/20 uppercase italic mb-1 tracking-widest">México</div>
-              <div className="text-[9px] font-bold text-slate-500 uppercase flex items-center gap-1.5">
-                <div className="w-1.5 h-1.5 bg-[#a3e635] rounded-full animate-pulse"></div> {initialUltimaAct}
-              </div>
-            </div>
-          </div>
-
-          <div className="relative mb-4 w-full px-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
-            <input id="buscar" type="text" placeholder="Busca equipos o ligas..." className="w-full bg-slate-900/50 border border-slate-800 rounded-2xl py-3 pl-11 pr-10 text-base focus:outline-none focus:border-[#a3e635] text-slate-200" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
-            {busqueda && <button onClick={() => setBusqueda("")} className="absolute right-3 top-1/2 -translate-y-1/2 bg-slate-800 p-1 rounded-full text-slate-400"><X className="w-4 h-4" /></button>}
-          </div>
-        </div>
-      </div>
+      <Header ultimaAct={initialUltimaAct} showSearch={true} busqueda={busqueda} onBusquedaChange={setBusqueda} />
 
       <div ref={filtrosRef} className="bg-[#020617] border-b border-slate-800 shadow-lg z-50" style={{ position: filtrosFixed ? 'fixed' : 'static', top: 0, left: 0, right: 0, width: filtrosFixed ? '100%' : undefined }}>
         <div className="max-w-4xl mx-auto px-4 py-2">
@@ -249,6 +235,20 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
                 {formatearBotonFecha(f)}
               </button>
             ))}
+            {filtroDeporte !== "Todos" && filtroCompeticion === "Todos" && competicionesUnicas.length > 1 && (
+              <>
+                <div className="w-px h-6 bg-slate-800 mx-1"></div>
+                <select 
+                  value={filtroCompeticion} 
+                  onChange={(e) => setFiltroCompeticion(e.target.value)}
+                  className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-400 outline-none focus:border-blue-500 appearance-none cursor-pointer"
+                >
+                  {competicionesUnicas.map((c: any) => (
+                    <option key={c} value={c}>{c === "Todos" ? "🏆 Todas" : c}</option>
+                  ))}
+                </select>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -402,6 +402,8 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
         <ArrowUp size={24} strokeWidth={3} />
       </button>
 
+      <NavMobile />
+      <Footer />
     </div>
   );
 }

@@ -174,7 +174,10 @@ export default function AdminPanel() {
     try {
       const res = await fetch("/api/noticias/generar", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET || "guiasports-secret-2024"}`,
+        },
         body: JSON.stringify({ 
           evento: promptIA, 
           instrucciones: instruccionesIA,

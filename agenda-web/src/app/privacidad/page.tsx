@@ -1,6 +1,22 @@
 import Link from 'next/link';
 import { Shield, ArrowLeft } from 'lucide-react';
 import NextImage from 'next/image';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Política de Privacidad | GuíaSports",
+  description: "Conoce cómo GuíaSports protege tu privacidad y utiliza cookies para mejorar tu experiencia. Tu información personal está segura con nosotros.",
+  alternates: {
+    canonical: "https://www.guiasports.com/privacidad",
+  },
+  openGraph: {
+    title: "Política de Privacidad | GuíaSports",
+    description: "Conoce cómo protegemos tu privacidad en GuíaSports.",
+    type: "website",
+    locale: "es_MX",
+    url: "https://www.guiasports.com/privacidad",
+  },
+};
 
 export default function Privacidad() {
   return (

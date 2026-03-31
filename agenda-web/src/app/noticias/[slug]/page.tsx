@@ -26,7 +26,7 @@ export async function generateMetadata(
 
   const { data: noticia } = await supabase
     .from('noticias')
-    .select('titulo, contenido, imagen_url')
+    .select('titulo, contenido, imagen_url, fecha, created_at')
     .eq('slug', slug)
     .maybeSingle();
 
@@ -38,21 +38,34 @@ export async function generateMetadata(
 
   // Get first 150 chars for description
   const cleanDescription = noticia.contenido.substring(0, 150).replace(/\n/g, ' ') + '...';
+  const wordCount = noticia.contenido.split(/\s+/).length;
 
   return {
     title: `${noticia.titulo} | GuíaSports`,
     description: cleanDescription,
+    alternates: {
+      canonical: `https://www.guiasports.com/noticias/${slug}`,
+    },
     openGraph: {
       title: noticia.titulo,
       description: cleanDescription,
       images: noticia.imagen_url ? [{ url: noticia.imagen_url }] : [],
       type: 'article',
+      locale: 'es_MX',
+      publishedTime: noticia.fecha,
+      modifiedTime: noticia.created_at || noticia.fecha,
     },
     twitter: {
       card: 'summary_large_image',
       title: noticia.titulo,
       description: cleanDescription,
       images: noticia.imagen_url ? [noticia.imagen_url] : [],
+    },
+    other: {
+      'article:published_time': noticia.fecha,
+      'article:modified_time': noticia.created_at || noticia.fecha,
+      'article:author': 'GuíaSports Editorial',
+      'article:section': 'Deportes',
     },
   };
 }
@@ -81,8 +94,44 @@ export default async function NoticiaDetalle({ params }: Props) {
     );
   }
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    "headline": noticia.titulo,
+    "description": noticia.contenido.substring(0, 150).replace(/\n/g, ' ') + '...',
+    "image": noticia.imagen_url ? [noticia.imagen_url] : [],
+    "datePublished": noticia.fecha,
+    "dateModified": noticia.created_at || noticia.fecha,
+    "author": {
+      "@type": "Organization",
+      "name": "GuíaSports Editorial",
+      "url": "https://www.guiasports.com"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "GuíaSports",
+      "url": "https://www.guiasports.com",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://www.guiasports.com/GuiaSports-logo.svg"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": `https://www.guiasports.com/noticias/${noticia.slug}`
+    },
+    "inLanguage": "es-MX",
+    "articleSection": "Deportes",
+    "wordCount": noticia.contenido.split(/\s+/).length,
+  };
+
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-20">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-20">
       <div className="max-w-3xl mx-auto px-4 pt-10">
         
         <Link href="/" className="flex items-center gap-2 text-blue-500 text-[10px] font-black uppercase tracking-widest mb-10 hover:text-blue-400 group transition-colors">
@@ -119,10 +168,12 @@ export default async function NoticiaDetalle({ params }: Props) {
         {/* --- SECCIÓN DE IMAGEN DESTACADA --- */}
         {noticia.imagen_url && (
           <div className="relative w-full h-[250px] md:h-[400px] mb-12 rounded-[40px] overflow-hidden border border-slate-800 shadow-2xl group">
-            <img 
+            <NextImage 
               src={noticia.imagen_url} 
               alt={noticia.titulo} 
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-700"
+              sizes="(max-width: 768px) 100vw, 800px"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent opacity-80 mix-blend-multiply"></div>
           </div>
@@ -145,6 +196,7 @@ export default async function NoticiaDetalle({ params }: Props) {
             </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

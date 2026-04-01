@@ -39,10 +39,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   const filtrosRef = useRef<HTMLDivElement>(null);
   const [filtrosFixed, setFiltrosFixed] = useState(false);
   const filtrosOffsetTop = useRef(0);
-  const [hasScrolledToLive, setHasScrolledToLive] = useState(false);
   const [showGoTop, setShowGoTop] = useState(false);
-  const [isSystemScrolling, setIsSystemScrolling] = useState(false);
-  const lastScrollY = useRef(0);
   const [showFechaDropdown, setShowFechaDropdown] = useState(false);
   const [showCompDropdown, setShowCompDropdown] = useState(false);
 
@@ -110,62 +107,13 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   const competicionesUnicas = ["Todos", ...new Set(eventos.map(e => e.competicion).filter(Boolean))];
 
   useEffect(() => {
-    setHasScrolledToLive(false);
-  }, [filtroFecha]);
-
-  useEffect(() => {
-    if (hasScrolledToLive || eventos.length === 0) return;
-    if (filtroFecha !== "Todos" && filtroFecha !== hoyStr) return;
-
     const handleScroll = () => {
-      const currentScroll = window.scrollY;
-      const scrollingDown = currentScroll > lastScrollY.current;
-      lastScrollY.current = currentScroll;
-
-      // Bajamos el umbral a 350px para que aparezca más rápido en todas las vistas
-      setShowGoTop(currentScroll > 350);
-
-      if (hasScrolledToLive || isSystemScrolling) return;
-
-      // Definimos el "sensor" en el QUINTO evento para dar margen de exploración manual
-      const sensorElement = document.getElementById('sensor-scroll-profundo');
-      if (!sensorElement) return;
-
-      const rect = sensorElement.getBoundingClientRect();
-      
-      // SOLO ACTIVAR SI EL SENSOR ESTÁ ENTRANDO BIEN A LA PANTALLA
-      const isVisible = rect.top < window.innerHeight * 0.4 && rect.top > 0 && scrollingDown; 
-
-      if (isVisible && !hasScrolledToLive) {
-        const hoy = new Date();
-        const ahoraMinutos = hoy.getHours() * 60 + hoy.getMinutes();
-
-        const eventoObjetivo = eventos
-          .filter(e => e.fecha === hoyStr)
-          .find(e => {
-            const [h, m] = e.hora.split(':').map(Number);
-            const horaMinutos = h * 60 + m;
-            return ahoraMinutos >= horaMinutos - 15 && ahoraMinutos <= horaMinutos + 120;
-          });
-
-        if (eventoObjetivo) {
-          const el = document.getElementById(`evento-${eventoObjetivo.id}`);
-          if (el) {
-            setHasScrolledToLive(true);
-            window.scrollTo({ 
-              top: el.getBoundingClientRect().top + window.pageYOffset - 180, 
-              behavior: 'smooth' 
-            });
-          }
-        } else {
-          setHasScrolledToLive(true);
-        }
-      }
+      setShowGoTop(window.scrollY > 350);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [eventos, filtroFecha, hoyStr, hasScrolledToLive, isSystemScrolling]);
+  }, []);
 
   const estaEnVivo = (fecha: string, hora: string) => {
     if (fecha !== hoyStr) return false;
@@ -237,14 +185,9 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   };
 
   const toggleEnVivo = () => {
-    setSoloEnVivo(!soloEnVivo);
-    if (!soloEnVivo) {
-      setTimeout(() => {
-        const eventosEnVivo = document.querySelectorAll('[data-envivo="true"]');
-        if (eventosEnVivo.length > 0) {
-          eventosEnVivo[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }, 100);
+    const eventosEnVivo = document.querySelectorAll('[data-envivo="true"]');
+    if (eventosEnVivo.length > 0) {
+      eventosEnVivo[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   };
 
@@ -284,7 +227,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
 
             <div className="md:hidden relative">
               <button data-fecha-toggle onClick={() => setShowFechaDropdown(!showFechaDropdown)} className={`flex items-center gap-1 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${filtroFecha !== "Todos" ? "text-[#a3e635] bg-[#a3e635]/10 border border-[#a3e635]/30" : "bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800"}`}>
-                📅 {filtroFecha === "Todos" ? "Fecha" : formatearLabelFecha(filtroFecha)}
+                📅 {filtroFecha === "Todos" ? "Hoy" : formatearLabelFecha(filtroFecha)}
                 <ChevronRight size={12} className={`transition-transform ${showFechaDropdown ? 'rotate-[-90deg]' : 'rotate-90'}`} />
               </button>
               {showFechaDropdown && (
@@ -417,9 +360,9 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
             {noticias.length > 0 && (
               <div className="mb-12">
                 <h2 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] mb-6 flex items-center gap-2"><Newspaper className="w-3 h-3" /> Previas y Análisis</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
                   {noticias.map((n: any) => (
-                    <Link key={n.id} href={`/noticias/${n.slug}`} className="bg-slate-900/50 border border-slate-800 p-5 rounded-[32px] flex gap-4 items-center hover:bg-slate-800/80 hover:border-slate-700 transition-all cursor-pointer group">
+                    <Link key={n.id} href={`/noticias/${n.slug}`} className="min-w-[85vw] sm:min-w-[300px] bg-slate-900/50 border border-slate-800 p-5 rounded-[32px] flex gap-4 items-center hover:bg-slate-800/80 hover:border-slate-700 transition-all cursor-pointer group flex-shrink-0">
                       <div className="w-16 h-16 bg-blue-600/20 rounded-2xl flex-shrink-0 flex items-center justify-center border border-blue-500/20 group-hover:scale-105 group-hover:bg-blue-600/30 transition-all">
                         <Newspaper className="text-blue-500" size={28} />
                       </div>
@@ -446,8 +389,6 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
               <div className="grid gap-3">
                 {eventosAgrupados[fecha].map((evento: any, index: number) => (
                   <div key={evento.id} id={`evento-${evento.id}`} data-envivo={estaEnVivo(evento.fecha, evento.hora) ? 'true' : 'false'}>
-                    {/* El sensor se coloca en el 5to evento (index 4) de hoy */}
-                    {fecha === hoyStr && index === 4 && <div id="sensor-scroll-profundo" className="absolute -translate-y-20"></div>}
                     <div className="group bg-slate-900/30 border border-slate-800/50 rounded-2xl p-4 hover:border-blue-500/30 hover:bg-slate-900/60 transition-all duration-300">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 overflow-hidden">
                         <div className="flex flex-row items-start sm:items-center gap-2 sm:gap-3 w-full">
@@ -492,10 +433,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
       {/* BOTÓN IR ARRIBA - POSICIONAMIENTO UNIVERSAL EXTREMO */}
       <button 
         onClick={() => {
-          setIsSystemScrolling(true);
           window.scrollTo({ top: 0, behavior: 'smooth' });
-          // No seteamos setHasScrolledToLive(false) aquí para que no se repita el scroll automático
-          setTimeout(() => setIsSystemScrolling(false), 1500);
         }}
         className={`fixed bottom-28 right-6 p-4 bg-slate-900/95 backdrop-blur-2xl border border-slate-700/50 rounded-2xl text-[#a3e635] shadow-[0_20px_60px_rgba(0,0,0,0.8)] transition-all duration-500 z-[9999] md:bottom-10 md:right-10 ${showGoTop ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-24 opacity-0 scale-50 pointer-events-none'}`}
         aria-label="Ir Arriba"

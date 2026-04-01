@@ -1,14 +1,41 @@
 # Python
 venv/
 __pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
 *.csv
-.DS_Store
 
-# Next.js
+# Node / Next.js
 node_modules/
 .next/
-.env.local
-.env
+out/
+*.tsbuildinfo
 
-# General
+# Environment / Secrets
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE / Editor
 .vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+*.tmp
+*.bak
+*.cache

@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 import re
+import pytz
 
 def extraer_deporte_limpio(celda_detalles):
     if not celda_detalles: return "Otros"
@@ -29,7 +30,9 @@ def obtener_agenda_real():
         response = requests.get(url, headers=headers, timeout=20)
         soup = BeautifulSoup(response.text, 'html.parser')
         lista_eventos = []
-        fecha_actual_db = datetime.now().strftime("%Y-%m-%d")
+        tz_mx = pytz.timezone('America/Mexico_City')
+        hoy = datetime.now(tz_mx).strftime("%Y-%m-%d")
+        fecha_actual_db = hoy
         
         filas = soup.find_all('tr')
         
@@ -64,8 +67,7 @@ def obtener_agenda_real():
                 if len(tds) >= 3:
                     evento = tds[1].get_text(strip=True)
 
-            # Si encontramos un nombre de evento, procesamos
-            if evento and len(evento) > 3:
+            if evento and len(evento) > 3 and fecha_actual_db >= hoy:
                 celda_hora = fila.find('td', class_='hora')
                 celda_detalles = fila.find('td', class_='detalles')
                 celda_canales = fila.find('td', class_='canales')

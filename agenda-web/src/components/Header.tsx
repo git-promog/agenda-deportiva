@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import NextImage from 'next/image';
 import { Newspaper, Radio, Mail, Users } from 'lucide-react';
@@ -32,9 +34,9 @@ export default function Header({ ultimaAct, showSearch = false, busqueda = '', o
             <Link href="/" className="text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-[#a3e635] transition-colors flex items-center gap-1.5">
               <Radio size={14} /> Agenda
             </Link>
-            <Link href="/envivo" className="text-[10px] font-black text-red-400 uppercase tracking-widest hover:text-red-300 transition-colors flex items-center gap-1.5">
+            <button onClick={() => { window.dispatchEvent(new CustomEvent('scroll-to-live')); }} className="text-[10px] font-black text-red-400 uppercase tracking-widest hover:text-red-300 transition-colors flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div> En Vivo
-            </Link>
+            </button>
             <Link href="/noticias" className="text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-[#a3e635] transition-colors flex items-center gap-1.5">
               <Newspaper size={14} /> Noticias
             </Link>

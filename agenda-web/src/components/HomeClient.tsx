@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Tv, Calendar, Trophy, Clock, Zap, Filter, Star, Search, X, CalendarDays, Share2, ChevronLeft, ChevronRight, Newspaper, ArrowUp } from 'lucide-react';
+import { Tv, Calendar, Trophy, Clock, Zap, Filter, Star, Search, X, CalendarDays, Share2, ChevronLeft, ChevronRight, Newspaper, ArrowUp, Shield } from 'lucide-react';
 import Link from 'next/link';
 import NextImage from 'next/image';
 import AdPlacement from '@/components/AdPlacement';
@@ -43,12 +43,39 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   const [showGoTop, setShowGoTop] = useState(false);
   const [isSystemScrolling, setIsSystemScrolling] = useState(false);
   const lastScrollY = useRef(0);
+  const [showFechaDropdown, setShowFechaDropdown] = useState(false);
+  const [showCompDropdown, setShowCompDropdown] = useState(false);
 
   useEffect(() => {
     if (searchParams.get('envivo') === '1') {
       setSoloEnVivo(true);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    const handleScrollToLive = () => {
+      const eventosEnVivo = document.querySelectorAll('[data-envivo="true"]');
+      if (eventosEnVivo.length > 0) {
+        eventosEnVivo[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    };
+    window.addEventListener('scroll-to-live', handleScrollToLive);
+    return () => window.removeEventListener('scroll-to-live', handleScrollToLive);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (showFechaDropdown && !target.closest('[data-fecha-toggle]') && !target.closest('[data-fecha-dropdown]')) {
+        setShowFechaDropdown(false);
+      }
+      if (showCompDropdown && !target.closest('[data-comp-toggle]') && !target.closest('[data-comp-dropdown]')) {
+        setShowCompDropdown(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [showFechaDropdown, showCompDropdown]);
 
   useEffect(() => {
     const originalOffsetTop = filtrosRef.current?.offsetTop || 0;
@@ -203,6 +230,31 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
     return new Date(fStr + 'T12:00:00').toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric' }).toUpperCase();
   };
 
+  const formatearLabelFecha = (fStr: string) => {
+    if (fStr === "Todos") return "Todo";
+    if (fStr === hoyStr) return "Hoy";
+    return new Date(fStr + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+  };
+
+  const toggleEnVivo = () => {
+    setSoloEnVivo(!soloEnVivo);
+    if (!soloEnVivo) {
+      setTimeout(() => {
+        const eventosEnVivo = document.querySelectorAll('[data-envivo="true"]');
+        if (eventosEnVivo.length > 0) {
+          eventosEnVivo[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+    }
+  };
+
+  const activeFilters = [];
+  if (filtroDeporte !== "Todos") activeFilters.push(`${emojis[filtroDeporte] || "🏆"} ${filtroDeporte}`);
+  if (filtroFecha !== "Todos") activeFilters.push("📅 " + formatearLabelFecha(filtroFecha));
+  if (filtroCompeticion !== "Todos") activeFilters.push("🛡️ " + filtroCompeticion);
+  if (soloTvAbierta) activeFilters.push("📺 TV Abierta");
+  if (soloEnVivo) activeFilters.push("🔴 En Vivo");
+
   return (
     <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-24 w-full">
       
@@ -210,7 +262,70 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
 
       <div ref={filtrosRef} className="bg-[#020617] border-b border-slate-800 shadow-lg z-50" style={{ position: filtrosFixed ? 'fixed' : 'static', top: 0, left: 0, right: 0, width: filtrosFixed ? '100%' : undefined }}>
         <div className="max-w-4xl mx-auto px-4 py-2">
-          <div className="relative flex items-center mb-2">
+
+          {/* ROW 1: Barra de acción rápida */}
+          <div className="flex items-center gap-2 mb-2">
+            <button
+              onClick={toggleEnVivo}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${soloEnVivo ? "bg-red-600 text-white shadow-lg shadow-red-900/40 border border-red-500" : "bg-slate-900 border border-slate-800 text-red-400 hover:bg-slate-800"}`}
+            >
+              <div className={`w-1.5 h-1.5 rounded-full ${soloEnVivo ? "bg-white animate-ping" : "bg-red-500"}`}></div>
+              <span className="hidden sm:inline">{soloEnVivo ? "En Vivo" : "En Vivo"}</span>
+              <span className="sm:hidden">📻</span>
+            </button>
+
+            <div className="hidden md:flex items-center gap-1">
+              {fechasUnicas.slice(0, 4).map((f: any) => (
+                <button key={f} onClick={() => setFiltroFecha(f)} className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${filtroFecha === f ? "text-[#a3e635] bg-[#a3e635]/10 border border-[#a3e635]/30" : "bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800"}`}>
+                  {formatearBotonFecha(f)}
+                </button>
+              ))}
+            </div>
+
+            <div className="md:hidden relative">
+              <button data-fecha-toggle onClick={() => setShowFechaDropdown(!showFechaDropdown)} className={`flex items-center gap-1 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${filtroFecha !== "Todos" ? "text-[#a3e635] bg-[#a3e635]/10 border border-[#a3e635]/30" : "bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800"}`}>
+                📅 {filtroFecha === "Todos" ? "Fecha" : formatearLabelFecha(filtroFecha)}
+                <ChevronRight size={12} className={`transition-transform ${showFechaDropdown ? 'rotate-[-90deg]' : 'rotate-90'}`} />
+              </button>
+              {showFechaDropdown && (
+                <div data-fecha-dropdown className="absolute top-full left-0 mt-1 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 py-1 min-w-[160px]">
+                  {fechasUnicas.map((f: any) => (
+                    <button key={f} onClick={() => { setFiltroFecha(f); setShowFechaDropdown(false); }} className={`w-full text-left px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${filtroFecha === f ? "text-[#a3e635] bg-[#a3e635]/10" : "text-slate-400 hover:bg-slate-800"}`}>
+                      {formatearBotonFecha(f)}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {competicionesUnicas.length > 1 && (
+              <div className="relative">
+                <button data-comp-toggle onClick={() => setShowCompDropdown(!showCompDropdown)} className={`flex items-center gap-1 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${filtroCompeticion !== "Todos" ? "text-blue-400 bg-blue-600/10 border border-blue-500/30" : "bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800"}`}>
+                  🛡️ <span className="hidden sm:inline">{filtroCompeticion === "Todos" ? "Torneos" : filtroCompeticion}</span><span className="sm:hidden">Torneos</span>
+                  <ChevronRight size={12} className={`transition-transform ${showCompDropdown ? 'rotate-[-90deg]' : 'rotate-90'}`} />
+                </button>
+                {showCompDropdown && (
+                  <div data-comp-dropdown className="absolute top-full left-0 mt-1 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 py-1 min-w-[200px] max-h-[240px] overflow-y-auto">
+                    {competicionesUnicas.map((c: any) => (
+                      <button key={c} onClick={() => { setFiltroCompeticion(c); setShowCompDropdown(false); }} className={`w-full text-left px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${filtroCompeticion === c ? "text-blue-400 bg-blue-600/10" : "text-slate-400 hover:bg-slate-800"}`}>
+                        {c === "Todos" ? "🛡️ Todos los torneos" : c}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <button
+              onClick={() => setSoloTvAbierta(!soloTvAbierta)}
+              className={`flex items-center gap-1 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${soloTvAbierta ? "bg-white text-black border border-white" : "text-slate-500 border border-slate-800 hover:text-slate-300 bg-slate-900/50"}`}
+            >
+              <Tv size={12} /> <span className="hidden sm:inline">{soloTvAbierta ? "TV Abierta" : "TV Abierta"}</span><span className="sm:hidden">📺</span>
+            </button>
+          </div>
+
+          {/* ROW 2: Filtro de deportes con scroll */}
+          <div className="relative flex items-center">
             <button onClick={() => scrollDeportes('left')} className="absolute left-0 z-10 bg-slate-900/80 p-2 rounded-full shadow-lg"><ChevronLeft size={16} /></button>
             <div ref={scrollRef} className="flex gap-2 overflow-x-auto py-1 px-8 scrollbar-hide scroll-smooth w-full text-center">
               {deportesUnicos.map((dep: any) => (
@@ -222,34 +337,20 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
             <button onClick={() => scrollDeportes('right')} className="absolute right-0 z-10 bg-slate-900/80 p-2 rounded-full shadow-lg"><ChevronRight size={16} /></button>
           </div>
 
-          <div className="relative flex gap-2 overflow-x-auto pb-2 scrollbar-hide px-1">
-            <button
-              onClick={() => setSoloTvAbierta(!soloTvAbierta)}
-              className={`px-4 py-1.5 rounded-lg text-[10px] font-black transition-all whitespace-nowrap uppercase tracking-widest flex items-center gap-1 ${soloTvAbierta ? "bg-white text-black border border-white" : "text-slate-500 border border-slate-800 hover:text-slate-300 bg-slate-900/50"}`}
-            >
-              <Tv size={12} /> {soloTvAbierta ? "TV Abierta" : "Só TV Abierta"}
-            </button>
-            <div className="w-px h-6 bg-slate-800 mx-1"></div>
-            {fechasUnicas.map((f: any) => (
-              <button key={f} onClick={() => setFiltroFecha(f)} className={`px-4 py-1.5 rounded-lg text-[10px] font-black transition-all whitespace-nowrap uppercase tracking-widest ${filtroFecha === f ? "text-[#a3e635] bg-[#a3e635]/10 border-[#a3e635]/30 border" : "text-slate-500 border border-transparent hover:text-slate-300"}`}>
-                {formatearBotonFecha(f)}
+          {/* ROW 3: Breadcrumb de filtros activos */}
+          {activeFilters.length > 0 && (
+            <div className="flex items-center gap-2 mt-2 pt-2 border-t border-slate-700/50">
+              <span className="text-[10px] font-black text-[#a3e635] uppercase tracking-wider">Mostrando:</span>
+              <div className="flex flex-wrap gap-1.5">
+                {activeFilters.map((f, i) => (
+                  <span key={i} className="text-[10px] font-black text-white bg-blue-600/30 px-2.5 py-1 rounded-lg border border-blue-500/30">{f}</span>
+                ))}
+              </div>
+              <button onClick={() => { setFiltroDeporte("Todos"); setFiltroFecha("Todos"); setFiltroCompeticion("Todos"); setSoloTvAbierta(false); setSoloEnVivo(false); }} className="text-[10px] font-black text-red-400 hover:text-red-300 transition-colors ml-auto uppercase">
+                Limpiar ✕
               </button>
-            ))}
-            {filtroDeporte !== "Todos" && filtroCompeticion === "Todos" && competicionesUnicas.length > 1 && (
-              <>
-                <div className="w-px h-6 bg-slate-800 mx-1"></div>
-                <select 
-                  value={filtroCompeticion} 
-                  onChange={(e) => setFiltroCompeticion(e.target.value)}
-                  className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-400 outline-none focus:border-blue-500 appearance-none cursor-pointer"
-                >
-                  {competicionesUnicas.map((c: any) => (
-                    <option key={c} value={c}>{c === "Todos" ? "🏆 Todas" : c}</option>
-                  ))}
-                </select>
-              </>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
       {filtrosFixed && <div style={{ height: filtrosRef.current?.offsetHeight }}></div>}

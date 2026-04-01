@@ -3,3 +3,5 @@ beautifulsoup4
 pandas
 supabase
 pytz
+python-dotenv
+google-generativeai

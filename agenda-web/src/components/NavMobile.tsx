@@ -34,7 +34,7 @@ export default function NavMobile() {
           <span className="text-[8px] font-black uppercase tracking-widest">Buscar</span>
         </button>
 
-        <button onClick={() => scrollToSection('listado-eventos-principal')} className="flex flex-col items-center gap-1 w-14 text-slate-500 hover:text-red-400 transition-colors">
+        <button onClick={() => { window.dispatchEvent(new CustomEvent('scroll-to-live')); }} className="flex flex-col items-center gap-1 w-14 text-slate-500 hover:text-red-400 transition-colors">
           <Radio size={20} className="animate-pulse" />
           <span className="text-[8px] font-black uppercase tracking-widest text-red-400">En Vivo</span>
         </button>

@@ -3,11 +3,19 @@ from supabase import create_client, Client
 from scraper import obtener_agenda_real
 from datetime import datetime
 import pytz # Para manejar la hora de México
+from dotenv import load_dotenv
+
+# Cargar variables de entorno desde .env
+load_dotenv()
 
 # --- CONFIGURACIÓN ---
-# El robot de GitHub usará las variables de entorno, en local usará tus llaves
-SUPABASE_URL = os.environ.get("SUPABASE_URL") or "TU_URL_DE_SUPABASE_AQUÍ"
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY") or "TU_LLAVE_ANON_AQUÍ"
+# El robot de GitHub usará las variables de entorno, en local usará el .env
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+
+if not SUPABASE_URL or not SUPABASE_KEY:
+    print("⚠️ Faltan variables de entorno. Revisa tu archivo .env")
+    exit(1)
 
 def actualizar_base_de_datos():
     try:

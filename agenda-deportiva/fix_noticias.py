@@ -1,9 +1,21 @@
+import os
 import requests
 import json
 from datetime import datetime
+from dotenv import load_dotenv
 
-url = "https://dmutaluipvmrxuvxtluq.supabase.co/rest/v1/noticias"
-key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtdXRhbHVpcHZtcnh1dnh0bHVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzMjg5ODIsImV4cCI6MjA4OTkwNDk4Mn0.X97I7C-5Ap4XfpJNd3xKg5EJCoqgyS1pqeOZSglYe0E"
+# Cargar variables de entorno desde .env
+load_dotenv()
+
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+
+if not SUPABASE_URL or not SUPABASE_KEY:
+    print("⚠️ Faltan variables de entorno. Revisa tu archivo .env")
+    exit(1)
+
+url = f"{SUPABASE_URL}/rest/v1/noticias"
+key = SUPABASE_KEY
 
 headers = {
     "apikey": key,

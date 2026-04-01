@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Tv, Calendar, Trophy, Clock, Zap, Filter, Star, Search, X, CalendarDays, Share2, ChevronLeft, ChevronRight, Newspaper, ArrowUp, Shield } from 'lucide-react';
+import { Tv, Calendar, Trophy, Clock, Zap, Filter, Star, Search, X, CalendarDays, Share2, ChevronLeft, ChevronRight, Newspaper, ArrowUp, Shield, Radio } from 'lucide-react';
 import Link from 'next/link';
 import NextImage from 'next/image';
 import AdPlacement from '@/components/AdPlacement';
@@ -271,7 +271,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
             >
               <div className={`w-1.5 h-1.5 rounded-full ${soloEnVivo ? "bg-white animate-ping" : "bg-red-500"}`}></div>
               <span className="hidden sm:inline">{soloEnVivo ? "En Vivo" : "En Vivo"}</span>
-              <span className="sm:hidden">📻</span>
+              <Radio size={14} className="sm:hidden animate-pulse" />
             </button>
 
             <div className="hidden md:flex items-center gap-1">

@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import "./globals.css";
 import Footer from "@/components/Footer";
-import NavMobile from "@/components/NavMobile"; // <-- Importamos NavBar Móvil
-import StickyAd from "@/components/StickyAd"; // <-- Banner Flotante de Anuncios
+import NavMobile from "@/components/NavMobile";
+import StickyAd from "@/components/StickyAd";
 import CookieConsent from "@/components/CookieConsent";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -25,8 +26,9 @@ export default function RootLayout({
         <Footer />
         <StickyAd />
         <CookieConsent />
-        <NavMobile /> {/* <-- Esto la fijará abajo en todo momento en teléfonos */}
+        <NavMobile />
       </body>
+      <GoogleAnalytics gaId="G-ZTLD10YLJC" />
     </html>
   );
 }

@@ -12,6 +12,15 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: '/quienes_somos',
+        destination: '/quienes-somos',
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

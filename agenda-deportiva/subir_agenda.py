@@ -28,7 +28,16 @@ def actualizar_base_de_datos():
             print("❌ Error: No se obtuvieron datos.")
             return
 
-        print(f"2. Se encontraron {len(datos)} eventos. Limpiando tabla...")
+        print(f"2. Se encontraron {len(datos)} eventos. Preservando destacados...")
+        
+        # Guardar valores de "destacado" antes de borrar
+        respuesta = supabase.table("eventos").select("id, evento, fecha, competicion, destacado").execute()
+        destacados_guardados = {}
+        if respuesta.data:
+            for ev in respuesta.data:
+                key = f"{ev['evento']}||{ev['fecha']}||{ev['competicion']}"
+                destacados_guardados[key] = ev['destacado']
+            print(f"   Se preservarán {len(destacados_guardados)} configuraciones de destacados")
         
         # Limpiar tabla de eventos
         supabase.table("eventos").delete().neq("id", 0).execute()
@@ -36,8 +45,21 @@ def actualizar_base_de_datos():
         print("3. Subiendo nuevos datos a Supabase...")
         supabase.table("eventos").insert(datos).execute()
         
+        # Reaplicar valores de "destacado" a los eventos que coincidan
+        print("4. Restaurando configuraciones de destacados...")
+        eventos_nuevos = supabase.table("eventos").select("id, evento, fecha, competicion").execute()
+        restaurados = 0
+        if eventos_nuevos.data:
+            for ev in eventos_nuevos.data:
+                key = f"{ev['evento']}||{ev['fecha']}||{ev['competicion']}"
+                if key in destacados_guardados:
+                    valor = destacados_guardados[key]
+                    supabase.table("eventos").update({"destacado": valor}).eq("id", ev["id"]).execute()
+                    restaurados += 1
+        print(f"   Se restauraron {restaurados} destacados")
+        
         # --- PASO NUEVO: TOQUE DE VIDA ---
-        print("4. Actualizando hora de sincronización...")
+        print("5. Actualizando hora de sincronización...")
         
         # Definimos la zona horaria de CDMX
         tz_mx = pytz.timezone('America/Mexico_City')

@@ -3,15 +3,16 @@ import Link from 'next/link';
 import NextImage from 'next/image';
 import { Metadata } from 'next';
 import { Newspaper, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import Breadcrumbs from '@/components/Breadcrumbs';
 
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Noticias y Previas Deportivas | GuíaSports",
+  title: "Noticias Deportivas y Dónde Ver Partidos Hoy | GuíaSports",
   description: "Lee las mejores previas, análisis y noticias deportivas de México. Fútbol, F1, MLB, NBA y más. Información actualizada sobre dónde ver deportes en vivo.",
   openGraph: {
-    title: "Noticias y Previas Deportivas | GuíaSports",
-    description: "Lee las mejores previas, análisis y noticias deportivas de México.",
+    title: "Noticias Deportivas y Dónde Ver Partidos Hoy | GuíaSports",
+    description: "Lee las mejores previas, análisis y noticias deportivas de México. Fútbol, F1, MLB, NBA y más.",
     type: "website",
     locale: "es_MX",
   },
@@ -77,10 +78,7 @@ export default async function NoticiasIndex({
       />
       <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-24">
         <div className="max-w-4xl mx-auto px-4 pt-10">
-          <Link href="/" className="flex items-center gap-2 text-blue-500 text-[10px] font-black uppercase tracking-widest mb-10 hover:text-blue-400 group transition-colors w-fit">
-            <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> 
-            Volver a GuíaSports
-          </Link>
+          <Breadcrumbs items={[]} current="Noticias" />
 
           <header className="mb-12">
             <div className="flex items-center gap-4 mb-6">
@@ -111,6 +109,7 @@ export default async function NoticiasIndex({
                           fill
                           className="object-cover group-hover:scale-105 transition-transform duration-700"
                           sizes="(max-width: 768px) 100vw, 50vw"
+                          loading="lazy"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent opacity-60"></div>
                       </div>

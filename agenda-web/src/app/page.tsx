@@ -6,8 +6,8 @@ import { Metadata } from 'next';
 export const revalidate = 300; 
 
 export const metadata: Metadata = {
-  title: "GuíaSports - Agenda Deportiva y Dónde Ver Deportes Hoy en México",
-  description: "Encuentra en qué canal de TV y plataformas de streaming ver fútbol, F1, MLB, NBA y más eventos deportivos en vivo desde México. La mejor guía deportiva.",
+  title: "GuíaSports | Dónde Ver Fútbol, NBA, MLB, F1 en Vivo por TV y Streaming México",
+  description: "¿Dónde ver el partido hoy? GuíaSports te dice en qué canal TV y streaming (ViX, ESPN, Disney+) transmiten fútbol, NBA, MLB, F1 en vivo en México.",
   alternates: {
     canonical: "https://www.guiasports.com",
   },
@@ -59,6 +59,14 @@ export default async function Home() {
     console.error("Error cargando datos en servidor:", err);
   }
 
+  const calculateEndDate = (e: any) => {
+    if (!e.hora) return '23:59';
+    const [h, m] = e.hora.split(':').map(Number);
+    const fin = new Date();
+    fin.setHours(h + 2, m, 0);
+    return String(fin.getHours()).padStart(2, '0') + ':' + String(fin.getMinutes()).padStart(2, '0');
+  };
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -69,11 +77,33 @@ export default async function Home() {
         "@type": "SportsEvent",
         "name": e.evento,
         "startDate": `${e.fecha}T${e.hora}:00-06:00`,
+        "endDate": `${e.fecha}T${calculateEndDate(e)}:00-06:00`,
+        "eventStatus": "https://schema.org/EventScheduled",
         "sport": e.deporte,
         "description": `Transmisión de ${e.competicion}: ${e.evento} en vivo por ${e.canales}.`,
+        "organizer": {
+          "@type": "Organization",
+          "name": e.competicion
+        },
+        "performer": {
+          "@type": "PerformingGroup",
+          "name": e.evento
+        },
         "location": {
-          "@type": "VirtualLocation",
-          "url": "https://guiasports.com"
+          "@type": "Place",
+          "name": "Televisión y Streaming México",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "México"
+          }
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "MXN",
+          "availability": "https://schema.org/AvailableInGeneral",
+          "validFrom": e.fecha,
+          "url": "https://www.guiasports.com"
         }
       }
     }))
@@ -81,6 +111,7 @@ export default async function Home() {
 
   return (
     <>
+      <h1 className="sr-only">GuíaSports | Dónde Ver Fútbol, NBA, MLB, F1 en Vivo por TV y Streaming México</h1>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

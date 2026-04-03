@@ -14,6 +14,32 @@ export const metadata: Metadata = {
   description: "La guía definitiva de canales y streaming para fútbol, NBA, MLB, F1, tenis, box y más en México. ¡No te pierdas ningún partido!",
 };
 
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "GuíaSports",
+  "url": "https://www.guiasports.com",
+  "logo": "https://www.guiasports.com/GuiaSports-logo.svg",
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "email": "contacto@promographic.com.mx",
+    "contactType": "customer service"
+  },
+  "sameAs": []
+};
+
+const webSiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "GuíaSports",
+  "url": "https://www.guiasports.com",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://www.guiasports.com/?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -22,6 +48,14 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${inter.className} bg-[#020617] pb-16 md:pb-0`}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(webSiteSchema) }}
+        />
         {children}
         <Footer />
         <StickyAd />

@@ -43,6 +43,7 @@ export default function AdminPanel() {
   const [promptIA, setPromptIA] = useState("");
   const [instruccionesIA, setInstruccionesIA] = useState("");
   const [generandoIA, setGenerandoIA] = useState(false);
+  const [previewIA, setPreviewIA] = useState<any>(null);
   
   const [eventoSugeridoFiltrado, setEventoSugeridoFiltrado] = useState<any[]>([]);
   const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
@@ -206,11 +207,31 @@ export default function AdminPanel() {
     const noticiaParaSubir = { ...editandoNoticia, slug };
 
     let res;
-    if (editandoNoticia.id) res = await supabase.from('noticias').update(noticiaParaSubir).eq('id', editandoNoticia.id);
-    else res = await supabase.from('noticias').insert([noticiaParaSubir]);
+    if (editandoNoticia.id) {
+      res = await fetch("/api/noticias/editar", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET || "guiasports-secret-2024"}`,
+        },
+        body: JSON.stringify({
+          id: editandoNoticia.id,
+          titulo: editandoNoticia.titulo,
+          contenido: editandoNoticia.contenido,
+          imagen_url: editandoNoticia.imagen_url,
+          fecha: editandoNoticia.fecha,
+        }),
+      });
+      const data = await res.json();
+      if (!data.success) { showToast("Error: " + (data.error || "No se pudo actualizar"), "error"); return; }
+    } else {
+      res = await supabase.from('noticias').insert([noticiaParaSubir]);
+      if (res.error) { showToast("Error: " + res.error.message, "error"); return; }
+    }
 
-    if (res.error) showToast("Error: " + res.error.message, "error");
-    else { showToast(editandoNoticia.id ? "Noticia actualizada" : "Noticia publicada"); cerrarModalNoticia(); cargarNoticias(); }
+    showToast(editandoNoticia.id ? "Noticia actualizada" : "Noticia publicada");
+    cerrarModalNoticia();
+    cargarNoticias();
   }
 
   async function eliminarNoticia(id: string) {
@@ -247,6 +268,7 @@ export default function AdminPanel() {
     if (!promptIA) return alert("Escribe el nombre del evento");
     
     setGenerandoIA(true);
+    setPreviewIA(null);
     try {
       const res = await fetch("/api/noticias/generar", {
         method: "POST",
@@ -264,11 +286,7 @@ export default function AdminPanel() {
       const data = await res.json();
       
       if (data.success) {
-        showToast("¡Noticia generada con éxito!");
-        setPromptIA("");
-        setInstruccionesIA("");
-        setTab('noticias');
-        cargarNoticias();
+        setPreviewIA(data.preview);
       } else {
         showToast("Error IA: " + (data.error || "No se pudo generar"), "error");
       }
@@ -277,6 +295,38 @@ export default function AdminPanel() {
     } finally {
       setGenerandoIA(false);
     }
+  }
+
+  async function publicarPreview() {
+    if (!previewIA) return;
+    try {
+      const res = await fetch("/api/noticias/publicar", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET || "guiasports-secret-2024"}`,
+        },
+        body: JSON.stringify(previewIA),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast("¡Noticia publicada con éxito!");
+        setPreviewIA(null);
+        setPromptIA("");
+        setInstruccionesIA("");
+        setEventoSeleccionadoIA(null);
+        cargarNoticias();
+      } else {
+        showToast("Error al publicar: " + (data.error || "Error desconocido"), "error");
+      }
+    } catch (e) {
+      showToast("Error al publicar", "error");
+    }
+  }
+
+  async function regenerarIA() {
+    setPreviewIA(null);
+    dispararGeneracionIA();
   }
 
   if (!autenticado) {
@@ -534,12 +584,94 @@ export default function AdminPanel() {
                 onClick={dispararGeneracionIA}
                 disabled={generandoIA}
               >
-                <span className="relative z-10">{generandoIA ? 'Redactando con IA...' : 'Generar Al Instante'}</span>
+                <span className="relative z-10">{generandoIA ? 'Redactando con IA...' : 'Generar Borrador'}</span>
                 {!generandoIA && <ArrowRight size={18} className="relative z-10 group-hover:translate-x-1 transition-transform" />}
                 {generandoIA && <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>}
               </button>
-              <p className="text-center text-[10px] text-slate-600 font-bold uppercase tracking-widest mt-4">Tomará unos 15 segundos redactar y procesar</p>
+              <p className="text-center text-[10px] text-slate-600 font-bold uppercase tracking-widest mt-4">Revisa el borrador antes de publicar</p>
             </div>
+
+            {/* VISTA PREVIA DEL BORRADOR */}
+            {previewIA && (
+              <div className="relative z-10 mt-10 pt-10 border-t border-slate-800">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="bg-[#a3e635]/10 p-2 rounded-xl border border-[#a3e635]/20">
+                    <Check className="text-[#a3e635]" size={18} />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black uppercase text-[#a3e635] tracking-widest">Borrador Generado</h3>
+                    <p className="text-[10px] text-slate-500 font-bold uppercase">Revisa y edita antes de publicar</p>
+                  </div>
+                </div>
+
+                {previewIA.imagen_url && (
+                  <div className="w-full h-48 rounded-2xl overflow-hidden mb-6 border border-slate-800">
+                    <img src={previewIA.imagen_url} alt="Preview" className="w-full h-full object-cover" />
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[#a3e635] ml-1 mb-1 block">Título (editable)</label>
+                    <input 
+                      type="text" 
+                      className="w-full bg-[#020617] border border-slate-800 p-4 rounded-xl outline-none text-white focus:border-[#a3e635] font-bold text-lg shadow-inner"
+                      value={previewIA.titulo}
+                      onChange={(e) => setPreviewIA({...previewIA, titulo: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1 mb-1 block">Contenido (editable)</label>
+                    <textarea 
+                      rows={10}
+                      className="w-full bg-[#020617] border border-slate-800 p-4 rounded-xl outline-none text-slate-300 focus:border-blue-500 text-sm leading-relaxed shadow-inner resize-none"
+                      value={previewIA.contenido}
+                      onChange={(e) => setPreviewIA({...previewIA, contenido: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1 mb-1 block">Imagen URL</label>
+                    <input 
+                      type="text" 
+                      className="w-full bg-[#020617] border border-slate-800 p-4 rounded-xl outline-none text-slate-400 focus:border-blue-500 text-xs shadow-inner"
+                      value={previewIA.imagen_url}
+                      onChange={(e) => setPreviewIA({...previewIA, imagen_url: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-4 mt-8">
+                  <button 
+                    type="button"
+                    onClick={regenerarIA}
+                    className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-4 px-6 rounded-2xl transition-all uppercase tracking-widest text-xs border border-slate-700"
+                  >
+                    🔄 Regenerar
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      abrirModalNoticia({
+                        titulo: previewIA.titulo,
+                        contenido: previewIA.contenido,
+                        imagen_url: previewIA.imagen_url,
+                        fecha: previewIA.fecha,
+                      });
+                    }}
+                    className="flex-1 bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 font-bold py-4 px-6 rounded-2xl transition-all uppercase tracking-widest text-xs border border-blue-500/20"
+                  >
+                    ✏️ Editar Más
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={publicarPreview}
+                    className="flex-1 bg-[#a3e635] hover:bg-[#86c523] text-black font-black py-4 px-6 rounded-2xl transition-all uppercase tracking-widest text-xs shadow-lg shadow-[#a3e635]/20"
+                  >
+                    ✓ Publicar
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

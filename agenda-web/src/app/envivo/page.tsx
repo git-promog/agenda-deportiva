@@ -194,7 +194,6 @@ export default async function EnVivo() {
           </div>
         </div>
 
-        <Footer />
       </div>
     </>
   );

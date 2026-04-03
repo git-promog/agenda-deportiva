@@ -34,9 +34,12 @@ export default function NavMobile() {
           <span className="text-[8px] font-black uppercase tracking-widest">Buscar</span>
         </button>
 
-        <button onClick={() => { window.dispatchEvent(new CustomEvent('scroll-to-live')); }} className="flex flex-col items-center gap-1 w-14 text-slate-500 hover:text-red-400 transition-colors">
-          <Radio size={20} className="animate-pulse" />
-          <span className="text-[8px] font-black uppercase tracking-widest text-red-400">En Vivo</span>
+        <button onClick={() => { window.dispatchEvent(new CustomEvent('scroll-to-live')); }} className="flex flex-col items-center gap-1 w-14 transition-colors relative">
+          <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+          <div className="bg-red-600/20 p-2 rounded-xl border border-red-500/30">
+            <Radio size={20} className="text-red-500" />
+          </div>
+          <span className="text-[8px] font-black uppercase tracking-widest text-red-500">En Vivo</span>
         </button>
 
         <Link href="/noticias" className={`flex flex-col items-center gap-1 w-14 transition-colors ${pathname.includes('/noticias') ? 'text-[#a3e635]' : 'text-slate-500 hover:text-slate-300'}`}>

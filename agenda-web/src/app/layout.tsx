@@ -12,6 +12,10 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "GuíaSports - Dónde ver deportes hoy en México",
   description: "La guía definitiva de canales y streaming para fútbol, NBA, MLB, F1, tenis, box y más en México. ¡No te pierdas ningún partido!",
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/favicon.ico',
+  },
 };
 
 const organizationSchema = {

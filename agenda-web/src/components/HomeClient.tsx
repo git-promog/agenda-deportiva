@@ -2,13 +2,13 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Tv, Calendar, Trophy, Clock, Zap, Filter, Star, Search, X, CalendarDays, Share2, ChevronLeft, ChevronRight, Newspaper, ArrowUp, Shield, Radio } from 'lucide-react';
+import { Tv, Calendar, Trophy, Clock, Zap, Filter, Star, Search, X, CalendarDays, ChevronLeft, ChevronRight, Newspaper, ArrowUp, Shield, Radio } from 'lucide-react';
 import Link from 'next/link';
 import NextImage from 'next/image';
 import AdPlacement from '@/components/AdPlacement';
 import NavMobile from '@/components/NavMobile';
-import Footer from '@/components/Footer';
 import Header from '@/components/Header';
+import ShareButton from '@/components/ShareButton';
 
 const emojis: { [key: string]: string } = {
   "Fútbol": "⚽️", "Básquetbol": "🏀", "Béisbol": "⚾️", "Fórmula 1": "🏎️", 
@@ -123,11 +123,6 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
     horaEvento.setHours(h, m, 0);
     const dif = ahora.getTime() - horaEvento.getTime();
     return dif >= 0 && dif < (2 * 60 * 60 * 1000);
-  };
-
-  const compartirWhatsApp = (e: any) => {
-    const texto = `📺 *${e.evento}*\n🏆 ${e.competicion}\n⏰ ${e.hora}\n🔗 Canales: ${e.canales}\n\nLo vi en: https://guiasports.com`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
   };
 
   const destacados = eventos.filter(e => {
@@ -312,13 +307,16 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
                       {tipoHero === "EN VIVO AHORA" && <div className="w-2 h-2 bg-white rounded-full animate-ping mr-1"></div>}
                       {tipoHero}
                     </div>
-                    <button aria-label="Compartir" onClick={() => compartirWhatsApp(eventoHero)} className="bg-white/10 p-3 rounded-full text-white backdrop-blur-md hover:bg-white/20 transition-all">
-                      <Share2 size={16} />
-                    </button>
+                    <ShareButton 
+                      titulo={eventoHero.evento} 
+                      url={`https://www.guiasports.com/?evento=${eventoHero.id}`} 
+                      variant="icon"
+                      className="!bg-white/10 !text-white !p-3 !rounded-full !hover:!bg-white/20"
+                    />
                   </div>
                   <div>
                     <div className="text-[12px] font-black text-[#a3e635] uppercase tracking-widest mb-3 drop-shadow-lg flex items-center gap-2">
-                       <span className="text-2xl">{emojis[eventoHero.deporte] || "🏆"}</span> {eventoHero.competicion}
+                        <span className="text-2xl" suppressHydrationWarning>{emojis[eventoHero.deporte] || "🏆"}</span> {eventoHero.competicion}
                     </div>
                     <h1 className="text-3xl md:text-5xl font-black italic uppercase text-white leading-none mb-6 drop-shadow-2xl">{eventoHero.evento}</h1>
                     <div className="flex flex-wrap items-center gap-4">
@@ -405,7 +403,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
           </div>
         </section>
 
-        <div id="listado-eventos-principal" className="max-w-4xl mx-auto px-4 w-full overflow-hidden">
+        <div id="listado-eventos-principal" className="max-w-4xl mx-auto px-4 w-full">
         {Object.keys(eventosAgrupados).length > 0 ? (
           Object.keys(eventosAgrupados).sort().map((fecha) => (
             <section key={fecha} className="mb-12 w-full">
@@ -417,7 +415,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
                 {eventosAgrupados[fecha].map((evento: any, index: number) => (
                   <div key={evento.id} id={`evento-${evento.id}`} data-envivo={estaEnVivo(evento.fecha, evento.hora) ? 'true' : 'false'}>
                     <div className="group bg-slate-900/30 border border-slate-800/50 rounded-2xl p-4 hover:border-blue-500/30 hover:bg-slate-900/60 transition-all duration-300">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 overflow-hidden">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                         <div className="flex flex-row items-start sm:items-center gap-2 sm:gap-3 w-full">
                           <div className="flex flex-col justify-center min-w-[50px] sm:min-w-[65px] text-blue-400 font-mono font-black text-sm md:text-xl shrink-0 border-r border-slate-800/60 pr-2 sm:pr-3">
                             {evento.hora}
@@ -433,12 +431,16 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
                             </div>
                           </div>
                         </div>
-                        <div className="flex flex-row items-center gap-2 shrink-0 w-full sm:w-auto overflow-hidden sm:overflow-visible border-t sm:border-t-0 border-slate-800/50 pt-2 sm:pt-0 mt-1 sm:mt-0">
+                        <div className="flex flex-row items-center gap-2 shrink-0 w-full sm:w-auto sm:overflow-visible border-t sm:border-t-0 border-slate-800/50 pt-2 sm:pt-0 mt-1 sm:mt-0">
                           <div className="flex-1 sm:flex-none flex items-center justify-start sm:justify-start gap-2 bg-[#020617] px-3 md:px-4 py-2 rounded-xl border border-slate-800 min-w-0 overflow-hidden">
                             <Tv className="w-3 h-3 sm:w-4 sm:h-4 text-slate-600 shrink-0" />
                             <span className="text-[10px] md:text-[11px] font-black text-[#a3e635] italic uppercase whitespace-normal break-words py-0.5">{evento.canales}</span>
                           </div>
-                          <button aria-label="Compartir" onClick={() => compartirWhatsApp(evento)} className="p-3 bg-slate-800 rounded-xl hover:bg-emerald-600 transition-colors text-slate-400 hover:text-white shrink-0"><Share2 className="w-4 h-4" /></button>
+                          <ShareButton 
+                            titulo={evento.evento} 
+                            url={`https://www.guiasports.com/?evento=${evento.id}`} 
+                            variant="icon"
+                          />
                         </div>
                       </div>
                     </div>
@@ -467,9 +469,6 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
       >
         <ArrowUp size={24} strokeWidth={3} />
       </button>
-
-      <NavMobile />
-      <Footer />
     </div>
   );
 }

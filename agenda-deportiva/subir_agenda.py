@@ -28,16 +28,35 @@ def actualizar_base_de_datos():
             print("❌ Error: No se obtuvieron datos.")
             return
 
-        print(f"2. Se encontraron {len(datos)} eventos. Preservando destacados...")
+        print(f"2. Se encontraron {len(datos)} eventos. Preservando destacados y manuales...")
         
-        # Guardar valores de "destacado" antes de borrar
-        respuesta = supabase.table("eventos").select("id, evento, fecha, competicion, destacado").execute()
+        # Guardar TODOS los eventos existentes antes de borrar
+        respuesta = supabase.table("eventos").select("*").execute()
+        eventos_existentes = respuesta.data or []
+        
+        # Guardar destacados por clave
         destacados_guardados = {}
-        if respuesta.data:
-            for ev in respuesta.data:
-                key = f"{ev['evento']}||{ev['fecha']}||{ev['competicion']}"
-                destacados_guardados[key] = ev['destacado']
-            print(f"   Se preservarán {len(destacados_guardados)} configuraciones de destacados")
+        eventos_por_clave = {}
+        for ev in eventos_existentes:
+            key = f"{ev['evento']}||{ev['fecha']}||{ev['competicion']}"
+            destacados_guardados[key] = ev.get('destacado')
+            eventos_por_clave[key] = ev
+        
+        # Claves de los eventos scrapeados
+        claves_scrapeadas = set()
+        for ev in datos:
+            key = f"{ev['evento']}||{ev['fecha']}||{ev['competicion']}"
+            claves_scrapeadas.add(key)
+        
+        # Identificar eventos manuales (existen pero no están en el scrapeo)
+        eventos_manuales = []
+        for key, ev in eventos_por_clave.items():
+            if key not in claves_scrapeadas:
+                # Es un evento manual, guardarlo para re-insertar después
+                eventos_manuales.append(ev)
+        
+        print(f"   Destacados a preservar: {len(destacados_guardados)}")
+        print(f"   Eventos manuales detectados: {len(eventos_manuales)}")
         
         # Limpiar tabla de eventos
         supabase.table("eventos").delete().neq("id", 0).execute()
@@ -45,8 +64,16 @@ def actualizar_base_de_datos():
         print("3. Subiendo nuevos datos a Supabase...")
         supabase.table("eventos").insert(datos).execute()
         
+        # Re-insertar eventos manuales
+        if eventos_manuales:
+            print(f"4. Re-insertando {len(eventos_manuales)} eventos manuales...")
+            for ev_manual in eventos_manuales:
+                # Eliminar el id viejo para que se genere uno nuevo
+                ev_sin_id = {k: v for k, v in ev_manual.items() if k != 'id'}
+                supabase.table("eventos").insert(ev_sin_id).execute()
+        
         # Reaplicar valores de "destacado" a los eventos que coincidan
-        print("4. Restaurando configuraciones de destacados...")
+        print("5. Restaurando configuraciones de destacados...")
         eventos_nuevos = supabase.table("eventos").select("id, evento, fecha, competicion").execute()
         restaurados = 0
         if eventos_nuevos.data:
@@ -59,7 +86,7 @@ def actualizar_base_de_datos():
         print(f"   Se restauraron {restaurados} destacados")
         
         # --- PASO NUEVO: TOQUE DE VIDA ---
-        print("5. Actualizando hora de sincronización...")
+        print("6. Actualizando hora de sincronización...")
         
         # Definimos la zona horaria de CDMX
         tz_mx = pytz.timezone('America/Mexico_City')

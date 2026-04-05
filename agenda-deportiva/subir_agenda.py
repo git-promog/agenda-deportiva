@@ -95,30 +95,34 @@ def actualizar_base_de_datos():
         ahora_mx = datetime.now(tz_mx).strftime("%d/%m/%Y %I:%M %p")
         
         # Usamos la API REST directa con service_role para bypass RLS
+        # SUPABASE_KEY ya es la service_role key (la misma que usamos para delete/insert)
         headers = {
-            "apikey": SUPABASE_SERVICE_KEY,
-            "Authorization": f"Bearer {SUPABASE_SERVICE_KEY}",
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}",
             "Content-Type": "application/json",
-            "Prefer": "return=representation"
+            "Prefer": "resolution=merge-duplicates"
         }
         
-        # Intentamos update
-        resp = requests.patch(
-            f"{SUPABASE_URL}/rest/v1/status?nombre=eq.ultima_actualizacion",
+        # Hacemos upsert: inserta si no existe, actualiza si existe
+        resp = requests.post(
+            f"{SUPABASE_URL}/rest/v1/status",
             headers=headers,
-            json={"valor": ahora_mx}
+            json={"nombre": "ultima_actualizacion", "valor": ahora_mx}
         )
         
-        # Si no actualizó (no rows found), insertamos
-        if not resp.text or resp.text == '[]':
-            print("   Update no encontró fila, insertando...")
-            resp = requests.post(
-                f"{SUPABASE_URL}/rest/v1/status",
-                headers=headers,
-                json={"nombre": "ultima_actualizacion", "valor": ahora_mx}
+        print(f"   Status code: {resp.status_code}")
+        if resp.status_code in (200, 201, 204):
+            print(f"   Hora guardada exitosamente: {ahora_mx}")
+        else:
+            print(f"   ⚠️ Response: {resp.status_code} - {resp.text[:200]}")
+            # Fallback: intentamos con update directo
+            resp2 = requests.patch(
+                f"{SUPABASE_URL}/rest/v1/status?nombre=eq.ultima_actualizacion",
+                headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}", "Content-Type": "application/json"},
+                json={"valor": ahora_mx}
             )
+            print(f"   Fallback status: {resp2.status_code}")
         
-        print(f"   Hora guardada: {ahora_mx}")
         print(f"✅ PROCESO COMPLETADO: Sincronizado a las {ahora_mx}")
 
     except Exception as e:

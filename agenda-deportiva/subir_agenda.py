@@ -1,4 +1,5 @@
 import os
+import requests
 from supabase import create_client, Client
 from scraper import obtener_agenda_real
 from datetime import datetime
@@ -12,6 +13,7 @@ load_dotenv()
 # El robot de GitHub usará las variables de entorno, en local usará el .env
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", SUPABASE_KEY)
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     print("⚠️ Faltan variables de entorno. Revisa tu archivo .env")
@@ -92,17 +94,29 @@ def actualizar_base_de_datos():
         tz_mx = pytz.timezone('America/Mexico_City')
         ahora_mx = datetime.now(tz_mx).strftime("%d/%m/%Y %I:%M %p")
         
-        # Intentamos update primero
-        try:
-            supabase.table("status").update({"valor": ahora_mx}).eq("nombre", "ultima_actualizacion").execute()
-        except Exception as e:
-            print(f"   Update falló ({e}), intentando insert...")
+        # Usamos la API REST directa con service_role para bypass RLS
+        headers = {
+            "apikey": SUPABASE_SERVICE_KEY,
+            "Authorization": f"Bearer {SUPABASE_SERVICE_KEY}",
+            "Content-Type": "application/json",
+            "Prefer": "return=representation"
+        }
         
-        # Si no existe, insertamos
-        try:
-            supabase.table("status").insert({"nombre": "ultima_actualizacion", "valor": ahora_mx}).execute()
-        except Exception:
-            pass  # Ya existe, no importa
+        # Intentamos update
+        resp = requests.patch(
+            f"{SUPABASE_URL}/rest/v1/status?nombre=eq.ultima_actualizacion",
+            headers=headers,
+            json={"valor": ahora_mx}
+        )
+        
+        # Si no actualizó (no rows found), insertamos
+        if not resp.text or resp.text == '[]':
+            print("   Update no encontró fila, insertando...")
+            resp = requests.post(
+                f"{SUPABASE_URL}/rest/v1/status",
+                headers=headers,
+                json={"nombre": "ultima_actualizacion", "valor": ahora_mx}
+            )
         
         print(f"   Hora guardada: {ahora_mx}")
         print(f"✅ PROCESO COMPLETADO: Sincronizado a las {ahora_mx}")

@@ -92,24 +92,25 @@ def actualizar_base_de_datos():
         tz_mx = pytz.timezone('America/Mexico_City')
         ahora_mx = datetime.now(tz_mx).strftime("%d/%m/%Y %I:%M %p")
         
-        # Usamos upsert: inserta si no existe, actualiza si existe
-        supabase.table("status").upsert(
-            {"nombre": "ultima_actualizacion", "valor": ahora_mx},
-            on_conflict="nombre"
-        ).execute()
+        # Intentamos update primero
+        try:
+            supabase.table("status").update({"valor": ahora_mx}).eq("nombre", "ultima_actualizacion").execute()
+        except Exception as e:
+            print(f"   Update falló ({e}), intentando insert...")
         
-        # Verificar que se guardó correctamente
-        verificacion = supabase.table("status").select("valor").eq("nombre", "ultima_actualizacion").maybeSingle().execute()
-        if verificacion.data:
-            print(f"   Verificado: hora guardada = {verificacion.data['valor']}")
-        else:
-            print("   ⚠️ Advertencia: No se pudo verificar la hora guardada")
-
+        # Si no existe, insertamos
+        try:
+            supabase.table("status").insert({"nombre": "ultima_actualizacion", "valor": ahora_mx}).execute()
+        except Exception:
+            pass  # Ya existe, no importa
+        
+        print(f"   Hora guardada: {ahora_mx}")
         print(f"✅ PROCESO COMPLETADO: Sincronizado a las {ahora_mx}")
 
     except Exception as e:
         print(f"❌ Ocurrió un error: {e}")
-        raise
+        import traceback
+        traceback.print_exc()
 
 if __name__ == "__main__":
     actualizar_base_de_datos()

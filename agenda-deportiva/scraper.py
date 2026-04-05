@@ -34,11 +34,17 @@ def obtener_agenda_real():
         hoy = datetime.now(tz_mx).strftime("%Y-%m-%d")
         fecha_actual_db = hoy
         
+        print(f"   Fecha de hoy (filtro): {hoy}")
+        
         filas = soup.find_all('tr')
         
         if not filas or len(filas) < 5:
             print("🚨 CRITICAL WARNING: No se encontraron suficientes filas '<tr/>' en el origen.")
             print("🚨 Es posible que 'futbolenvivomexico.com' haya cambiado su diseño o esté bloqueando el scraper.")
+
+        eventos_ayer = 0
+        eventos_hoy = 0
+        eventos_futuro = 0
 
         for fila in filas:
             clases = fila.get('class', [])
@@ -67,7 +73,16 @@ def obtener_agenda_real():
                 if len(tds) >= 3:
                     evento = tds[1].get_text(strip=True)
 
-            if evento and len(evento) > 3 and fecha_actual_db >= hoy:
+            # Filtrar estrictamente: solo eventos de hoy o futuros
+            if evento and len(evento) > 3:
+                if fecha_actual_db < hoy:
+                    eventos_ayer += 1
+                    continue  # Saltar eventos de días anteriores
+                if fecha_actual_db == hoy:
+                    eventos_hoy += 1
+                else:
+                    eventos_futuro += 1
+                    
                 celda_hora = fila.find('td', class_='hora')
                 celda_detalles = fila.find('td', class_='detalles')
                 celda_canales = fila.find('td', class_='canales')
@@ -97,6 +112,7 @@ def obtener_agenda_real():
                     "canales": canales_final if canales_final else "Por confirmar"
                 })
 
+        print(f"   Eventos filtrados: {eventos_hoy} hoy, {eventos_futuro} futuros, {eventos_ayer} de ayer descartados")
         return lista_eventos
     except Exception as e:
         print(f"Error: {e}")

@@ -51,11 +51,16 @@ def actualizar_base_de_datos():
             claves_scrapeadas.add(key)
         
         # Identificar eventos manuales (existen pero no están en el scrapeo)
+        # Solo preservar manuales con fecha de hoy o futura
+        tz_mx = pytz.timezone('America/Mexico_City')
+        hoy = datetime.now(tz_mx).strftime("%Y-%m-%d")
         eventos_manuales = []
         for key, ev in eventos_por_clave.items():
             if key not in claves_scrapeadas:
-                # Es un evento manual, guardarlo para re-insertar después
-                eventos_manuales.append(ev)
+                # Es un evento manual, pero solo si es de hoy o futuro
+                if ev.get('fecha', '') >= hoy:
+                    eventos_manuales.append(ev)
+                    print(f"   Manual preservado: {ev.get('evento', '')} ({ev.get('fecha', '')})")
         
         print(f"   Destacados a preservar: {len(destacados_guardados)}")
         print(f"   Eventos manuales detectados: {len(eventos_manuales)}")
@@ -94,35 +99,11 @@ def actualizar_base_de_datos():
         tz_mx = pytz.timezone('America/Mexico_City')
         ahora_mx = datetime.now(tz_mx).strftime("%d/%m/%Y %I:%M %p")
         
-        # Usamos la API REST directa con service_role para bypass RLS
-        # SUPABASE_KEY ya es la service_role key (la misma que usamos para delete/insert)
-        headers = {
-            "apikey": SUPABASE_KEY,
-            "Authorization": f"Bearer {SUPABASE_KEY}",
-            "Content-Type": "application/json",
-            "Prefer": "resolution=merge-duplicates"
-        }
+        # Borramos la fila vieja y creamos una nueva (mismo patrón que funciona con eventos)
+        supabase.table("status").delete().eq("nombre", "ultima_actualizacion").execute()
+        supabase.table("status").insert({"nombre": "ultima_actualizacion", "valor": ahora_mx}).execute()
         
-        # Hacemos upsert: inserta si no existe, actualiza si existe
-        resp = requests.post(
-            f"{SUPABASE_URL}/rest/v1/status",
-            headers=headers,
-            json={"nombre": "ultima_actualizacion", "valor": ahora_mx}
-        )
-        
-        print(f"   Status code: {resp.status_code}")
-        if resp.status_code in (200, 201, 204):
-            print(f"   Hora guardada exitosamente: {ahora_mx}")
-        else:
-            print(f"   ⚠️ Response: {resp.status_code} - {resp.text[:200]}")
-            # Fallback: intentamos con update directo
-            resp2 = requests.patch(
-                f"{SUPABASE_URL}/rest/v1/status?nombre=eq.ultima_actualizacion",
-                headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}", "Content-Type": "application/json"},
-                json={"valor": ahora_mx}
-            )
-            print(f"   Fallback status: {resp2.status_code}")
-        
+        print(f"   Hora guardada: {ahora_mx}")
         print(f"✅ PROCESO COMPLETADO: Sincronizado a las {ahora_mx}")
 
     except Exception as e:

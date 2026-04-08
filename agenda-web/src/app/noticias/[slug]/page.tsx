@@ -130,17 +130,24 @@ export async function generateMetadata(
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const { slug } = await params;
+  const decodedSlug = decodeURIComponent(slug);
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
-  const { data: noticia } = await supabase
+  const { data: noticia, error } = await supabase
     .from('noticias')
-    .select('titulo, contenido, imagen_url, fecha, created_at')
-    .eq('slug', slug)
+    .select('*')
+    .eq('slug', decodedSlug)
     .maybeSingle();
+
+  console.log("=== METADATA DEBUG ===");
+  console.log("Raw Slug:", slug);
+  console.log("Decoded Slug:", decodedSlug);
+  console.log("Noticia found?:", !!noticia);
+  if (error) console.log("Supabase Error:", error);
 
   if (!noticia) {
     return {
@@ -186,6 +193,7 @@ export async function generateMetadata(
 
 export default async function NoticiaDetalle({ params }: Props) {
   const { slug } = await params;
+  const decodedSlug = decodeURIComponent(slug);
   
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -195,7 +203,7 @@ export default async function NoticiaDetalle({ params }: Props) {
   const { data: noticia } = await supabase
     .from('noticias')
     .select('*')
-    .eq('slug', slug)
+    .eq('slug', decodedSlug)
     .maybeSingle();
 
   if (!noticia) {
@@ -236,7 +244,7 @@ export default async function NoticiaDetalle({ params }: Props) {
   const { data: noticiasRelacionadas } = await supabase
     .from('noticias')
     .select('titulo, slug, fecha, created_at')
-    .neq('slug', slug)
+    .neq('slug', decodedSlug)
     .order('created_at', { ascending: false })
     .limit(3);
 

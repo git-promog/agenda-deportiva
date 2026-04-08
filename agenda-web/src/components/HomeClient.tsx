@@ -126,10 +126,10 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   };
 
   const destacados = eventos.filter(e => {
-    if (e.destacado === true) return true;
+    const esDeHoy = e.fecha === hoyStr;
+    if (e.destacado === true) return esDeHoy;
     if (e.destacado === false) return false;
     if (e.destacado === null || e.destacado === undefined) {
-      const esDeHoy = e.fecha === hoyStr;
       return esDeHoy && TOP_TEAMS.some(t => e.evento.toLowerCase().includes(t.toLowerCase()));
     }
     return false;

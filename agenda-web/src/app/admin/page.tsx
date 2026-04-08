@@ -67,10 +67,11 @@ export default function AdminPanel() {
 
   const destacadosPreview = useMemo(() => {
     return eventos.filter(e => {
-      if (e.destacado === true) return true;
+      const esDeHoy = e.fecha === hoyStr;
+      if (e.destacado === true) return esDeHoy;
       if (e.destacado === false) return false;
       if (e.destacado === null || e.destacado === undefined) {
-        return e.fecha === hoyStr && TOP_TEAMS.some(t => e.evento.toLowerCase().includes(t.toLowerCase()));
+        return esDeHoy && TOP_TEAMS.some(t => e.evento.toLowerCase().includes(t.toLowerCase()));
       }
       return false;
     }).slice(0, 6);

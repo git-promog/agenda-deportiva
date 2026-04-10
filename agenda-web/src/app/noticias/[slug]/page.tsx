@@ -130,7 +130,8 @@ export async function generateMetadata(
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const { slug } = await params;
-  const decodedSlug = decodeURIComponent(slug);
+  // Clean slug: decode, lowercase, and remove trailing slash
+  const decodedSlug = decodeURIComponent(slug).toLowerCase().replace(/\/$/, "");
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -193,7 +194,8 @@ export async function generateMetadata(
 
 export default async function NoticiaDetalle({ params }: Props) {
   const { slug } = await params;
-  const decodedSlug = decodeURIComponent(slug);
+  // Clean slug: decode, lowercase, and remove trailing slash
+  const decodedSlug = decodeURIComponent(slug).toLowerCase().replace(/\/$/, "");
   
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

@@ -103,9 +103,9 @@ export default async function NoticiasIndex({
                   <Link key={n.id} href={`/noticias/${n.slug}`} className="group bg-slate-900/50 border border-slate-800/50 rounded-[32px] overflow-hidden hover:border-slate-700 hover:bg-slate-900/80 transition-all duration-300">
                     {n.imagen_url ? (
                       <div className="w-full h-44 overflow-hidden relative">
-                        <NextImage 
-                          src={n.imagen_url} 
-                          alt={n.titulo} 
+                        <NextImage
+                          src={n.imagen_url}
+                          alt={n.titulo}
                           fill
                           className="object-cover group-hover:scale-105 transition-transform duration-700"
                           sizes="(max-width: 768px) 100vw, 50vw"
@@ -141,11 +141,11 @@ export default async function NoticiasIndex({
                       <span className="text-[10px] font-black uppercase tracking-widest">Anterior</span>
                     </Link>
                   )}
-                  
+
                   <div className="flex items-center gap-2">
                     {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((p) => (
-                      <Link 
-                        key={p} 
+                      <Link
+                        key={p}
                         href={`/noticias?pagina=${p}`}
                         className={`w-10 h-10 rounded-xl flex items-center justify-center text-xs font-black transition-colors ${p === paginaActual ? 'bg-[#a3e635] text-black' : 'bg-slate-900 text-slate-500 hover:bg-slate-800 hover:text-slate-300'}`}
                       >

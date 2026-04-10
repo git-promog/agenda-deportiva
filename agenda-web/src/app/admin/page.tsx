@@ -162,14 +162,25 @@ export default function AdminPanel() {
     else { showToast(`${ids.length} eventos actualizados`); cargarEventos(); }
   }
 
+  async function toggleMarketing(id: string, campo: string, valorActual: boolean | undefined) {
+    const nuevoValor = !valorActual;
+    const { error } = await supabase.from('eventos').update({ [campo]: nuevoValor }).eq('id', id);
+    if (error) {
+      showToast("Error al actualizar: " + error.message, "error");
+    } else {
+      showToast(`Automatización actualizada`);
+      setEventos(prev => prev.map(e => e.id === id ? { ...e, [campo]: nuevoValor } : e));
+    }
+  }
+
   async function guardarEvento(e: React.FormEvent) {
     e.preventDefault();
     let error;
     if (editando.id) {
-      const res = await supabase.from('eventos').update(editando).eq('id', editando.id);
+      const res = await supabase.from('eventos').update({ ...editando, ajuste_manual: true }).eq('id', editando.id);
       error = res.error;
     } else {
-      const res = await supabase.from('eventos').insert([editando]);
+      const res = await supabase.from('eventos').insert([{ ...editando, ajuste_manual: true }]);
       error = res.error;
     }
     if (error) showToast("Error al guardar", "error");
@@ -371,7 +382,7 @@ export default function AdminPanel() {
           <div className="space-y-6">
             <div className="flex justify-between items-center bg-slate-900/40 p-6 rounded-3xl border border-slate-800">
                <h2 className="text-xl font-black italic uppercase">Gestión de <span className="text-blue-500">Partidos</span></h2>
-               <button onClick={() => setEditando({ evento: "", hora: "", canales: "", competicion: "", deporte: "Fútbol", fecha: new Date().toLocaleDateString('sv-SE'), destacado: null })} className="bg-blue-600 hover:bg-blue-500 transition-colors p-3 px-6 rounded-xl text-xs font-black uppercase italic flex items-center gap-2 shadow-lg shadow-blue-900/20"><Plus size={16}/> Añadir Evento Manual</button>
+               <button onClick={() => setEditando({ evento: "", hora: "", canales: "", competicion: "", deporte: "Fútbol", fecha: new Date().toLocaleDateString('sv-SE'), destacado: null, ajuste_manual: true })} className="bg-blue-600 hover:bg-blue-500 transition-colors p-3 px-6 rounded-xl text-xs font-black uppercase italic flex items-center gap-2 shadow-lg shadow-blue-900/20"><Plus size={16}/> Añadir Evento Manual</button>
             </div>
             
             {/* FILTROS */}
@@ -429,7 +440,7 @@ export default function AdminPanel() {
             <div className="bg-slate-900/50 border border-slate-800 rounded-[32px] overflow-hidden shadow-2xl">
               <div className="overflow-x-auto">
                 <table className="w-full text-left min-w-[800px]">
-                  <thead className="text-[10px] uppercase text-slate-400 border-b border-slate-800 font-black bg-slate-950/80"><tr><th className="p-6">Fecha/Hora</th><th className="p-6">Evento</th><th className="p-6">Canales</th><th className="p-6 text-center">Destacar</th><th className="p-6 text-right">Acciones</th></tr></thead>
+                  <thead className="text-[10px] uppercase text-slate-400 border-b border-slate-800 font-black bg-slate-950/80"><tr><th className="p-6">Fecha/Hora</th><th className="p-6">Evento</th><th className="p-6">Canales</th><th className="p-6 text-center">Destacar</th><th className="p-6 text-left">Automatizaciones N8N</th><th className="p-6 text-right">Acciones</th></tr></thead>
                   <tbody>
                     {eventosFiltrados.map(e => (
                       <tr key={e.id} className="border-b border-slate-800/30 hover:bg-slate-800/40 transition-colors">
@@ -452,6 +463,37 @@ export default function AdminPanel() {
                             <button onClick={() => actualizarDestacado(e.id, null)} className={`p-2 rounded-lg transition-colors ${e.destacado === null ? 'bg-slate-800 text-white shadow' : 'text-slate-600 hover:text-slate-400'}`} title="Modo auto"><Zap size={14}/></button>
                             <button onClick={() => actualizarDestacado(e.id, true)} className={`p-2 rounded-lg transition-colors ${e.destacado === true ? 'bg-yellow-500/20 text-yellow-500 shadow' : 'text-slate-600 hover:text-slate-400'}`} title="Destacar"><Star size={14} fill={e.destacado === true ? "currentColor" : "none"}/></button>
                             <button onClick={() => actualizarDestacado(e.id, false)} className={`p-2 rounded-lg transition-colors ${e.destacado === false ? 'bg-red-500/20 text-red-500 shadow' : 'text-slate-600 hover:text-slate-400'}`} title="No destacar"><X size={14}/></button>
+                          </div>
+                        </td>
+                        <td className="p-6 text-left">
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-2 w-max bg-[#0f172a]/50 p-2 rounded-xl border border-slate-800/80">
+                            <div className="flex items-center justify-between gap-3 group p-1.5 rounded-lg hover:bg-[#020617] transition-colors border border-transparent hover:border-slate-800" title="Para la cartelera diaria en redes">
+                              <span className="text-[9px] font-bold text-slate-400 group-hover:text-slate-200 transition-colors whitespace-nowrap">Dest. Día</span>
+                              <button type="button" onClick={() => toggleMarketing(e.id, 'destacado_dia', e.destacado_dia)} className={`relative inline-flex h-4 w-7 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${e.destacado_dia ? 'bg-blue-500' : 'bg-slate-800'}`}>
+                                <span className={`pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${e.destacado_dia ? 'translate-x-3' : 'translate-x-0'}`} />
+                              </button>
+                            </div>
+                            
+                            <div className="flex items-center justify-between gap-3 group p-1.5 rounded-lg hover:bg-[#020617] transition-colors border border-transparent hover:border-slate-800" title="Para detonar el artículo SEO de la previa">
+                              <span className="text-[9px] font-bold text-slate-400 group-hover:text-slate-200 transition-colors whitespace-nowrap">Estelar (Blog)</span>
+                              <button type="button" onClick={() => toggleMarketing(e.id, 'estelar_dia', e.estelar_dia)} className={`relative inline-flex h-4 w-7 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${e.estelar_dia ? 'bg-fuchsia-500' : 'bg-slate-800'}`}>
+                                <span className={`pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${e.estelar_dia ? 'translate-x-3' : 'translate-x-0'}`} />
+                              </button>
+                            </div>
+                            
+                            <div className="flex items-center justify-between gap-3 group p-1.5 rounded-lg hover:bg-[#020617] transition-colors border border-transparent hover:border-slate-800" title="Para la Mega-Guía SEO del jueves">
+                              <span className="text-[9px] font-bold text-slate-400 group-hover:text-slate-200 transition-colors whitespace-nowrap">Dest. Finde</span>
+                              <button type="button" onClick={() => toggleMarketing(e.id, 'destacado_finde', e.destacado_finde)} className={`relative inline-flex h-4 w-7 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${e.destacado_finde ? 'bg-orange-500' : 'bg-slate-800'}`}>
+                                <span className={`pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${e.destacado_finde ? 'translate-x-3' : 'translate-x-0'}`} />
+                              </button>
+                            </div>
+                            
+                            <div className="flex items-center justify-between gap-3 group p-1.5 rounded-lg hover:bg-[#020617] transition-colors border border-transparent hover:border-slate-800" title="Para el carrusel de Instagram del viernes">
+                              <span className="text-[9px] font-bold text-slate-400 group-hover:text-slate-200 transition-colors whitespace-nowrap">Carrusel IG</span>
+                              <button type="button" onClick={() => toggleMarketing(e.id, 'carrusel_ig', e.carrusel_ig)} className={`relative inline-flex h-4 w-7 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${e.carrusel_ig ? 'bg-pink-500' : 'bg-slate-800'}`}>
+                                <span className={`pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${e.carrusel_ig ? 'translate-x-3' : 'translate-x-0'}`} />
+                              </button>
+                            </div>
                           </div>
                         </td>
                         <td className="p-6 text-right"><div className="flex justify-end gap-3"><button onClick={() => setEditando(e)} className="p-2.5 bg-blue-600/10 hover:bg-blue-600/20 text-blue-500 rounded-xl transition-colors"><Edit3 size={18}/></button><button onClick={() => eliminarEvento(e.id)} className="p-2.5 bg-red-600/10 hover:bg-red-600/20 text-red-500 rounded-xl transition-colors"><Trash2 size={18}/></button></div></td>

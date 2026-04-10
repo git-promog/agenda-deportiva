@@ -35,67 +35,84 @@ def actualizar_base_de_datos():
             supabase.table("status").insert({"nombre": "ultima_actualizacion", "valor": f"SCRAPER VACÍO - {ahora_mx}"}).execute()
             return
 
-        print(f"2. Se encontraron {len(datos)} eventos. Preservando destacados y manuales...")
+        print(f"2. Se encontraron {len(datos)} eventos. Preservando configuraciones manuales...")
         
-        # Guardar TODOS los eventos existentes antes de borrar
+        # Guardar todos los eventos existentes para cruzarlos
         respuesta = supabase.table("eventos").select("*").execute()
         eventos_existentes = respuesta.data or []
         
-        # Guardar destacados por clave
-        destacados_guardados = {}
-        eventos_por_clave = {}
+        # Mapear eventos manuales y configuraciones por clave (evento + fecha + competicion)
+        eventos_manuales = {}
+        configuraciones_persistentes = {} # Para preservar destacado, destacado_dia, etc.
+        
         for ev in eventos_existentes:
             key = f"{ev['evento']}||{ev['fecha']}||{ev['competicion']}"
-            destacados_guardados[key] = ev.get('destacado')
-            eventos_por_clave[key] = ev
+            
+            # Guardamos las banderas de marketing/destacado para re-aplicarlas después
+            configuraciones_persistentes[key] = {
+                'destacado': ev.get('destacado'),
+                'destacado_dia': ev.get('destacado_dia', False),
+                'estelar_dia': ev.get('estelar_dia', False),
+                'destacado_finde': ev.get('destacado_finde', False),
+                'carrusel_ig': ev.get('carrusel_ig', False)
+            }
+            
+            # Si el usuario lo editó a mano, este objeto es SAGRADO
+            if ev.get('ajuste_manual'):
+                eventos_manuales[key] = ev
+
+        # 3. Procesar datos del scraper respetando los ajustes manuales
+        datos_finales = []
+        claves_procesadas = set()
         
-        # Claves de los eventos scrapeados
-        claves_scrapeadas = set()
-        for ev in datos:
-            key = f"{ev['evento']}||{ev['fecha']}||{ev['competicion']}"
-            claves_scrapeadas.add(key)
-        
-        # Identificar eventos manuales (existen pero no están en el scrapeo)
-        # Solo preservar manuales con fecha de hoy o futura
+        for ev_scrapeado in datos:
+            key = f"{ev_scrapeado['evento']}||{ev_scrapeado['fecha']}||{ev_scrapeado['competicion']}"
+            
+            if key in eventos_manuales:
+                # Usar la versión manual (con hora corregida, deporte corregido, etc.)
+                # Quitamos el ID para la nueva inserción
+                manual_data = {k: v for k, v in eventos_manuales[key].items() if k != 'id'}
+                datos_finales.append(manual_data)
+                print(f"   Ajuste manual aplicado (Prevaleció sobre scraper): {ev_scrapeado['evento']}")
+            else:
+                # Usar versión del scraper
+                datos_finales.append(ev_scrapeado)
+            
+            claves_procesadas.add(key)
+
+        # 4. Agregar eventos manuales que NO están en el scraper (eventos añadidos a mano)
         tz_mx = pytz.timezone('America/Mexico_City')
         hoy = datetime.now(tz_mx).strftime("%Y-%m-%d")
-        eventos_manuales = []
-        for key, ev in eventos_por_clave.items():
-            if key not in claves_scrapeadas:
-                # Es un evento manual, pero solo si es de hoy o futuro
-                if ev.get('fecha', '') >= hoy:
-                    eventos_manuales.append(ev)
-                    print(f"   Manual preservado: {ev.get('evento', '')} ({ev.get('fecha', '')})")
         
-        print(f"   Destacados a preservar: {len(destacados_guardados)}")
-        print(f"   Eventos manuales detectados: {len(eventos_manuales)}")
-        
-        # Limpiar tabla de eventos
-        supabase.table("eventos").delete().neq("id", 0).execute()
+        for key, ev_manual in eventos_manuales.items():
+            if key not in claves_procesadas:
+                # Solo si es de hoy o futuro
+                if ev_manual.get('fecha', '') >= hoy:
+                    manual_data = {k: v for k, v in ev_manual.items() if k != 'id'}
+                    datos_finales.append(manual_data)
+                    print(f"   Evento manual extra preservado: {ev_manual['evento']}")
 
-        print("3. Subiendo nuevos datos a Supabase...")
-        supabase.table("eventos").insert(datos).execute()
+        # 5. Limpiar y Subir
+        print(f"3. Limpiando tabla y subiendo {len(datos_finales)} eventos...")
+        supabase.table("eventos").delete().neq("id", 0).execute()
         
-        # Re-insertar eventos manuales
-        if eventos_manuales:
-            print(f"4. Re-insertando {len(eventos_manuales)} eventos manuales...")
-            for ev_manual in eventos_manuales:
-                # Eliminar el id viejo para que se genere uno nuevo
-                ev_sin_id = {k: v for k, v in ev_manual.items() if k != 'id'}
-                supabase.table("eventos").insert(ev_sin_id).execute()
+        if datos_finales:
+            # Insertar en bloques para evitar límites de Supabase si es necesario, 
+            # pero aquí son pocos usualmente.
+            supabase.table("eventos").insert(datos_finales).execute()
         
-        # Reaplicar valores de "destacado" a los eventos que coincidan
-        print("5. Restaurando configuraciones de destacados...")
+        # 6. Restaurar banderas de marketing y destacados
+        print("4. Restaurando banderas de marketing...")
         eventos_nuevos = supabase.table("eventos").select("id, evento, fecha, competicion").execute()
         restaurados = 0
         if eventos_nuevos.data:
             for ev in eventos_nuevos.data:
                 key = f"{ev['evento']}||{ev['fecha']}||{ev['competicion']}"
-                if key in destacados_guardados:
-                    valor = destacados_guardados[key]
-                    supabase.table("eventos").update({"destacado": valor}).eq("id", ev["id"]).execute()
+                if key in configuraciones_persistentes:
+                    params = configuraciones_persistentes[key]
+                    supabase.table("eventos").update(params).eq("id", ev["id"]).execute()
                     restaurados += 1
-        print(f"   Se restauraron {restaurados} destacados")
+        print(f"   Se restauraron configuraciones en {restaurados} eventos")
         
         # --- PASO NUEVO: TOQUE DE VIDA ---
         print("6. Actualizando hora de sincronización...")

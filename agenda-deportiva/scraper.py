@@ -18,6 +18,7 @@ def extraer_deporte_limpio(celda_detalles):
         if "motociclismo" in nombre.lower() or "motogp" in nombre.lower(): return "Motorismo"
         if "ciclismo" in nombre.lower(): return "Ciclismo"
         if "rugby" in nombre.lower(): return "Rugby"
+        if "fútbol americano" in nombre.lower() or "nfl" in nombre.lower() or "lfa" in nombre.lower(): return "Fútbol Americano"
         if "mma" in nombre.lower() or "box" in nombre.lower(): return "Combate"
         return nombre.capitalize()
     return "Otros"

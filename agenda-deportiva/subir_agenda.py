@@ -92,16 +92,57 @@ def actualizar_base_de_datos():
                     datos_finales.append(manual_data)
                     print(f"   Evento manual extra preservado: {ev_manual['evento']}")
 
-        # 5. Limpiar y Subir
-        print(f"3. Limpiando tabla y subiendo {len(datos_finales)} eventos...")
-        supabase.table("eventos").delete().neq("id", 0).execute()
+        # 5. Subir con Triple Seguridad
+        if not datos_finales:
+            print("⚠️ No hay datos finales para subir. Abortando para proteger la DB.")
+            return
+
+        print(f"3. Validando e insertando {len(datos_finales)} eventos...")
         
-        if datos_finales:
-            # Insertar en bloques para evitar límites de Supabase si es necesario, 
-            # pero aquí son pocos usualmente.
-            supabase.table("eventos").insert(datos_finales).execute()
+        # Limpiamos los datos para asegurarnos que solo enviamos lo que la DB acepta
+        columnas_validas = ['fecha', 'hora', 'evento', 'competicion', 'deporte', 'canales', 
+                            'destacado', 'destacado_dia', 'estelar_dia', 'destacado_finde', 
+                            'carrusel_ig', 'ajuste_manual']
         
-        # 6. Restaurar banderas de marketing y destacados
+        datos_limpios = []
+        for d in datos_finales:
+            limpio = {k: v for k, v in d.items() if k in columnas_validas}
+            # Asegurar que los booleanos no sean None
+            for col in ['destacado_dia', 'estelar_dia', 'destacado_finde', 'carrusel_ig', 'ajuste_manual']:
+                if col in limpio and limpio[col] is None:
+                    limpio[col] = False
+            datos_limpios.append(limpio)
+
+        try:
+            # FLUJO: Borrar todo e insertar todo el bloque limpio
+            supabase.table("eventos").delete().neq("id", 0).execute()
+            
+            # Insertar en bloques pequeños si es necesario (evita timeouts)
+            for i in range(0, len(datos_limpios), 100):
+                batch = datos_limpios[i:i+100]
+                supabase.table("eventos").insert(batch).execute()
+            
+            print("✅ Inserción completada con éxito.")
+
+        except Exception as e:
+            error_msg = str(e)
+            print(f"❌ ERROR CRÍTICO EN INSERCIÓN: {error_msg}")
+            
+            if "column" in error_msg.lower() or "field" in error_msg.lower():
+                print("   Reintentando con esquema mínimo de emergencia...")
+                columnas_minimas = ['fecha', 'hora', 'evento', 'competicion', 'deporte', 'canales']
+                datos_emergencia = []
+                for d in datos_limpios:
+                    emergencia = {k: v for k, v in d.items() if k in columnas_minimas}
+                    datos_emergencia.append(emergencia)
+                
+                supabase.table("eventos").delete().neq("id", 0).execute()
+                supabase.table("eventos").insert(datos_emergencia).execute()
+                print("⚠️ Web recuperada con esquema mínimo.")
+            else:
+                print("   No se pudo recuperar automáticamente. La tabla podría estar vacía.")
+
+        # 6. Restaurar banderas de marketing y destacados (Solo si existen las columnas)
         print("4. Restaurando banderas de marketing...")
         eventos_nuevos = supabase.table("eventos").select("id, evento, fecha, competicion").execute()
         restaurados = 0
@@ -110,26 +151,29 @@ def actualizar_base_de_datos():
                 key = f"{ev['evento']}||{ev['fecha']}||{ev['competicion']}"
                 if key in configuraciones_persistentes:
                     params = configuraciones_persistentes[key]
-                    supabase.table("eventos").update(params).eq("id", ev["id"]).execute()
-                    restaurados += 1
+                    
+                    # Limpiar params de valores None
+                    update_data = {k: v for k, v in params.items() if v is not None}
+                    
+                    if update_data:
+                        try:
+                            supabase.table("eventos").update(update_data).eq("id", ev["id"]).execute()
+                            restaurados += 1
+                        except:
+                            pass 
         print(f"   Se restauraron configuraciones en {restaurados} eventos")
-        
-        # --- PASO NUEVO: TOQUE DE VIDA ---
+
+        # --- STEP 6: WRAP UP ---
         print("6. Actualizando hora de sincronización...")
-        
-        # Definimos la zona horaria de CDMX
         tz_mx = pytz.timezone('America/Mexico_City')
         ahora_mx = datetime.now(tz_mx).strftime("%d/%m/%Y %I:%M %p")
-        
-        # Borramos la fila vieja y creamos una nueva (mismo patrón que funciona con eventos)
         supabase.table("status").delete().eq("nombre", "ultima_actualizacion").execute()
         supabase.table("status").insert({"nombre": "ultima_actualizacion", "valor": ahora_mx}).execute()
         
-        print(f"   Hora guardada: {ahora_mx}")
         print(f"✅ PROCESO COMPLETADO: Sincronizado a las {ahora_mx}")
 
     except Exception as e:
-        print(f"❌ Ocurrió un error: {e}")
+        print(f"❌ Ocurrió un error general: {e}")
         import traceback
         traceback.print_exc()
 

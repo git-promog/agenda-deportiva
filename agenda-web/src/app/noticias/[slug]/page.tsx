@@ -1,5 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
-import { Calendar, Clock } from 'lucide-react';
+import { 
+  Calendar, 
+  Clock, 
+  Tv, 
+  Info, 
+  Target, 
+  Activity, 
+  MapPin, 
+  ListChecks,
+  ChevronRight,
+  Sparkles
+} from 'lucide-react';
 import Link from 'next/link';
 import NextImage from 'next/image';
 import { Metadata, ResolvingMetadata } from 'next';
@@ -18,80 +29,97 @@ interface Props {
 function renderArticleContent(content: string) {
   const lines = content.split('\n');
   const elements: JSX.Element[] = [];
+  const headings: { id: string; text: string }[] = [];
   let currentParagraph: string[] = [];
+  let currentList: JSX.Element[] = [];
+  let isOrderedList = false;
 
   const flushParagraph = () => {
     if (currentParagraph.length > 0) {
       const text = currentParagraph.join('\n').trim();
       if (text) {
+        // Look for "Label: Value" patterns to bold the label
+        const formattedText = text.split('\n').map((line, idx) => {
+          const colonIndex = line.indexOf(':');
+          if (colonIndex > 0 && colonIndex < 40) {
+            return (
+              <span key={idx} className="block mb-1">
+                <strong className="text-blue-400 font-bold">{line.substring(0, colonIndex + 1)}</strong>
+                {line.substring(colonIndex + 1)}
+              </span>
+            );
+          }
+          return <span key={idx} className="block mb-1">{line}</span>;
+        });
+
         elements.push(
-          <p key={`p-${elements.length}`} className="text-slate-300 leading-relaxed mb-4">
-            {text}
-          </p>
+          <div key={`p-${elements.length}`} className="text-slate-300 leading-relaxed mb-6">
+            {formattedText}
+          </div>
         );
       }
       currentParagraph = [];
     }
   };
 
+  const flushList = () => {
+    if (currentList.length > 0) {
+      const ListTag = isOrderedList ? 'ol' : 'ul';
+      elements.push(
+        <ListTag key={`list-${elements.length}`} className={`mb-8 space-y-3 ${isOrderedList ? 'list-decimal ml-6' : 'list-none'}`}>
+          {currentList}
+        </ListTag>
+      );
+      currentList = [];
+    }
+  };
+
   const sectionHeadingPatterns = [
-    /^ANÁLISIS DE GUIASPORTS/i,
-    /^ALINEACIONES PROBABLES/i,
-    /^DÓNDE VER/i,
-    /^DÓNDE VERLO/i,
-    /^CANALES Y STREAMING/i,
-    /^HORARIO Y CANAL/i,
-    /^CLAVES DEL PARTIDO/i,
-    /^CONTEXTO/i,
-    /^PREVIA/i,
-    /^ESTADÍSTICAS/i,
-    /^FORMACIÓN/i,
-    /^CONCLUSIÓN/i,
-    /^PRÓXIMO PARTIDO/i,
-    /^SITUACIÓN ACTUAL/i,
-    /^EL DATO/i,
-    /^LA CLAVE/i,
-    /^ANTECEDENTES/i,
-    /^ANÁLISIS TÁCTICO/i,
-    /^PROYECCIÓN/i,
-    /^PREDICCIÓN/i,
-    /^RESULTADOS RECIENTES/i,
-    /^EN CUANTO A/i,
-    /^POR ÚLTIMO/i,
-    /^RECUERDA/i,
-    /^NO TE PIERDAS/i,
-    /^MÁS INFORMACIÓN/i,
-    /^TE PUEDE INTERESAR/i,
+    { pattern: /^ANÁLISIS DE GUIASPORTS/i, icon: <Sparkles className="w-5 h-5 text-yellow-400" /> },
+    { pattern: /^ALINEACIONES PROBABLES/i, icon: <ListChecks className="w-5 h-5 text-green-400" /> },
+    { pattern: /^DÓNDE VER/i, icon: <Tv className="w-5 h-5 text-blue-400" /> },
+    { pattern: /^CANALES Y STREAMING/i, icon: <Tv className="w-5 h-5 text-blue-400" /> },
+    { pattern: /^HORARIO/i, icon: <Clock className="w-5 h-5 text-purple-400" /> },
+    { pattern: /^CLAVES DEL PARTIDO/i, icon: <Target className="w-5 h-5 text-red-400" /> },
+    { pattern: /^ESTADÍSTICAS/i, icon: <Activity className="w-5 h-5 text-orange-400" /> },
+    { pattern: /^SITUACIÓN ACTUAL/i, icon: <Info className="w-5 h-5 text-cyan-400" /> },
+    { pattern: /^ANTECEDENTES/i, icon: <Activity className="w-5 h-5 text-indigo-100" /> },
+    { pattern: /^CONCLUSIÓN/i, icon: <ChevronRight className="w-5 h-5 text-slate-400" /> },
   ];
 
-  const isSectionHeading = (line: string): boolean => {
+  const getHeadingInfo = (line: string) => {
     const trimmed = line.trim();
-    if (!trimmed) return false;
-    if (trimmed.length > 80) return false;
-    if (trimmed.endsWith(':') || trimmed.endsWith('!')) {
-      return sectionHeadingPatterns.some(pattern => pattern.test(trimmed));
+    if (!trimmed || trimmed.length > 80) return null;
+    
+    // Check if it's one of our known sections
+    for (const item of sectionHeadingPatterns) {
+      if (item.pattern.test(trimmed)) {
+        return item;
+      }
     }
-    if (trimmed === trimmed.toUpperCase() && trimmed.length > 3 && trimmed.length < 60) {
-      return sectionHeadingPatterns.some(pattern => pattern.test(trimmed));
+
+    // Generic heading detection: Uppercase and short
+    if (trimmed === trimmed.toUpperCase() && trimmed.length > 3 && trimmed.length < 50) {
+      return { pattern: null, icon: <ChevronRight className="w-5 h-5 text-blue-500" /> };
     }
-    return sectionHeadingPatterns.some(pattern => pattern.test(trimmed));
+
+    // Ends with colon and short
+    if (trimmed.endsWith(':') && trimmed.length < 40) {
+      return { pattern: null, icon: <ChevronRight className="w-5 h-5 text-blue-500" /> };
+    }
+
+    return null;
   };
 
-  const isSubHeading = (line: string): boolean => {
-    const trimmed = line.trim();
-    if (!trimmed) return false;
-    if (trimmed.length > 80) return false;
-    const subPatterns = [
-      /^TV ABIERTA/i, /^TV DE PAGA/i, /^STREAMING/i,
-      /^OPCIONES GRATUITAS/i, /^OPCIONES DE PAGO/i,
-      /^TRANSMISIÓN/i, /^EN VIVO/i, /^CANALES/i,
-      /^PLATAFORMAS/i, /^APPS/i,
-      /^LOCAL/i, /^VISITANTE/i, /^PROBABLES/i,
-      /^PORTEROS/i, /^DEFENSA/i, /^MEDIOCAMPO/i, /^DELANTEROS/i,
-      /^BANCA/i, /^SUPLENTES/i,
-    ];
-    return subPatterns.some(pattern => pattern.test(trimmed));
-  };
+  // First pass: collect headings for TOC
+  lines.forEach((line, index) => {
+    const info = getHeadingInfo(line);
+    if (info) {
+      const text = line.trim().replace(/:$/, '');
+      const id = text.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      headings.push({ id, text });
+    }
+  });
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -99,31 +127,118 @@ function renderArticleContent(content: string) {
 
     if (!trimmed) {
       flushParagraph();
+      flushList();
       continue;
     }
 
-    if (isSectionHeading(trimmed)) {
+    // Check for list items
+    const listMatch = trimmed.match(/^[-*•]\s+(.*)/) || trimmed.match(/^(\d+)[.)]\s+(.*)/);
+    if (listMatch) {
       flushParagraph();
-      elements.push(
-        <h2 key={`h2-${elements.length}`} className="text-xl md:text-2xl font-black italic uppercase text-white mt-10 mb-4 tracking-tight">
-          {trimmed.replace(/:$/, '')}
-        </h2>
+      const isOrdered = !!trimmed.match(/^\d+[.)]/);
+      if (isOrdered !== isOrderedList && currentList.length > 0) {
+        flushList();
+      }
+      isOrderedList = isOrdered;
+      
+      const content = listMatch[1] || listMatch[2];
+      currentList.push(
+        <li key={`li-${elements.length}-${currentList.length}`} className="flex items-start gap-3 group">
+          {!isOrderedList && <span className="mt-2.5 w-1.5 h-1.5 rounded-full bg-blue-500 group-hover:bg-blue-400 transition-colors" />}
+          <span className="text-slate-300 leading-relaxed">{content}</span>
+        </li>
       );
-    } else if (isSubHeading(trimmed)) {
+      continue;
+    } else if (currentList.length > 0) {
+      flushList();
+    }
+
+    const headingInfo = getHeadingInfo(trimmed);
+    if (headingInfo) {
       flushParagraph();
-      elements.push(
-        <h3 key={`h3-${elements.length}`} className="text-lg font-black uppercase text-blue-400 mt-6 mb-3 tracking-wide">
-          {trimmed.replace(/:$/, '')}
-        </h3>
-      );
+      const cleanTitle = trimmed.replace(/:$/, '');
+      const id = cleanTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      
+      // Special styling for "DÓNDE VER" or "HORARIO" as a card
+      const isSpecialSection = /DÓNDE VER|HORARIO/i.test(trimmed);
+      
+      if (isSpecialSection) {
+        elements.push(
+          <div key={`special-${elements.length}`} id={id} className="scroll-mt-24 my-10 p-6 bg-gradient-to-br from-slate-900 to-[#020617] border border-blue-500/20 rounded-3xl relative overflow-hidden group hover:border-blue-500/40 transition-all shadow-xl shadow-blue-900/10">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              {headingInfo.icon}
+            </div>
+            <h2 className="text-xl font-black italic uppercase text-white mb-6 flex items-center gap-3">
+              {headingInfo.icon}
+              {cleanTitle}
+            </h2>
+            {/* The next lines will be part of this card until the next empty line or heading */}
+            <div className="space-y-3">
+              {(() => {
+                const subElements = [];
+                let nextIdx = i + 1;
+                while (nextIdx < lines.length && lines[nextIdx].trim() && !getHeadingInfo(lines[nextIdx])) {
+                  const subLine = lines[nextIdx].trim();
+                  const colonIdx = subLine.indexOf(':');
+                  if (colonIdx > 0) {
+                    subElements.push(
+                      <div key={`sub-${nextIdx}`} className="flex justify-between items-center border-b border-slate-800/50 py-3 last:border-0">
+                        <span className="text-[10px] font-black uppercase text-slate-500 tracking-[0.1em]">{subLine.substring(0, colonIdx)}</span>
+                        <span className="text-sm font-black text-[#a3e635] italic">{subLine.substring(colonIdx + 1).trim()}</span>
+                      </div>
+                    );
+                  } else {
+                    subElements.push(<p key={`sub-${nextIdx}`} className="text-sm text-slate-400 py-1 leading-relaxed">{subLine}</p>);
+                  }
+                  nextIdx++;
+                }
+                i = nextIdx - 1; // Skip these lines in the main loop
+                return subElements;
+              })()}
+            </div>
+          </div>
+        );
+      } else {
+        elements.push(
+          <h2 key={`h2-${elements.length}`} id={id} className="scroll-mt-24 text-xl md:text-2xl font-black italic uppercase text-white mt-12 mb-6 tracking-tight flex items-center gap-3 border-l-4 border-blue-600 pl-4 py-1 bg-blue-600/5 rounded-r-lg group hover:bg-blue-600/10 transition-colors">
+            {headingInfo.icon}
+            {cleanTitle}
+          </h2>
+        );
+      }
     } else {
       currentParagraph.push(trimmed);
     }
   }
 
   flushParagraph();
+  flushList();
+
+  // Insert TOC at the beginning if there are several headings
+  if (headings.length > 2) {
+    const toc = (
+      <nav key="toc" className="mb-12 p-6 bg-slate-900/30 border border-slate-800 rounded-2xl">
+        <h3 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+          <ChevronRight className="w-3 h-3" /> Contenido de esta guía
+        </h3>
+        <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
+          {headings.map((h, idx) => (
+            <li key={idx}>
+              <a href={`#${h.id}`} className="text-xs font-bold text-slate-400 hover:text-blue-400 transition-colors flex items-center gap-2 group">
+                <span className="w-1 h-1 bg-slate-700 rounded-full group-hover:bg-blue-500 transition-colors" />
+                {h.text}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    );
+    elements.unshift(toc);
+  }
+
   return elements;
 }
+
 
 export async function generateMetadata(
   { params }: Props,
@@ -159,35 +274,41 @@ export async function generateMetadata(
 
   // Get first 150 chars for description with SEO-optimized format
   const cleanDescription = noticia.contenido.substring(0, 150).replace(/\n/g, ' ') + '...';
-  const seoDescription = `Horario y dónde ver en vivo ${noticia.titulo}: canales TV, streaming y plataforma. ${noticia.contenido.substring(0, 120).replace(/\n/g, ' ')}... GuíaSports México.`;
-  const wordCount = noticia.contenido.split(/\s+/).length;
+  const seoDescription = `¿A qué hora y en qué canal ver ${noticia.titulo}? Consulta aquí la guía definitiva: canales de TV, plataformas de streaming y alineaciones probables para seguir el partido en vivo. GuíaSports te trae toda la información de última hora.`;
+  
+  // Extract keywords for tags
+  const keywords = noticia.titulo.split(' ').filter((w: string) => w.length > 3).slice(0, 5);
 
   return {
-    title: `${noticia.titulo} | Horario y Canal TV | GuíaSports`,
+    title: `En vivo: ${noticia.titulo} | Horario, Canal y Dónde Ver`,
     description: seoDescription,
+    keywords: keywords.join(', '),
     alternates: {
       canonical: `https://www.guiasports.com/noticias/${slug}`,
     },
     openGraph: {
-      title: noticia.titulo,
+      title: `Guía TV: ${noticia.titulo}`,
       description: seoDescription,
       images: noticia.imagen_url ? [{ url: noticia.imagen_url }] : [],
       type: 'article',
       locale: 'es_MX',
       publishedTime: noticia.fecha,
       modifiedTime: noticia.created_at || noticia.fecha,
+      siteName: 'GuíaSports México',
     },
     twitter: {
       card: 'summary_large_image',
       title: noticia.titulo,
       description: seoDescription,
       images: noticia.imagen_url ? [noticia.imagen_url] : [],
+      site: '@guiasports',
     },
     other: {
       'article:published_time': noticia.fecha,
       'article:modified_time': noticia.created_at || noticia.fecha,
       'article:author': 'GuíaSports Editorial',
-      'article:section': 'Deportes',
+      'article:section': 'Fútbol Internacional',
+      'article:tag': keywords.join(','),
     },
   };
 }
@@ -297,7 +418,7 @@ export default async function NoticiaDetalle({ params }: Props) {
             Previas y Análisis
           </Link>
           
-          <h1 className="text-4xl md:text-6xl font-black italic uppercase leading-[0.95] tracking-tighter mb-8">
+          <h1 className="text-4xl md:text-6xl font-black italic uppercase leading-[0.95] tracking-tighter mb-8 bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
             {noticia.titulo}
           </h1>
 

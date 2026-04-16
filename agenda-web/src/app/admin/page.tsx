@@ -101,13 +101,22 @@ export default function AdminPanel() {
     if (data) {
       console.log("Raw destacado values:", data.slice(0, 5).map(e => `id=${e.id} val="${e.destacado}" type=${typeof e.destacado}`).join(" | "));
       const normalized = data.map(e => {
-        let d = e.destacado;
-        if (d === true || d === 'true' || d === 'TRUE' || d === '1' || d === 1) d = true;
-        else if (d === false || d === 'false' || d === 'FALSE' || d === '0' || d === 0) d = false;
-        else d = null;
-        return { ...e, destacado: d };
+        const normalizeBool = (val: any) => {
+          if (val === true || val === 'true' || val === 'TRUE' || val === '1' || val === 1) return true;
+          if (val === false || val === 'false' || val === 'FALSE' || val === '0' || val === 0) return false;
+          return null;
+        };
+
+        return { 
+          ...e, 
+          destacado: normalizeBool(e.destacado),
+          destacado_dia: normalizeBool(e.destacado_dia) === true,
+          estelar_dia: normalizeBool(e.estelar_dia) === true,
+          destacado_finde: normalizeBool(e.destacado_finde) === true,
+          carrusel_ig: normalizeBool(e.carrusel_ig) === true
+        };
       });
-      console.log("Normalized:", normalized.slice(0, 3).map(e => ({ id: e.id, destacado: e.destacado })));
+      console.log("Normalized sample:", normalized.slice(0, 3).map(e => ({ id: e.id, estelar: e.estelar_dia })));
       setEventos(normalized);
     }
   }

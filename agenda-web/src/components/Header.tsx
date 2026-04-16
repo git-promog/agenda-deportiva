@@ -40,7 +40,7 @@ export default function Header({ ultimaAct, showSearch = false, busqueda = '', o
             <Link href="/noticias" className="text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-[#a3e635] transition-colors flex items-center gap-1.5">
               <Newspaper size={14} /> Noticias
             </Link>
-            <Link href="/quienes_somos" className="text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-[#a3e635] transition-colors flex items-center gap-1.5">
+            <Link href="/quienes-somos" className="text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-[#a3e635] transition-colors flex items-center gap-1.5">
               <Users size={14} /> Nosotros
             </Link>
             <Link href="/contacto" className="text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-[#a3e635] transition-colors flex items-center gap-1.5">

@@ -284,7 +284,7 @@ export async function generateMetadata(
     description: seoDescription,
     keywords: keywords.join(', '),
     alternates: {
-      canonical: `https://www.guiasports.com/noticias/${slug}`,
+      canonical: `https://www.guiasports.com/noticias/${decodedSlug}`,
     },
     openGraph: {
       title: `Guía TV: ${noticia.titulo}`,

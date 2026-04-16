@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="flex flex-wrap justify-center gap-6 mb-8">
         <Link href="/" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-blue-500 transition-colors">Inicio</Link>
         <Link href="/noticias" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-blue-500 transition-colors">Noticias</Link>
-        <Link href="/quienes_somos" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-blue-500 transition-colors">Quiénes Somos</Link>
+        <Link href="/quienes-somos" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-blue-500 transition-colors">Quiénes Somos</Link>
         <Link href="/privacidad" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-blue-500 transition-colors">Privacidad</Link>
         <Link href="/contacto" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-blue-500 transition-colors">Contacto</Link>
       </div>

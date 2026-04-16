@@ -7,19 +7,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
-  const { data: noticias } = await supabase
-    .from('noticias')
-    .select('slug, created_at')
-    .order('created_at', { ascending: false });
+  let noticiasUrls: MetadataRoute.Sitemap = [];
+  
+  try {
+    const { data: noticias, error } = await supabase
+      .from('noticias')
+      .select('slug, created_at')
+      .order('created_at', { ascending: false })
+      .limit(1000); // Limit to latest 1000 for safety
 
-  const noticiasUrls: MetadataRoute.Sitemap = noticias
-    ? noticias.map((noticia) => ({
-        url: `https://www.guiasports.com/noticias/${noticia.slug}`,
-        lastModified: noticia.created_at || new Date().toISOString(),
-        changeFrequency: 'weekly',
-        priority: 0.8,
-      }))
-    : [];
+    if (error) {
+      console.error("Error fetching noticias for sitemap:", error);
+    } else if (noticias) {
+      noticiasUrls = noticias
+        .filter(n => n.slug) // Ensure slug exists
+        .map((noticia) => ({
+          url: `https://www.guiasports.com/noticias/${noticia.slug}`,
+          lastModified: noticia.created_at ? new Date(noticia.created_at) : new Date(),
+          changeFrequency: 'weekly' as const,
+          priority: 0.8,
+        }));
+    }
+  } catch (err) {
+    console.error("Unexpected error in sitemap generation:", err);
+  }
 
   return [
     {

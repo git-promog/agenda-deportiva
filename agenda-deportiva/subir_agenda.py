@@ -32,7 +32,7 @@ def actualizar_base_de_datos():
             tz_mx = pytz.timezone('America/Mexico_City')
             ahora_mx = datetime.now(tz_mx).strftime("%d/%m/%Y %I:%M %p")
             supabase.table("status").delete().eq("nombre", "ultima_actualizacion").execute()
-            supabase.table("status").insert({"nombre": "ultima_actualizacion", "valor": f"SCRAPER VACÍO - {ahora_mx}"}).execute()
+            supabase.table("status").insert({"nombre": "ultima_actualizacion", "valor": f"ACTUALIZADO - {ahora_mx}"}).execute()
             return
 
         print(f"2. Se encontraron {len(datos)} eventos. Preservando configuraciones manuales...")
@@ -168,7 +168,7 @@ def actualizar_base_de_datos():
         tz_mx = pytz.timezone('America/Mexico_City')
         ahora_mx = datetime.now(tz_mx).strftime("%d/%m/%Y %I:%M %p")
         supabase.table("status").delete().eq("nombre", "ultima_actualizacion").execute()
-        supabase.table("status").insert({"nombre": "ultima_actualizacion", "valor": ahora_mx}).execute()
+        supabase.table("status").insert({"nombre": "ultima_actualizacion", "valor": f"ACTUALIZADO - {ahora_mx}"}).execute()
         
         print(f"✅ PROCESO COMPLETADO: Sincronizado a las {ahora_mx}")
 

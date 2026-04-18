@@ -60,8 +60,8 @@ export default async function Home() {
   }
 
   const calculateEndDate = (e: any) => {
-    if (!e.hora) return '23:59';
-    const [h, m] = e.hora.split(':').map(Number);
+    const startHora = e.hora || '00:00';
+    const [h, m] = startHora.split(':').map(Number);
     const fin = new Date();
     fin.setHours(h + 2, m, 0);
     return String(fin.getHours()).padStart(2, '0') + ':' + String(fin.getMinutes()).padStart(2, '0');
@@ -70,43 +70,48 @@ export default async function Home() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    "itemListElement": eventos.slice(0, 50).map((e: any, index: number) => ({
-      "@type": "ListItem",
-      "position": index + 1,
-      "item": {
-        "@type": "SportsEvent",
-        "name": e.evento,
-        "startDate": `${e.fecha}T${e.hora}:00-06:00`,
-        "endDate": `${e.fecha}T${calculateEndDate(e)}:00-06:00`,
-        "eventStatus": "https://schema.org/EventScheduled",
-        "sport": e.deporte,
-        "description": `Transmisión de ${e.competicion}: ${e.evento} en vivo por ${e.canales}.`,
-        "organizer": {
-          "@type": "Organization",
-          "name": e.competicion
-        },
-        "performer": {
-          "@type": "PerformingGroup",
-          "name": e.evento
-        },
-        "location": {
-          "@type": "Place",
-          "name": "Televisión y Streaming México",
-          "address": {
-            "@type": "PostalAddress",
-            "addressLocality": "México"
+    "itemListElement": eventos.slice(0, 50).map((e: any, index: number) => {
+      const startDateTime = `${e.fecha}T${e.hora || '00:00'}:00-06:00`;
+      const endDateTime = `${e.fecha}T${calculateEndDate(e)}:00-06:00`;
+      
+      return {
+        "@type": "ListItem",
+        "position": index + 1,
+        "item": {
+          "@type": "SportsEvent",
+          "name": e.evento,
+          "description": `Transmisión de ${e.competicion}: ${e.evento} en vivo por ${e.canales}.`,
+          "image": "https://www.guiasports.com/GuiaSports-logo.svg",
+          "startDate": startDateTime,
+          "endDate": endDateTime,
+          "eventStatus": "https://schema.org/EventScheduled",
+          "eventAttendanceMode": "https://schema.org/OnlineEventAttendanceMode",
+          "sport": e.deporte,
+          "location": {
+            "@type": "VirtualLocation",
+            "name": "Televisión y Streaming (México)",
+            "url": "https://www.guiasports.com"
+          },
+          "organizer": {
+            "@type": "Organization",
+            "name": e.competicion || "GuíaSports",
+            "url": "https://www.guiasports.com"
+          },
+          "performer": {
+            "@type": "PerformingGroup",
+            "name": e.evento
+          },
+          "offers": {
+            "@type": "Offer",
+            "url": "https://www.guiasports.com",
+            "price": "0",
+            "priceCurrency": "MXN",
+            "availability": "https://schema.org/InStock",
+            "validFrom": startDateTime
           }
-        },
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "MXN",
-          "availability": "https://schema.org/AvailableInGeneral",
-          "validFrom": e.fecha,
-          "url": "https://www.guiasports.com"
         }
-      }
-    }))
+      };
+    })
   };
 
   return (

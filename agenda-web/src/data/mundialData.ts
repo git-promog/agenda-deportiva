@@ -18,6 +18,7 @@ export interface WCMatch {
   equipo2: string;
   fase: string;
   grupo?: string;
+  broadcasters?: string;
 }
 
 export interface WCGroup {

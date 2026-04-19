@@ -1,5 +1,5 @@
 import React from 'react';
-import { WCMatch } from '@/data/mundialData';
+import { WCMatch, getFlagUrl } from '@/data/mundialData';
 import { Calendar, MapPin, Clock, Tv, Trophy } from 'lucide-react';
 
 interface Props {
@@ -14,6 +14,9 @@ export default function WCMatchCard({ match }: Props) {
     if (['Argentina', 'Brasil', 'USA', 'Alemania', 'Francia'].includes(match.equipo1) || ['Argentina', 'Brasil', 'USA', 'Alemania', 'Francia'].includes(match.equipo2)) return 'TUDN | Canal 5 | ViX';
     return 'ViX (Premium)';
   };
+
+  const flag1 = getFlagUrl(match.equipo1);
+  const flag2 = getFlagUrl(match.equipo2);
 
   return (
     <div className="group bg-slate-900/40 backdrop-blur-md border border-white/5 rounded-2xl p-4 md:p-5 hover:bg-slate-900/60 transition-all duration-300 relative overflow-hidden flex flex-col md:flex-row md:items-center gap-6 shadow-lg">
@@ -36,14 +39,22 @@ export default function WCMatchCard({ match }: Props) {
       {/* Teams Row */}
       <div className="flex-1 flex items-center justify-between md:justify-start gap-4 md:gap-12">
         <div className="flex flex-col md:flex-row items-center gap-3 flex-1 md:flex-none md:w-[150px]">
-          <span className="text-2xl">🏳️</span>
+          {flag1 ? (
+            <img src={flag1} alt={match.equipo1} className="w-8 h-8 rounded-full object-cover border-2 border-white/10 shadow-lg" />
+          ) : (
+            <span className="text-2xl">🏳️</span>
+          )}
           <span className="text-xs md:text-sm font-black uppercase italic text-white line-clamp-1">{match.equipo1}</span>
         </div>
         
         <div className="text-[10px] font-black italic text-slate-700 select-none">VS</div>
 
         <div className="flex flex-col md:flex-row-reverse items-center gap-3 flex-1 md:flex-none md:w-[150px]">
-          <span className="text-2xl">🏳️</span>
+          {flag2 ? (
+            <img src={flag2} alt={match.equipo2} className="w-8 h-8 rounded-full object-cover border-2 border-white/10 shadow-lg" />
+          ) : (
+            <span className="text-2xl">🏳️</span>
+          )}
           <span className="text-xs md:text-sm font-black uppercase italic text-white line-clamp-1">{match.equipo2}</span>
         </div>
       </div>

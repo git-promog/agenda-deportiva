@@ -1,5 +1,5 @@
 import React from 'react';
-import { WCGroup } from '@/data/mundialData';
+import { WCGroup, getFlagUrl } from '@/data/mundialData';
 
 interface Props {
   grupo: WCGroup;
@@ -25,17 +25,21 @@ export default function WCGroupTable({ grupo }: Props) {
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
-            {grupo.equipos.map((equipo, idx) => (
-              <tr key={idx} className="hover:bg-blue-500/5 transition-colors group">
-                <td className="px-5 py-3 flex items-center gap-2">
-                  <span className="text-slate-600 group-hover:text-blue-400 transition-colors w-2">{idx + 1}</span>
-                  <span className="text-slate-200 group-hover:text-white uppercase italic truncate max-w-[80px]">{equipo.nombre}</span>
-                </td>
-                <td className="px-2 py-3 text-center text-slate-400">{equipo.pj}</td>
-                <td className="px-2 py-3 text-center text-slate-400">{equipo.pg}</td>
-                <td className="px-2 py-3 text-center text-blue-400 font-black">{equipo.pts}</td>
-              </tr>
-            ))}
+            {grupo.equipos.map((equipo, idx) => {
+              const flag = getFlagUrl(equipo.nombre);
+              return (
+                <tr key={idx} className="hover:bg-blue-500/5 transition-colors group">
+                  <td className="px-5 py-3 flex items-center gap-2">
+                    <span className="text-slate-600 group-hover:text-blue-400 transition-colors w-2">{idx + 1}</span>
+                    {flag && <img src={flag} alt={equipo.nombre} className="w-4 h-4 rounded-sm object-cover" />}
+                    <span className="text-slate-200 group-hover:text-white uppercase italic truncate max-w-[80px]">{equipo.nombre}</span>
+                  </td>
+                  <td className="px-2 py-3 text-center text-slate-400">{equipo.pj}</td>
+                  <td className="px-2 py-3 text-center text-slate-400">{equipo.pg}</td>
+                  <td className="px-2 py-3 text-center text-blue-400 font-black">{equipo.pts}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

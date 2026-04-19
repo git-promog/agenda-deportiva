@@ -21,17 +21,38 @@ export interface WCMatch {
   broadcasters?: string;
 }
 
+export const COUNTRY_CODES: Record<string, string> = {
+  'México': 'mx', 'Sudáfrica': 'za', 'R. de Corea': 'kr', 'Chequia': 'cz',
+  'Canadá': 'ca', 'Bosnia': 'ba', 'Catar': 'qa', 'Suiza': 'ch',
+  'Brasil': 'br', 'Marruecos': 'ma', 'Haití': 'ht', 'Escocia': 'gb-sct',
+  'USA': 'us', 'Paraguay': 'py', 'Australia': 'au', 'Turquía': 'tr',
+  'Alemania': 'de', 'Curazao': 'cw', 'C. de Marfil': 'ci', 'Ecuador': 'ec',
+  'Países Bajos': 'nl', 'Japón': 'jp', 'Suecia': 'se', 'Túnez': 'tn',
+  'Bélgica': 'be', 'Egipto': 'eg', 'Irán': 'ir', 'N. Zelanda': 'nz',
+  'España': 'es', 'Cabo Verde': 'cv', 'Ar. Saudí': 'sa', 'Uruguay': 'uy',
+  'Francia': 'fr', 'Senegal': 'sn', 'Irak': 'iq', 'Noruega': 'no',
+  'Argentina': 'ar', 'Argelia': 'dz', 'Austria': 'at', 'Jordania': 'jo',
+  'Portugal': 'pt', 'RD Congo': 'cd', 'Uzbekistán': 'uz', 'Colombia': 'co',
+  'Inglaterra': 'gb-eng', 'Croacia': 'hr', 'Ghana': 'gh', 'Panamá': 'pa'
+};
+
+export const getFlagUrl = (countryName: string) => {
+  const code = COUNTRY_CODES[countryName];
+  if (!code) return null;
+  return `https://flagcdn.com/w80/${code}.png`;
+};
+
 export interface WCGroup {
   nombre: string;
   equipos: { nombre: string; pts: number; pj: number; pg: number; pe: number; pp: number; gf: number; gc: number }[];
 }
 
 export const SEDES: WCVenue[] = [
-  { id: 'azteca', ciudad: 'Ciudad de México', pais: 'México', estadio: 'Estadio Azteca', capacidad: '87,523', imagen: '🏟️', detalles: 'Sede del partido inaugural (11 de junio).' },
-  { id: 'akron', ciudad: 'Guadalajara', pais: 'México', estadio: 'Estadio Akron', capacidad: '49,850', imagen: '🏟️', detalles: 'Sede de fase de grupos.' },
+  { id: 'azteca', ciudad: 'Ciudad de México', pais: 'México', estadio: 'Estadio Azteca', capacidad: '87,523', imagen: '/images/mundial/azteca.png', detalles: 'Sede del partido inaugural (11 de junio).' },
+  { id: 'akron', ciudad: 'Guadalajara', pais: 'México', estadio: 'Estadio Akron', capacidad: '49,850', imagen: '/images/mundial/akron.png', detalles: 'Sede de fase de grupos.' },
   { id: 'bbva', ciudad: 'Monterrey', pais: 'México', estadio: 'Estadio BBVA', capacidad: '53,500', imagen: '🏟️', detalles: 'Sede de fase de grupos y dieciseisavos.' },
-  { id: 'metlife', ciudad: 'New York/NJ', pais: 'USA', estadio: 'MetLife Stadium', capacidad: '82,500', imagen: '🏟️', detalles: 'Sede de la Gran Final (19 de julio).' },
-  { id: 'sofi', ciudad: 'Los Ángeles', pais: 'USA', estadio: 'SoFi Stadium', capacidad: '70,240', imagen: '🏟️', detalles: 'Primer partido de USA (12 de junio).' },
+  { id: 'metlife', ciudad: 'New York/NJ', pais: 'USA', estadio: 'MetLife Stadium', capacidad: '82,500', imagen: '/images/mundial/metlife.png', detalles: 'Sede de la Gran Final (19 de julio).' },
+  { id: 'sofi', ciudad: 'Los Ángeles', pais: 'USA', estadio: 'SoFi Stadium', capacidad: '70,240', imagen: '/images/mundial/sofi.png', detalles: 'Primer partido de USA (12 de junio).' },
   { id: 'mercedes', ciudad: 'Atlanta', pais: 'USA', estadio: 'Mercedes-Benz Stadium', capacidad: '71,000', imagen: '🏟️', detalles: 'Sede de semifinales.' },
   { id: 'nrg', ciudad: 'Houston', pais: 'USA', estadio: 'NRG Stadium', capacidad: '72,220', imagen: '🏟️', detalles: 'Sede de cuartos de final.' },
   { id: 'hardrock', ciudad: 'Miami', pais: 'USA', estadio: 'Hard Rock Stadium', capacidad: '64,767', imagen: '🏟️', detalles: 'Sede del partido por el tercer lugar.' },
@@ -81,21 +102,33 @@ export const MATCHES: WCMatch[] = [
   { id: 'm23', fecha: '2026-06-17', hora: '17:00', estadio: 'BC Place', ciudad: 'Vancouver', equipo1: 'Inglaterra', equipo2: 'Croacia', fase: 'Fase de Grupos', grupo: 'L' },
   { id: 'm24', fecha: '2026-06-17', hora: '19:00', estadio: 'Estadio Azteca', ciudad: 'CDMX', equipo1: 'Ghana', equipo2: 'Panamá', fase: 'Fase de Grupos', grupo: 'L' },
 
-  // RONDA 2 Y POSTERIORES (SELECCIÓN DE CLAVES)
+  // RONDA 2
+  { id: 'm25', fecha: '2026-06-18', hora: '13:00', estadio: 'Gillette Stadium', ciudad: 'Boston', equipo1: 'Canadá', equipo2: 'Catar', fase: 'Fase de Grupos', grupo: 'B' },
+  { id: 'm26', fecha: '2026-06-18', hora: '16:00', estadio: 'SoFi Stadium', ciudad: 'Los Ángeles', equipo1: 'Bosnia', equipo2: 'Suiza', fase: 'Fase de Grupos', grupo: 'B' },
   { id: 'm28', fecha: '2026-06-18', hora: '19:00', estadio: 'Estadio Akron', ciudad: 'Guadalajara', equipo1: 'México', equipo2: 'R. de Corea', fase: 'Fase de Grupos', grupo: 'A' },
-  { id: 'm53', fecha: '2026-06-24', hora: '19:00', estadio: 'Estadio Azteca', ciudad: 'CDMX', equipo1: 'México', equipo2: 'Chequia', fase: 'Fase de Grupos', grupo: 'A' },
-  { id: 'm54', fecha: '2026-06-24', hora: '18:00', estadio: 'Estadio BBVA', ciudad: 'Monterrey', equipo1: 'TBD', equipo2: 'TBD', fase: 'Fase de Grupos' },
-  { id: 'm66', fecha: '2026-06-26', hora: '18:00', estadio: 'Estadio Akron', ciudad: 'Guadalajara', equipo1: 'TBD', equipo2: 'TBD', fase: 'Fase de Grupos' },
+  { id: 'm29', fecha: '2026-06-19', hora: '13:00', estadio: 'Lincoln Financial', ciudad: 'Filadelfia', equipo1: 'Sudáfrica', equipo2: 'Chequia', fase: 'Fase de Grupos', grupo: 'A' },
+  { id: 'm30', fecha: '2026-06-19', hora: '16:00', estadio: 'NRG Stadium', ciudad: 'Houston', equipo1: 'Brasil', equipo2: 'Haití', fase: 'Fase de Grupos', grupo: 'C' },
+  { id: 'm31', fecha: '2026-06-19', hora: '19:00', estadio: 'Levi\'s Stadium', ciudad: 'San Francisco', equipo1: 'Marruecos', equipo2: 'Escocia', fase: 'Fase de Grupos', grupo: 'C' },
+  { id: 'm32', fecha: '2026-06-19', hora: '20:00', estadio: 'SoFi Stadium', ciudad: 'Los Ángeles', equipo1: 'USA', equipo2: 'Australia', fase: 'Fase de Grupos', grupo: 'D' },
+  { id: 'm33', fecha: '2026-06-19', hora: '21:00', estadio: 'Lumen Field', ciudad: 'Seattle', equipo1: 'Paraguay', equipo2: 'Turquía', fase: 'Fase de Grupos', grupo: 'D' },
+  { id: 'm34', fecha: '2026-06-20', hora: '13:00', estadio: 'Arrowhead Stadium', ciudad: 'Kansas', equipo1: 'Alemania', equipo2: 'C. de Marfil', fase: 'Fase de Grupos', grupo: 'E' },
+  { id: 'm35', fecha: '2026-06-20', hora: '16:00', estadio: 'MetLife Stadium', ciudad: 'NJ', equipo1: 'Curazao', equipo2: 'Ecuador', fase: 'Fase de Grupos', grupo: 'E' },
+  { id: 'm36', fecha: '2026-06-20', hora: '18:00', estadio: 'BMO Field', ciudad: 'Toronto', equipo1: 'Países Bajos', equipo2: 'Suecia', fase: 'Fase de Grupos', grupo: 'F' },
+  { id: 'm37', fecha: '2026-06-20', hora: '20:00', estadio: 'BC Place', ciudad: 'Vancouver', equipo1: 'Japón', equipo2: 'Túnez', fase: 'Fase de Grupos', grupo: 'F' },
   
-  // PARTIDOS 73-104 (SIMULADOS PARA LOGICA)
+  // RONDA 3 (MÉXICO Y DEFINITIVOS)
+  { id: 'm52', fecha: '2026-06-24', hora: '16:00', estadio: 'Gillette Stadium', ciudad: 'Boston', equipo1: 'Sudáfrica', equipo2: 'R. de Corea', fase: 'Fase de Grupos', grupo: 'A' },
+  { id: 'm53', fecha: '2026-06-24', hora: '19:00', estadio: 'Estadio Azteca', ciudad: 'CDMX', equipo1: 'México', equipo2: 'Chequia', fase: 'Fase de Grupos', grupo: 'A' },
+  
+  // PARTIDOS 73-104 (SIMULADOS PARA LÓGICA DE ELIMINATORIA)
   ...Array.from({ length: 32 }, (_, i) => ({
     id: `m${73 + i}`,
     fecha: i < 16 ? '2026-06-29' : (i < 24 ? '2026-07-04' : (i < 28 ? '2026-07-09' : (i < 30 ? '2026-07-14' : '2026-07-19'))),
     hora: '18:00',
-    estadio: i === 31 ? 'MetLife Stadium' : 'TBD Stadium',
-    ciudad: i === 31 ? 'NJ' : 'Sede TBD',
-    equipo1: 'TBD',
-    equipo2: 'TBD',
+    estadio: i === 31 ? 'MetLife Stadium' : 'Sede FIFA',
+    ciudad: i === 31 ? 'NJ' : 'Sede FIFA',
+    equipo1: i < 16 ? '1° Grupo TBD' : (i < 24 ? 'Ganador ' + (73 + i - 16) : 'Ganador ' + (89 + i - 24)),
+    equipo2: i < 16 ? '2° Grupo TBD' : (i < 24 ? 'Ganador ' + (74 + i - 16) : 'Ganador ' + (90 + i - 24)),
     fase: i < 16 ? 'Dieciseisavos' : (i < 24 ? 'Octavos' : (i < 28 ? 'Cuartos' : (i < 30 ? 'Semis' : (i === 30 ? '3er Lugar' : 'Gran Final'))))
   }))
 ];

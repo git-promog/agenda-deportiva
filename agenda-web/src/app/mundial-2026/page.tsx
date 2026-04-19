@@ -224,28 +224,29 @@ export default function Mundial2026() {
             )}
 
             {activeTab === 'schedule' && (
-              <div className="animate-in fade-in duration-500 pb-12">
+              <div className="pb-12">
                 <div className="flex items-center justify-between mb-8">
                   <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Calendario Oficial</h2>
                   <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest bg-blue-500/10 px-3 py-1 rounded-lg">104 Partidos</span>
                 </div>
 
-                <div className="flex flex-col gap-3 mb-12">
+                <div className="flex flex-col gap-3 mb-12 [overflow-anchor:auto]">
                   {MATCHES.slice(0, visibleMatches).map(m => (
                     <WCMatchCard key={m.id} match={m} />
                   ))}
                 </div>
                 
                 {visibleMatches < MATCHES.length && (
-                  <div className="text-center pb-20">
+                  <div className="text-center mt-6 pb-32">
                     <button 
                       onClick={loadMoreMatches}
+                      type="button"
                       className="group bg-blue-600 hover:bg-blue-500 border border-blue-400/20 px-12 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white transition-all shadow-2xl hover:scale-105 active:scale-95"
                     >
                       Ver más partidos 
                       <span className="block text-[8px] opacity-70 mt-1 uppercase tracking-normal">Mostrando {visibleMatches} de {MATCHES.length}</span>
                     </button>
-                    <p className="text-[9px] text-slate-600 font-bold uppercase tracking-widest mt-6">Desliza para ver más</p>
+                    <p className="text-[9px] text-slate-600 font-bold uppercase tracking-widest mt-4">Nuevos partidos aparecerán debajo</p>
                   </div>
                 )}
               </div>
@@ -258,28 +259,43 @@ export default function Mundial2026() {
             )}
 
             {activeTab === 'venues' && (
-              <div className="grid gap-4 animate-in fade-in duration-500">
+              <div className="grid gap-6 animate-in fade-in duration-500">
                 {SEDES.map(s => (
-                  <div key={s.id} className="bg-slate-900/30 border border-slate-800/50 rounded-[32px] overflow-hidden group hover:border-blue-500/30 transition-all">
-                    <div className="flex flex-col md:flex-row">
-                      <div className="md:w-1/3 bg-slate-800 flex items-center justify-center text-6xl py-12 md:py-0">
-                        {s.imagen}
-                      </div>
-                      <div className="p-8 md:w-2/3">
-                        <div className="flex justify-between items-start mb-4">
-                          <div>
-                            <h3 className="text-2xl font-black italic uppercase text-white leading-none">{s.estadio}</h3>
-                            <p className="text-blue-500 text-[10px] font-black uppercase tracking-widest mt-2">{s.ciudad}, {s.pais}</p>
+                  <div key={s.id} className="bg-slate-900/30 border border-slate-800/50 rounded-[40px] overflow-hidden group hover:border-blue-500/30 transition-all shadow-2xl">
+                    <div className="flex flex-col md:flex-row min-h-[280px]">
+                      <div className="md:w-2/5 relative overflow-hidden bg-slate-800">
+                        {s.imagen.startsWith('/') ? (
+                          <img 
+                            src={s.imagen} 
+                            alt={s.estadio} 
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-8xl bg-gradient-to-br from-slate-800 to-slate-900">
+                            {s.imagen}
                           </div>
-                          <div className="bg-slate-900 px-4 py-2 rounded-xl border border-slate-800">
-                            <span className="text-[10px] font-black text-slate-400 block uppercase">Capacidad</span>
-                            <span className="text-sm font-black text-white">{s.capacidad}</span>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60 md:hidden"></div>
+                      </div>
+                      <div className="p-8 md:p-10 md:w-3/5 flex flex-col justify-center">
+                        <div className="flex justify-between items-start mb-6">
+                          <div>
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+                              <p className="text-blue-500 text-[10px] font-black uppercase tracking-[0.3em]">{s.ciudad}, {s.pais}</p>
+                            </div>
+                            <h3 className="text-3xl font-black italic uppercase text-white leading-none tracking-tighter">{s.estadio}</h3>
+                          </div>
+                          <div className="bg-white/5 border border-white/10 px-5 py-3 rounded-2xl backdrop-blur-md hidden sm:block">
+                            <span className="text-[9px] font-black text-slate-500 block uppercase tracking-widest mb-1">Capacidad</span>
+                            <span className="text-lg font-black text-white italic">{s.capacidad}</span>
                           </div>
                         </div>
-                        <p className="text-slate-400 text-sm leading-relaxed mb-6">{s.detalles}</p>
-                        <div className="flex items-center gap-3">
-                          <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-                          <span className="text-[9px] font-black uppercase text-slate-500 tracking-widest italic">Sede oficial confirmada</span>
+                        <p className="text-slate-400 text-sm leading-relaxed mb-8 font-medium">{s.detalles}</p>
+                        <div className="flex items-center gap-4">
+                          <button className="bg-blue-600/10 hover:bg-blue-600 text-blue-400 hover:text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-blue-500/20">
+                            Ver Calendario en Sede
+                          </button>
                         </div>
                       </div>
                     </div>

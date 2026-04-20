@@ -57,7 +57,7 @@ export default async function SedePage({ params }: { params: Promise<{ sede_id: 
     "event": partidos.map(m => ({
       "@type": "SportsEvent",
       "name": `${m.equipo1} vs ${m.equipo2}`,
-      "startDate": m.utc ?? `${m.fecha}T${m.hora}:00`,
+      "startDate": `${m.fecha}T${m.hora}:00`,
       "competitor": [
         { "@type": "SportsTeam", "name": m.equipo1 },
         { "@type": "SportsTeam", "name": m.equipo2 }

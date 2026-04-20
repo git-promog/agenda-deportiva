@@ -285,7 +285,7 @@ export default function Mundial2026() {
               {TAB_CONFIG.map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => setActiveTab(tab.id as WCTab)}
                   className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 whitespace-nowrap shadow-sm ${activeTab === tab.id ? 'bg-blue-600 text-white border border-blue-400/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'}`}
                 >
                   <tab.icon size={14} />

@@ -41,7 +41,7 @@ export default function WCMatchCard({ match, horaConvertida, notaHora, tzShort =
       itemType="https://schema.org/SportsEvent"
     >
       <meta itemProp="name" content={`${match.equipo1} vs ${match.equipo2} — ${match.fase}`} />
-      <meta itemProp="startDate" content={match.utc ?? `${match.fecha}T${match.hora}:00`} />
+      <meta itemProp="startDate" content={`${match.fecha}T${match.hora}:00`} />
       <meta itemProp="location" content={match.estadio} />
 
       <div className="absolute top-0 right-0 p-4 opacity-[0.02] pointer-events-none">

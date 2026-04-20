@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next';
 import { createClient } from '@supabase/supabase-js';
+import { SEDES } from '@/data/mundialData';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = createClient(
@@ -96,9 +97,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     {
       url: 'https://www.guiasports.com/mundial-2026',
       lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.9,
+      changeFrequency: 'daily',
+      priority: 1.0,
     },
+    ...SEDES.map(s => ({
+      url: `https://www.guiasports.com/mundial-2026/${s.id}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    })),
     ...noticiasUrls,
   ];
 }

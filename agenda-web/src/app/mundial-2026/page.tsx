@@ -13,11 +13,13 @@ import {
   Newspaper, 
   Info,
   Clock,
-  Star
+  Star,
+  X,
+  Search
 } from 'lucide-react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { createClient } from '@supabase/supabase-js';
-import { SEDES, GRUPOS, MATCHES } from '@/data/mundialData';
+import { SEDES, GRUPOS, MATCHES, getFlagUrl } from '@/data/mundialData';
 import WCGroupTable from '@/components/mundial/WCGroupTable';
 import WCMatchCard from '@/components/mundial/WCMatchCard';
 import WCBracket from '@/components/mundial/WCBracket';
@@ -31,11 +33,100 @@ const TAB_CONFIG = [
   { id: 'venues', label: 'Sedes', icon: MapPin },
 ];
 
+type WCTab = 'overview' | 'groups' | 'schedule' | 'bracket' | 'venues';
+
 export default function Mundial2026() {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState<WCTab>('overview');
   const [noticias, setNoticias] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [visibleMatches, setVisibleMatches] = useState(10);
+  const [venueFilter, setVenueFilter] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [timezone, setTimezone] = useState('America/Mexico_City');
+
+  const TIMEZONES = [
+    { value: 'America/Mexico_City', label: 'CDMX (UTC-6)',    short: 'CDMX' },
+    { value: 'America/New_York',    label: 'Este USA (EDT)',   short: 'EDT'  },
+    { value: 'America/Chicago',     label: 'Central USA (CDT)',short: 'CDT'  },
+    { value: 'America/Denver',      label: 'Montaña USA (MDT)',short: 'MDT'  },
+    { value: 'America/Los_Angeles', label: 'Pacífico USA (PDT)',short: 'PDT' },
+    { value: 'America/Toronto',     label: 'Toronto (EDT)',    short: 'TO'   },
+    { value: 'America/Vancouver',   label: 'Vancouver (PDT)', short: 'VAN'  },
+    { value: 'UTC',                 label: 'UTC (Referencia)', short: 'UTC'  },
+  ];
+
+  // Offset UTC de cada estadio en verano 2026 (DST aplicado: MX sin DST, US/CA con DST)
+  const STADIUM_UTC_OFFSET: Record<string, number> = {
+    'Estadio Ciudad de México':               -6,
+    'Estadio Guadalajara':                    -6,
+    'Estadio Monterrey':                      -6,
+    'Estadio de Toronto':                     -4,
+    'Estadio BC Place Vancouver':             -7,
+    'Estadio Nueva York/Nueva Jersey':        -4,
+    'Estadio Los Angeles':                    -7,
+    'Estadio Atlanta':                        -4,
+    'Estadio Dallas':                         -5,
+    'Estadio Houston':                        -5,
+    'Estadio Miami':                          -4,
+    'Estadio Boston':                         -4,
+    'Estadio Filadelfia':                     -4,
+    'Estadio Kansas City':                    -5,
+    'Estadio de la Bahía de San Francisco':   -7,
+    'Estadio de Seattle':                     -7,
+  };
+
+  /**
+   * Convierte la hora de un partido a la zona horaria seleccionada.
+   * - Si el partido tiene campo `utc` (sync script), lo usa directamente.
+   * - Si no, construye UTC desde fecha+hora local + offset conocido de la sede.
+   */
+  const convertirHora = (match: { hora: string; fecha: string; estadio: string; utc?: string }) => {
+    try {
+      let utcDate: Date;
+      if (match.utc) {
+        utcDate = new Date(match.utc);
+      } else {
+        const offset = STADIUM_UTC_OFFSET[match.estadio] ?? -6;
+        const localMs = new Date(`${match.fecha}T${match.hora}:00Z`).getTime();
+        utcDate = new Date(localMs - offset * 3_600_000);
+      }
+      const hora = utcDate.toLocaleTimeString('es-MX', {
+        timeZone: timezone,
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      });
+      return { hora, nota: '' };
+    } catch {
+      return { hora: match.hora, nota: 'Hora local sede' };
+    }
+  };
+
+  // Calcula el timestamp UTC de un partido para ordenamiento correcto
+  const getUtcMs = (m: { fecha: string; hora: string; estadio: string; utc?: string }) => {
+    if (m.utc) return new Date(m.utc).getTime();
+    const offset = STADIUM_UTC_OFFSET[m.estadio] ?? -6;
+    return new Date(`${m.fecha}T${m.hora}:00Z`).getTime() - offset * 3_600_000;
+  };
+
+  const filteredMatches = MATCHES
+    .filter(m => {
+      // 1. Filtro por sede
+      if (venueFilter && m.estadio !== venueFilter && m.ciudad !== venueFilter) return false;
+      // 2. Filtro de búsqueda (equipo, fase, sede, grupo)
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        const matchesQuery = 
+          m.equipo1.toLowerCase().includes(q) || 
+          m.equipo2.toLowerCase().includes(q) || 
+          m.fase.toLowerCase().includes(q) ||
+          m.estadio.toLowerCase().includes(q) ||
+          (m.grupo && m.grupo.toLowerCase() === q);
+        if (!matchesQuery) return false;
+      }
+      return true;
+    })
+    .sort((a, b) => getUtcMs(a) - getUtcMs(b));
 
   useEffect(() => {
     async function fetchWCNews() {
@@ -58,40 +149,82 @@ export default function Mundial2026() {
   }, []);
 
   const loadMoreMatches = () => {
-    setVisibleMatches(prev => Math.min(prev + 10, MATCHES.length));
+    setVisibleMatches(prev => Math.min(prev + 10, filteredMatches.length));
   };
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Event",
-    "name": "Copa Mundial de la FIFA 2026",
-    "startDate": "2026-06-11",
-    "endDate": "2026-07-19",
-    "eventStatus": "https://schema.org/EventScheduled",
-    "location": SEDES.map(s => ({
-      "@type": "Place",
-      "name": s.estadio,
-      "address": {
-        "@type": "PostalAddress",
-        "addressLocality": s.ciudad,
-        "addressCountry": s.pais === 'México' ? 'MX' : (s.pais === 'Canadá' ? 'CA' : 'US')
-      }
-    })),
-    "organizer": {
-      "@type": "Organization",
-      "name": "FIFA",
-      "url": "https://www.fifa.com"
-    },
-    "description": "El hub definitivo del Mundial 2026: Grupos, posiciones, calendario y sedes del torneo en México, USA y Canadá.",
-    "offers": {
-      "@type": "Offer",
-      "url": "https://www.fifa.com/tickets",
-      "price": "0",
-      "priceCurrency": "USD",
-      "availability": "https://schema.org/InStock",
-      "validFrom": "2025-01-01"
-    }
+  const handleVenueFilter = (venueName: string) => {
+    setVenueFilter(venueName);
+    setActiveTab('schedule');
+    setVisibleMatches(20);
+    window.scrollTo({ top: 300, behavior: 'smooth' });
   };
+
+  const clearFilter = () => {
+    setVenueFilter(null);
+    setSearchQuery('');
+    setVisibleMatches(10);
+  };
+
+  const now = new Date();
+
+  // Próximo partido (el siguiente en el futuro ordenado por UTC)
+  const proximoPartido = filteredMatches.find(m => {
+    const utcMs = getUtcMs(m);
+    return utcMs > now.getTime();
+  }) ?? null;
+
+  // Comprobar si un partido es HOY o LIVE (±110 min = duración aprox. partido)
+  const getMatchStatus = (m: { fecha: string; hora: string; estadio: string; utc?: string }) => {
+    const start = getUtcMs(m);
+    const diff  = now.getTime() - start;
+    if (diff >= 0 && diff < 110 * 60 * 1000) return 'live';
+    const todayStr = now.toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+    if (m.fecha === todayStr) return 'today';
+    return 'none';
+  };
+
+  const FAQS = [
+    { q: '¿Cuántas selecciones juegan en el Mundial 2026?', a: 'Por primera vez en la historia participarán 48 selecciones, divididas en 12 grupos de 4 equipos.' },
+    { q: '¿Cuándo empieza el Mundial 2026?', a: 'El torneo arranca el 11 de junio de 2026 con el partido inaugural México vs Sudáfrica en el Estadio Ciudad de México.' },
+    { q: '¿Dónde será la final del Mundial 2026?', a: 'La gran final se jugará el 19 de julio de 2026 en el MetLife Stadium de Nueva York/Nueva Jersey, USA.' },
+    { q: '¿Cuántos partidos albergará México en el Mundial 2026?', a: 'México albergará 13 partidos: 10 de fase de grupos (en CDMX, Guadalajara y Monterrey), 2 dieciseisavos y 1 octavo de final.' },
+    { q: '¿Cuántas sedes tiene el Mundial 2026?', a: 'Son 16 sedes en total: 3 en México (Ciudad de México, Guadalajara, Monterrey), 2 en Canadá (Vancouver, Toronto) y 11 en USA.' },
+  ];
+
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://www.guiasports.com" },
+        { "@type": "ListItem", "position": 2, "name": "Hub del Mundial 2026", "item": "https://www.guiasports.com/mundial-2026" }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": FAQS.map(f => ({
+        "@type": "Question",
+        "name": f.q,
+        "acceptedAnswer": { "@type": "Answer", "text": f.a }
+      }))
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "SportsEvent",
+      "name": "Copa Mundial de la FIFA 2026",
+      "startDate": "2026-06-11T19:00:00Z",
+      "endDate": "2026-07-19T21:00:00Z",
+      "eventStatus": "https://schema.org/EventScheduled",
+      "location": SEDES.map(s => ({
+        "@type": "Place",
+        "name": s.estadio,
+        "address": { "@type": "PostalAddress", "addressLocality": s.ciudad, "addressCountry": s.pais === 'México' ? 'MX' : (s.pais === 'Canadá' ? 'CA' : 'US') }
+      })),
+      "organizer": { "@type": "SportsOrganization", "name": "FIFA", "url": "https://www.fifa.com" },
+      "description": "La Copa Mundial de la FIFA 2026 se disputará en México, Estados Unidos y Canadá con 48 selecciones y 104 partidos del 11 de junio al 19 de julio de 2026."
+    }
+  ];
 
   return (
     <>
@@ -109,7 +242,7 @@ export default function Mundial2026() {
           <Breadcrumbs items={[]} current="Mundial 2026" />
 
           <header className="mb-10">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
               <div className="flex items-center gap-6">
                 <div className="bg-gradient-to-br from-yellow-500 to-yellow-700 p-5 rounded-3xl shadow-2xl shadow-yellow-900/20 text-5xl">
                   🏆
@@ -128,6 +261,21 @@ export default function Mundial2026() {
                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Inicia en</span>
                 <span className="text-2xl font-black italic text-white leading-none">JUN 11</span>
               </div>
+            </div>
+
+            {/* Stat Pills */}
+            <div className="flex flex-wrap gap-3">
+              {[
+                { valor: '48',  label: 'Selecciones', color: 'from-blue-600/20 to-blue-600/5   border-blue-500/20  text-blue-400'  },
+                { valor: '104', label: 'Partidos',    color: 'from-yellow-500/20 to-yellow-500/5 border-yellow-500/20 text-yellow-400' },
+                { valor: '16',  label: 'Sedes',       color: 'from-green-600/20 to-green-600/5  border-green-500/20 text-green-400'  },
+                { valor: '39',  label: 'Días',        color: 'from-purple-600/20 to-purple-600/5 border-purple-500/20 text-purple-400' },
+              ].map(({ valor, label, color }) => (
+                <div key={label} className={`flex items-center gap-2 bg-gradient-to-r ${color} border px-4 py-2 rounded-2xl`}>
+                  <span className={`text-lg font-black italic leading-none ${color.includes('blue') ? 'text-blue-400' : color.includes('yellow') ? 'text-yellow-400' : color.includes('green') ? 'text-green-400' : 'text-purple-400'}`}>{valor}</span>
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{label}</span>
+                </div>
+              ))}
             </div>
           </header>
 
@@ -154,22 +302,95 @@ export default function Mundial2026() {
                 {/* Countdown Timer */}
                 <WCCountdown />
 
+                {/* Próximo Partido Widget */}
+                {proximoPartido && (() => {
+                  const { hora } = convertirHora(proximoPartido);
+                  const tzShort = TIMEZONES.find(t => t.value === timezone)?.short ?? 'CDMX';
+                  return (
+                    <section
+                      className="relative overflow-hidden bg-gradient-to-r from-blue-950/80 via-slate-900/60 to-slate-900/40 border border-blue-500/30 rounded-[32px] p-6 md:p-8 shadow-2xl shadow-blue-900/20 cursor-pointer hover:border-blue-400/50 transition-all group/np"
+                      onClick={() => setActiveTab('schedule')}
+                      aria-label="Ver en el calendario"
+                    >
+                      <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/10 blur-[80px] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+                      <div className="flex flex-col md:flex-row md:items-center gap-6">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+                            <span className="text-[9px] font-black text-blue-400 uppercase tracking-[0.3em]">Próximo partido</span>
+                          </div>
+                          <div className="flex items-center gap-4 md:gap-8">
+                            <div className="flex flex-col items-center gap-1">
+                              {(() => { const f = getFlagUrl(proximoPartido.equipo1); return f ? <img src={f} alt={proximoPartido.equipo1} className="w-10 h-10 rounded-full object-cover border-2 border-white/10 shadow-lg" /> : <span className="text-3xl">🏳️</span>; })()}
+                              <span className="text-[10px] font-black uppercase text-white">{proximoPartido.equipo1}</span>
+                            </div>
+                            <span className="text-xl font-black italic text-slate-600">VS</span>
+                            <div className="flex flex-col items-center gap-1">
+                              {(() => { const f = getFlagUrl(proximoPartido.equipo2); return f ? <img src={f} alt={proximoPartido.equipo2} className="w-10 h-10 rounded-full object-cover border-2 border-white/10 shadow-lg" /> : <span className="text-3xl">🏳️</span>; })()}
+                              <span className="text-[10px] font-black uppercase text-white">{proximoPartido.equipo2}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex flex-col gap-2 md:items-end">
+                          <div className="flex items-center gap-2 text-slate-300 text-sm font-black">
+                            <Clock size={14} className="text-blue-400" />
+                            {hora} <span className="text-blue-400">{tzShort}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-slate-500 text-[10px] font-bold uppercase">
+                            <Calendar size={12} />
+                            {new Date(proximoPartido.fecha + 'T12:00:00').toLocaleDateString('es-MX', { weekday: 'long', day: '2-digit', month: 'long' })}
+                          </div>
+                          <div className="flex items-center gap-2 text-slate-500 text-[10px] font-bold uppercase">
+                            <MapPin size={12} />
+                            {proximoPartido.estadio}
+                          </div>
+                          {proximoPartido.grupo && (
+                            <span className="text-[8px] font-black bg-blue-600/20 border border-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full uppercase tracking-widest">Grupo {proximoPartido.grupo}</span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="absolute bottom-4 right-6 text-[9px] font-black text-slate-600 uppercase tracking-widest group-hover/np:text-blue-500 transition-colors">Ver en calendario →</div>
+                    </section>
+                  );
+                })()}
+
                 {/* Featured Highlight */}
-                <section className="bg-gradient-to-br from-blue-600/20 to-transparent border border-blue-500/20 rounded-[40px] p-8 md:p-12 relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <Trophy size={120} className="text-blue-500" />
+                <section 
+                  className="relative overflow-hidden group rounded-[40px] border border-blue-500/20 min-h-[420px] flex items-center cursor-pointer shadow-2xl"
+                  onClick={() => setActiveTab('venues')}
+                >
+                  {/* Background Image Container */}
+                  <div className="absolute inset-0 z-0 select-none">
+                    <img 
+                      src="/images/mundial/azteca.png" 
+                      alt="Estadio Azteca" 
+                      className="w-full h-full object-cover scale-100 group-hover:scale-110 transition-transform duration-[3000ms] ease-out opacity-40"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#020617] via-[#020617]/80 to-transparent"></div>
                   </div>
-                  <div className="relative z-10 max-w-xl">
-                    <div className="bg-blue-600 text-[9px] font-black px-3 py-1 rounded-full w-fit uppercase mb-6 tracking-widest">Destacado</div>
-                    <h2 className="text-2xl md:text-4xl font-black italic uppercase text-white mb-6 leading-tight">
-                      El Estadio Azteca hará historia con el <span className="text-[#a3e635]">partido inaugural</span>
+
+                  <div className="relative z-10 p-8 md:p-14 max-w-xl">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="bg-blue-600 text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg shadow-blue-500/20">Destacado</div>
+                      <div className="flex animate-pulse">
+                        <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full"></span>
+                      </div>
+                    </div>
+                    <h2 className="text-3xl md:text-5xl font-black italic uppercase text-white mb-6 leading-[0.95] tracking-tighter">
+                      El Estadio Azteca hará historia con el <span className="text-yellow-500 drop-shadow-sm">partido inaugural</span>
                     </h2>
-                    <p className="text-slate-300 text-sm leading-relaxed mb-8">
+                    <p className="text-slate-300 text-sm md:text-base leading-relaxed mb-8 font-medium drop-shadow-md">
                       Ciudad de México se convertirá en la única ciudad en el planeta en haber albergado tres partidos inaugurales de Copas del Mundo. La pasión por el fútbol regresa a su templo sagrado el 11 de junio de 2026.
                     </p>
-                    <button className="bg-white text-black px-8 py-4 rounded-2xl font-black text-xs uppercase italic hover:bg-slate-200 transition-all flex items-center gap-2 shadow-xl shadow-white/10">
-                      Ver detalles de la sede <ChevronRight size={16} />
+                    <button className="group/btn bg-white text-black px-8 py-5 rounded-2xl font-black text-[10px] uppercase italic hover:bg-yellow-500 transition-all flex items-center gap-3 shadow-2xl shadow-black/40">
+                      Explorar sedes oficiales 
+                      <ChevronRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
                     </button>
+                  </div>
+
+                  {/* Floating Trophy Icon - Decorative */}
+                  <div className="absolute bottom-0 right-0 p-12 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity duration-700 pointer-events-none">
+                    <Trophy size={200} className="text-white rotate-12" />
                   </div>
                 </section>
 
@@ -225,18 +446,131 @@ export default function Mundial2026() {
 
             {activeTab === 'schedule' && (
               <div className="pb-12">
-                <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Calendario Oficial</h2>
-                  <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest bg-blue-500/10 px-3 py-1 rounded-lg">104 Partidos</span>
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                  <div>
+                    <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Calendario Oficial</h2>
+                    <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest bg-blue-500/10 px-3 py-1 rounded-lg mt-2 inline-block">104 Partidos totales</span>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-3">
+                    {/* SELECTOR DE ZONA HORARIA — SEO + UX */}
+                    <div className="flex items-center gap-2 bg-slate-900/50 border border-slate-700/50 px-3 py-2 rounded-2xl" title="Zona horaria para los horarios del mundial">
+                      <Clock size={12} className="text-blue-400 shrink-0" />
+                      <label htmlFor="tz-selector" className="text-[9px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Hora en:</label>
+                      <select
+                        id="tz-selector"
+                        value={timezone}
+                        onChange={e => setTimezone(e.target.value)}
+                        className="bg-transparent text-[10px] font-black text-white uppercase outline-none cursor-pointer"
+                        aria-label="Seleccionar zona horaria para el calendario del Mundial 2026"
+                      >
+                        {TIMEZONES.map(tz => (
+                          <option key={tz.value} value={tz.value} className="bg-slate-900 text-white">
+                            {tz.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* BUSCADOR AVANZADO */}
+                    <div className="flex items-center gap-2 bg-slate-900/50 border border-slate-700/50 px-3 py-2 rounded-2xl md:min-w-[200px]">
+                      <Search size={12} className="text-slate-400 shrink-0" />
+                      <input
+                        type="text"
+                        placeholder="Buscar equipo o fase..."
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                        className="bg-transparent text-[10px] font-black text-white uppercase outline-none placeholder:text-slate-600 w-full"
+                      />
+                      {searchQuery && (
+                        <button onClick={() => setSearchQuery('')} className="text-slate-500 hover:text-white">
+                          <X size={12} />
+                        </button>
+                      )}
+                    </div>
+
+                    {venueFilter && (
+                      <div className="flex items-center gap-3 bg-blue-600/10 border border-blue-500/30 px-4 py-2 rounded-2xl animate-in zoom-in-95 duration-300">
+                        <span className="text-[9px] font-black text-blue-400 uppercase tracking-tight">Sede: {venueFilter}</span>
+                        <button 
+                          onClick={clearFilter}
+                          className="bg-blue-600 text-white p-1 rounded-full hover:bg-blue-500 transition-colors"
+                        >
+                          <X size={10} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                <div className="flex flex-col gap-3 mb-12 [overflow-anchor:auto]">
-                  {MATCHES.slice(0, visibleMatches).map(m => (
-                    <WCMatchCard key={m.id} match={m} />
-                  ))}
+                {/* Agrupación por fecha con separadores visuales */}
+                <div className="flex flex-col gap-0 mb-12 [overflow-anchor:auto]">
+                  {(() => {
+                    const visibles = filteredMatches.slice(0, visibleMatches);
+                    // Agrupar por fecha
+                    const byDate: Record<string, typeof visibles> = {};
+                    visibles.forEach(m => {
+                      if (!byDate[m.fecha]) byDate[m.fecha] = [];
+                      byDate[m.fecha].push(m);
+                    });
+                    const tzShort = TIMEZONES.find(t => t.value === timezone)?.short ?? 'CDMX';
+                    const todayStr = now.toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+
+                    return Object.entries(byDate).map(([fecha, partidos]) => {
+                      const esHoy = fecha === todayStr;
+                      const fechaLabel = new Date(fecha + 'T12:00:00').toLocaleDateString('es-MX', {
+                        weekday: 'long', day: 'numeric', month: 'long'
+                      });
+                      return (
+                        <div key={fecha} className="mb-6">
+                          {/* Separador de fecha */}
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border ${
+                              esHoy
+                                ? 'bg-green-500/10 border-green-500/30'
+                                : 'bg-slate-900/40 border-slate-800/50'
+                            }`}>
+                              {esHoy && <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />}
+                              <span className={`text-[9px] font-black uppercase tracking-widest ${
+                                esHoy ? 'text-green-400' : 'text-slate-500'
+                              }`}>
+                                {esHoy ? '● Hoy · ' : ''}{fechaLabel}
+                              </span>
+                            </div>
+                            <div className="flex-1 h-px bg-slate-800/60" />
+                            <span className="text-[8px] font-black text-slate-700 uppercase">{partidos.length} partido{partidos.length > 1 ? 's' : ''}</span>
+                          </div>
+
+                          {/* Partidos del día */}
+                          <div className="flex flex-col gap-3">
+                            {partidos.map(m => {
+                              const { hora, nota } = convertirHora(m);
+                              const status = getMatchStatus(m);
+                              return (
+                                <WCMatchCard
+                                  key={m.id}
+                                  match={m}
+                                  horaConvertida={hora}
+                                  notaHora={nota}
+                                  tzShort={tzShort}
+                                  matchStatus={status}
+                                />
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()}
+
+                  {filteredMatches.length === 0 && (
+                    <div className="text-center py-20 bg-slate-900/20 rounded-[40px] border border-dashed border-slate-800">
+                      <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">No hay partidos confirmados para esta sede aún</p>
+                    </div>
+                  )}
                 </div>
-                
-                {visibleMatches < MATCHES.length && (
+
+                {visibleMatches < filteredMatches.length && (
                   <div className="text-center mt-6 pb-32">
                     <button 
                       onClick={loadMoreMatches}
@@ -260,8 +594,17 @@ export default function Mundial2026() {
 
             {activeTab === 'venues' && (
               <div className="grid gap-6 animate-in fade-in duration-500">
-                {SEDES.map(s => (
-                  <div key={s.id} className="bg-slate-900/30 border border-slate-800/50 rounded-[40px] overflow-hidden group hover:border-blue-500/30 transition-all shadow-2xl">
+                {SEDES.map(s => {
+                  const isMx = s.pais === 'México';
+                  const isCa = s.pais === 'Canadá';
+                  
+                  const borderColor = isMx ? 'border-green-500/30 group-hover:border-green-400/50' : (isCa ? 'border-red-500/30 group-hover:border-red-400/50' : 'border-blue-500/30 group-hover:border-blue-400/50');
+                  const pulseColor = isMx ? 'bg-green-500' : (isCa ? 'bg-red-500' : 'bg-blue-500');
+                  const textColor = isMx ? 'text-green-400' : (isCa ? 'text-red-400' : 'text-blue-400');
+                  const glowColor = isMx ? 'group-hover:shadow-[0_0_30px_rgba(34,197,94,0.15)]' : (isCa ? 'group-hover:shadow-[0_0_30px_rgba(239,68,68,0.15)]' : 'group-hover:shadow-[0_0_30px_rgba(59,130,246,0.15)]');
+
+                  return (
+                  <div key={s.id} className={`bg-slate-900/30 border rounded-[40px] overflow-hidden group transition-all shadow-2xl ${borderColor} ${glowColor}`}>
                     <div className="flex flex-col md:flex-row min-h-[280px]">
                       <div className="md:w-2/5 relative overflow-hidden bg-slate-800">
                         {s.imagen.startsWith('/') ? (
@@ -275,14 +618,20 @@ export default function Mundial2026() {
                             {s.imagen}
                           </div>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60 md:hidden"></div>
+                        <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-slate-950/20 to-slate-950/90 hidden md:block z-10`}></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60 md:hidden z-10"></div>
+                        <div className="absolute top-4 left-4 z-20">
+                          <span className={`text-[8px] font-black uppercase tracking-widest px-3 py-1 rounded-full border bg-slate-900/80 backdrop-blur-sm ${borderColor} ${textColor}`}>
+                            {s.pais}
+                          </span>
+                        </div>
                       </div>
-                      <div className="p-8 md:p-10 md:w-3/5 flex flex-col justify-center">
+                      <div className="p-8 md:p-10 md:w-3/5 flex flex-col justify-center relative z-20 bg-slate-950/50 md:bg-transparent">
                         <div className="flex justify-between items-start mb-6">
                           <div>
                             <div className="flex items-center gap-2 mb-2">
-                              <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-                              <p className="text-blue-500 text-[10px] font-black uppercase tracking-[0.3em]">{s.ciudad}, {s.pais}</p>
+                              <span className={`w-2 h-2 rounded-full animate-pulse ${pulseColor}`}></span>
+                              <p className={`text-[10px] font-black uppercase tracking-[0.3em] ${textColor}`}>{s.ciudad}</p>
                             </div>
                             <h3 className="text-3xl font-black italic uppercase text-white leading-none tracking-tighter">{s.estadio}</h3>
                           </div>
@@ -292,15 +641,24 @@ export default function Mundial2026() {
                           </div>
                         </div>
                         <p className="text-slate-400 text-sm leading-relaxed mb-8 font-medium">{s.detalles}</p>
-                        <div className="flex items-center gap-4">
-                          <button className="bg-blue-600/10 hover:bg-blue-600 text-blue-400 hover:text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-blue-500/20">
-                            Ver Calendario en Sede
+                        <div className="flex flex-wrap items-center gap-4">
+                          <Link 
+                            href={`/mundial-2026/${s.id}`}
+                            className={`bg-slate-800 hover:bg-slate-700 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-slate-700 hover:border-slate-500`}
+                          >
+                            Conocer Sede y Partidos
+                          </Link>
+                          <button 
+                            onClick={() => handleVenueFilter(s.estadio)}
+                            className={`bg-slate-900 text-slate-400 hover:text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-slate-800 hover:border-white/20`}
+                          >
+                            Filtrar aquí
                           </button>
                         </div>
                       </div>
                     </div>
                   </div>
-                ))}
+                )})}
               </div>
             )}
           </main>

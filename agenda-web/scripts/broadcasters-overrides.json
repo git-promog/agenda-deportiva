@@ -1,0 +1,10 @@
+{
+  "_README": "Edita este archivo para agregar transmisiones por partido. Usa el id del partido (m1, m2, ...). El script sync-fifa.mjs lee este archivo y lo PRESERVA sin sobreescribir.",
+  "m1":  { "broadcasters": "Televisa, TV Azteca, ViX" },
+  "m2":  { "broadcasters": "Televisa, TV Azteca, ViX" },
+  "m3":  { "broadcasters": "TSN, TVA Sports" },
+  "m4":  { "broadcasters": "Telemundo, Fox Sports, ViX" },
+  "m53": { "broadcasters": "Televisa, TV Azteca, ViX" },
+  "m54": { "broadcasters": "Televisa, TV Azteca, ViX" },
+  "m104": { "broadcasters": "Televisa, TV Azteca, ViX, Telemundo, Fox Sports" }
+}

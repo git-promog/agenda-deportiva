@@ -246,8 +246,21 @@ export default function AdminPanel() {
       const data = await res.json();
       if (!data.success) { showToast("Error: " + (data.error || "No se pudo actualizar"), "error"); return; }
     } else {
-      res = await supabase.from('noticias').insert([noticiaParaSubir]);
-      if (res.error) { showToast("Error: " + res.error.message, "error"); return; }
+      res = await fetch("/api/noticias/publicar", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET || "guiasports-secret-2024"}`,
+        },
+        body: JSON.stringify({
+          titulo: editandoNoticia.titulo,
+          contenido: editandoNoticia.contenido,
+          imagen_url: editandoNoticia.imagen_url,
+          fecha: editandoNoticia.fecha,
+        }),
+      });
+      const data = await res.json();
+      if (!data.success) { showToast("Error: " + (data.error || "No se pudo crear"), "error"); return; }
     }
 
     showToast(editandoNoticia.id ? "Noticia actualizada" : "Noticia publicada");

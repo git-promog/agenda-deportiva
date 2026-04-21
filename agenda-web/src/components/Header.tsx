@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import NextImage from 'next/image';
 import { Newspaper, Radio, Mail, Users } from 'lucide-react';
@@ -12,9 +13,26 @@ interface HeaderProps {
 }
 
 export default function Header({ ultimaAct, showSearch = false, busqueda = '', onBusquedaChange }: HeaderProps) {
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const totalScroll = window.scrollY;
+      const windowHeight = document.body.scrollHeight - window.innerHeight;
+      if (windowHeight > 0) {
+        setScrollProgress((totalScroll / windowHeight) * 100);
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <>
-      <div className="border-b border-white/5 bg-[#020617]/70 backdrop-blur-2xl w-full overflow-x-hidden relative z-50">
+      <div className="fixed top-0 left-0 w-full h-1 bg-slate-900 z-[60]">
+        <div className="h-full bg-gradient-to-r from-[#a3e635] to-blue-500 transition-all duration-75" style={{ width: `${scrollProgress}%` }}></div>
+      </div>
+      <div className="border-b border-white/5 bg-[#020617]/50 backdrop-blur-xl w-full overflow-x-hidden relative z-50 pt-1">
         <div className="max-w-4xl mx-auto px-4 pt-4 w-full">
           <div className="flex justify-between items-center mb-4">
             <Link href="/" className="transition-transform active:scale-95">

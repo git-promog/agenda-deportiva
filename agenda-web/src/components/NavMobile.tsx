@@ -22,29 +22,31 @@ export default function NavMobile() {
   };
 
   return (
-    <div className="md:hidden fixed bottom-6 left-4 right-4 bg-slate-900/80 backdrop-blur-3xl border border-white/10 rounded-3xl py-3 px-6 z-[9999] shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-      <div className="flex justify-between items-center max-w-sm mx-auto">
-        <Link href="/" className={`flex flex-col items-center gap-1 w-14 transition-colors ${pathname === '/' ? 'text-[#a3e635]' : 'text-slate-500 hover:text-slate-300'}`}>
-          <Home size={20} className={pathname === '/' ? 'fill-[#a3e635]/20' : ''} />
-          <span className="text-[8px] font-black uppercase tracking-widest">Inicio</span>
+    <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] bg-black/40 backdrop-blur-2xl border border-white/10 rounded-full py-3 px-6 z-[9999] shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
+      <div className="flex justify-between items-center w-full">
+        <Link href="/" className={`group flex flex-col items-center gap-1 w-14 transition-all hover:-translate-y-2 ${pathname === '/' ? 'text-[#a3e635]' : 'text-slate-400 hover:text-white'}`}>
+          <div className={`p-2 rounded-2xl transition-all ${pathname === '/' ? 'bg-[#a3e635]/20 shadow-[0_0_15px_rgba(163,230,53,0.3)]' : 'group-hover:bg-white/10'}`}>
+            <Home size={22} className={pathname === '/' ? 'fill-[#a3e635]/20' : ''} />
+          </div>
         </Link>
         
-        <button onClick={() => scrollToSection('buscar')} className="flex flex-col items-center gap-1 w-14 text-slate-500 hover:text-slate-300 transition-colors">
-          <Search size={20} />
-          <span className="text-[8px] font-black uppercase tracking-widest">Buscar</span>
-        </button>
-
-        <button onClick={() => { window.dispatchEvent(new CustomEvent('scroll-to-live')); }} className="flex flex-col items-center gap-1 w-14 transition-colors relative">
-          <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-          <div className="bg-red-600/20 p-2 rounded-xl border border-red-500/30">
-            <Radio size={20} className="text-red-500" />
+        <button onClick={() => scrollToSection('buscar')} className="group flex flex-col items-center gap-1 w-14 text-slate-400 hover:text-white transition-all hover:-translate-y-2">
+          <div className="p-2 rounded-2xl transition-all group-hover:bg-white/10">
+            <Search size={22} />
           </div>
-          <span className="text-[8px] font-black uppercase tracking-widest text-red-500">En Vivo</span>
         </button>
 
-        <Link href="/noticias" className={`flex flex-col items-center gap-1 w-14 transition-colors ${pathname.includes('/noticias') ? 'text-[#a3e635]' : 'text-slate-500 hover:text-slate-300'}`}>
-          <Newspaper size={20} className={pathname.includes('/noticias') ? 'fill-[#a3e635]/20' : ''} />
-          <span className="text-[8px] font-black uppercase tracking-widest">Noticias</span>
+        <button onClick={() => { window.dispatchEvent(new CustomEvent('scroll-to-live')); }} className="group flex flex-col items-center gap-1 w-14 transition-all hover:-translate-y-2 relative">
+          <div className="absolute top-1 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse z-10"></div>
+          <div className="p-2 rounded-2xl transition-all bg-red-600/20 border border-red-500/30 group-hover:bg-red-600/30 group-hover:shadow-[0_0_15px_rgba(220,38,38,0.4)]">
+            <Radio size={22} className="text-red-500" />
+          </div>
+        </button>
+
+        <Link href="/noticias" className={`group flex flex-col items-center gap-1 w-14 transition-all hover:-translate-y-2 ${pathname.includes('/noticias') ? 'text-blue-400' : 'text-slate-400 hover:text-white'}`}>
+          <div className={`p-2 rounded-2xl transition-all ${pathname.includes('/noticias') ? 'bg-blue-600/20 shadow-[0_0_15px_rgba(59,130,246,0.3)] border border-blue-500/30' : 'group-hover:bg-white/10'}`}>
+            <Newspaper size={22} className={pathname.includes('/noticias') ? 'fill-blue-400/20' : ''} />
+          </div>
         </Link>
       </div>
     </div>

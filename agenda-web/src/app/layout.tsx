@@ -51,7 +51,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body className={`${inter.className} bg-[#020617] pb-16 md:pb-0`}>
+      <body className={`${inter.className} bg-[#020617] pb-16 md:pb-0`} suppressHydrationWarning>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}

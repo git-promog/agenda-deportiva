@@ -22,8 +22,8 @@ export default function NavMobile() {
   };
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0f172a]/90 backdrop-blur-xl border-t border-slate-800 pb-safe pt-2 px-4 z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.3)]">
-      <div className="flex justify-between items-center h-16 max-w-md mx-auto">
+    <div className="md:hidden fixed bottom-6 left-4 right-4 bg-slate-900/80 backdrop-blur-3xl border border-white/10 rounded-3xl py-3 px-6 z-[9999] shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+      <div className="flex justify-between items-center max-w-sm mx-auto">
         <Link href="/" className={`flex flex-col items-center gap-1 w-14 transition-colors ${pathname === '/' ? 'text-[#a3e635]' : 'text-slate-500 hover:text-slate-300'}`}>
           <Home size={20} className={pathname === '/' ? 'fill-[#a3e635]/20' : ''} />
           <span className="text-[8px] font-black uppercase tracking-widest">Inicio</span>

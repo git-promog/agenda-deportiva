@@ -99,7 +99,7 @@ export default async function NoticiasIndex({
           {noticias && noticias.length > 0 ? (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {noticias.map((n: any) => (
+                {noticias.map((n: any, idx: number) => (
                   <Link key={n.id} href={`/noticias/${n.slug}`} className="group bg-slate-900/50 border border-slate-800/50 rounded-[32px] overflow-hidden hover:border-slate-700 hover:bg-slate-900/80 transition-all duration-300">
                     {n.imagen_url ? (
                       <div className="w-full h-44 overflow-hidden relative">
@@ -109,7 +109,8 @@ export default async function NoticiasIndex({
                           fill
                           className="object-cover group-hover:scale-105 transition-transform duration-700"
                           sizes="(max-width: 768px) 100vw, 50vw"
-                          loading="lazy"
+                          priority={idx < 2}
+                          loading={idx < 2 ? undefined : "lazy"}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent opacity-60"></div>
                       </div>

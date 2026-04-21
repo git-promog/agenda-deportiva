@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Tv, Calendar, Trophy, Clock, Zap, Filter, Star, Search, X, CalendarDays, ChevronLeft, ChevronRight, Newspaper, ArrowUp, Shield, Radio } from 'lucide-react';
 import Link from 'next/link';
@@ -9,6 +9,9 @@ import AdPlacement from '@/components/AdPlacement';
 import NavMobile from '@/components/NavMobile';
 import Header from '@/components/Header';
 import ShareButton from '@/components/ShareButton';
+import SportEventCard from '@/components/SportEventCard';
+import HomeHero from '@/components/HomeHero';
+import HomeDestacados from '@/components/HomeDestacados';
 
 const emojis: { [key: string]: string } = {
   "Fútbol": "⚽️", "Básquetbol": "🏀", "Béisbol": "⚾️", "Fórmula 1": "🏎️", 
@@ -193,7 +196,30 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   if (soloTvAbierta) activeFilters.push("📺 TV Abierta");
   if (soloEnVivo) activeFilters.push("🔴 En Vivo");
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "itemListElement": eventosFiltrados.slice(0, 50).map((evento: any, index: number) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "item": {
+        "@type": "SportsEvent",
+        "name": `${evento.evento} - ${evento.competicion}`,
+        "startDate": `${evento.fecha}T${evento.hora}:00-06:00`,
+        "sport": evento.deporte,
+        "location": {
+          "@type": "Place",
+          "name": "Transmisión por TV/Streaming",
+          "address": "México"
+        },
+        "description": `Transmisión de ${evento.evento} por ${evento.canales} a las ${evento.hora}`,
+      }
+    }))
+  };
+
   return (
+    <>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-24 w-full">
       
       <Header ultimaAct={initialUltimaAct} showSearch={true} busqueda={busqueda} onBusquedaChange={setBusqueda} />
@@ -296,63 +322,10 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
       <main id="envivo" className="max-w-4xl mx-auto px-4 pt-24 pb-8">
         {!busqueda && (filtroFecha === "Todos" || filtroFecha === hoyStr) && (
           <>
-            {eventoHero && (
-              <div className="mb-12 relative w-full h-[320px] md:h-[400px] rounded-[40px] overflow-hidden group shadow-2xl border border-slate-800">
-                <div className="absolute inset-0 bg-gradient-to-br from-slate-900 to-[#020617] animate-pulse opacity-50"></div>
-                <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#ffffff_2px,transparent_2px)] [background-size:24px_24px]"></div>
-                <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-[#020617]/80 to-transparent z-10"></div>
-                <div className="absolute inset-0 z-20 flex flex-col justify-between p-8 md:p-12">
-                  <div className="flex justify-between items-start">
-                    <div className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black tracking-widest uppercase border ${tipoHero === "EN VIVO AHORA" ? "bg-red-600 border-red-500 text-white shadow-[0_0_20px_rgba(220,38,38,0.5)] animate-pulse" : "bg-blue-600/20 text-blue-400 border-blue-500/50"} backdrop-blur-md`}>
-                      {tipoHero === "EN VIVO AHORA" && <div className="w-2 h-2 bg-white rounded-full animate-ping mr-1"></div>}
-                      {tipoHero}
-                    </div>
-                    <ShareButton 
-                      titulo={eventoHero.evento} 
-                      url={`https://www.guiasports.com/?evento=${eventoHero.id}`} 
-                      variant="icon"
-                      className="!bg-white/10 !text-white !p-3 !rounded-full !hover:!bg-white/20"
-                    />
-                  </div>
-                  <div>
-                    <div className="text-[12px] font-black text-[#a3e635] uppercase tracking-widest mb-3 drop-shadow-lg flex items-center gap-2">
-                        <span className="text-2xl" suppressHydrationWarning>{emojis[eventoHero.deporte] || "🏆"}</span> {eventoHero.competicion}
-                    </div>
-                    <h1 className="text-3xl md:text-5xl font-black italic uppercase text-white leading-none mb-6 drop-shadow-2xl">{eventoHero.evento}</h1>
-                    <div className="flex flex-wrap items-center gap-4">
-                      <div className="bg-[#a3e635] text-black px-6 py-3 rounded-2xl font-black text-sm uppercase italic flex items-center gap-2 shadow-[0_0_30px_rgba(163,230,53,0.3)]">
-                        <Tv size={18} /> {eventoHero.canales}
-                      </div>
-                      <div className="bg-slate-900/80 border border-slate-700 backdrop-blur-md text-white px-6 py-3 rounded-2xl font-mono font-bold text-sm flex items-center gap-2">
-                        <Clock className="text-blue-400" size={18} /> {eventoHero.hora}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="absolute -right-10 -bottom-10 text-[250px] md:text-[350px] opacity-[0.03] z-0 transform -rotate-12 pointer-events-none">{emojis[eventoHero.deporte] || "🏆"}</div>
-              </div>
-            )}
+            <HomeHero evento={eventoHero} tipo={tipoHero} />
 
-            {destacados.length > 0 && filtroFecha === "Todos" && filtroDeporte === "Todos" && (
-              <div className="mb-12">
-                <h2 className="text-[10px] font-black text-yellow-500 uppercase tracking-[0.3em] mb-4 flex items-center gap-2"><Star className="w-3 h-3 fill-yellow-500" /> Imperdibles de Hoy</h2>
-                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
-                  {destacados.map((e) => (
-                    <div key={e.id} className="min-w-[85vw] sm:min-w-[300px] bg-gradient-to-br from-blue-600 to-blue-900 justify-between p-[1px] rounded-3xl relative overflow-hidden group">
-                      <div className="bg-[#020617]/80 backdrop-blur-sm p-5 rounded-[23px] h-full flex flex-col justify-between italic text-white hover:bg-transparent transition-colors duration-500 relative z-10">
-                        <div>
-                          <div className="text-[9px] font-black text-blue-400 uppercase mb-2">{e.competicion}</div>
-                          <div className="text-lg font-black leading-tight mb-4 uppercase">{e.evento}</div>
-                        </div>
-                        <div className="flex justify-between items-center mt-4">
-                           <div className="flex items-center gap-2 font-mono font-bold"><Clock className="w-4 h-4 text-blue-400" /> {e.hora}</div>
-                           <div className="text-[10px] font-black text-[#a3e635] bg-[#a3e635]/20 px-3 py-1 rounded-lg border border-[#a3e635]/30 backdrop-blur-md">{e.canales}</div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            {filtroFecha === "Todos" && filtroDeporte === "Todos" && (
+              <HomeDestacados destacados={destacados} />
             )}
 
             {noticias.length > 0 && (
@@ -414,36 +387,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
               <div className="grid gap-3">
                 {eventosAgrupados[fecha].map((evento: any, index: number) => (
                   <div key={evento.id} id={`evento-${evento.id}`} data-envivo={estaEnVivo(evento.fecha, evento.hora) ? 'true' : 'false'}>
-                    <div className="group bg-slate-900/30 border border-slate-800/50 rounded-2xl p-4 hover:border-blue-500/30 hover:bg-slate-900/60 transition-all duration-300">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-                        <div className="flex flex-row items-start sm:items-center gap-2 sm:gap-3 w-full">
-                          <div className="flex flex-col justify-center min-w-[50px] sm:min-w-[65px] text-blue-400 font-mono font-black text-sm md:text-xl shrink-0 border-r border-slate-800/60 pr-2 sm:pr-3">
-                            {evento.hora}
-                            {estaEnVivo(evento.fecha, evento.hora) && (
-                              <div className="flex items-center gap-1 mt-1 justify-center"><div className="w-1.5 h-1.5 bg-red-600 rounded-full animate-ping"></div><span className="text-[7px] font-black text-red-500 uppercase">LIVE</span></div>
-                            )}
-                          </div>
-                          <div className="flex-1 flex items-start sm:items-center justify-start min-w-0 pr-1">
-                            <span className="text-xl sm:text-2xl md:text-4xl opacity-80 mr-2 sm:mr-3 shrink-0 pt-0.5 sm:pt-0">{emojis[evento.deporte] || "🏆"}</span>
-                            <div className="min-w-0 flex-1 overflow-hidden">
-                              <div className="text-[8px] sm:text-[9px] font-black text-slate-500 uppercase mb-0.5 truncate">{evento.competicion}</div>
-                              <h3 className="text-[12px] sm:text-[14px] md:text-[15px] font-bold text-slate-200 leading-snug break-words line-clamp-2 md:line-clamp-2">{evento.evento}</h3>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex flex-row items-center gap-2 shrink-0 w-full sm:w-auto sm:overflow-visible border-t sm:border-t-0 border-slate-800/50 pt-2 sm:pt-0 mt-1 sm:mt-0">
-                          <div className="flex-1 sm:flex-none flex items-center justify-start sm:justify-start gap-2 bg-[#020617] px-3 md:px-4 py-2 rounded-xl border border-slate-800 min-w-0 overflow-hidden">
-                            <Tv className="w-3 h-3 sm:w-4 sm:h-4 text-slate-600 shrink-0" />
-                            <span className="text-[10px] md:text-[11px] font-black text-[#a3e635] italic uppercase whitespace-normal break-words py-0.5">{evento.canales}</span>
-                          </div>
-                          <ShareButton 
-                            titulo={evento.evento} 
-                            url={`https://www.guiasports.com/?evento=${evento.id}`} 
-                            variant="icon"
-                          />
-                        </div>
-                      </div>
-                    </div>
+                    <SportEventCard evento={evento} isLive={estaEnVivo(evento.fecha, evento.hora)} />
                     {(index + 1) % 8 === 0 && index !== eventosAgrupados[fecha].length - 1 && <AdPlacement />}
                   </div>
                 ))}
@@ -470,5 +414,6 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
         <ArrowUp size={24} strokeWidth={3} />
       </button>
     </div>
+    </>
   );
 }

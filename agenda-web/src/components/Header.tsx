@@ -14,7 +14,7 @@ interface HeaderProps {
 export default function Header({ ultimaAct, showSearch = false, busqueda = '', onBusquedaChange }: HeaderProps) {
   return (
     <>
-      <div className="border-b border-slate-800 bg-[#020617]/95 backdrop-blur-md w-full overflow-x-hidden">
+      <div className="border-b border-white/5 bg-[#020617]/70 backdrop-blur-2xl w-full overflow-x-hidden relative z-50">
         <div className="max-w-4xl mx-auto px-4 pt-4 w-full">
           <div className="flex justify-between items-center mb-4">
             <Link href="/" className="transition-transform active:scale-95">

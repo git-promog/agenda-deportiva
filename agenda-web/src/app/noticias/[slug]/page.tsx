@@ -448,7 +448,7 @@ export default async function NoticiaDetalle({ params }: Props) {
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-700"
               sizes="(max-width: 768px) 100vw, 800px"
-              fetchPriority="high"
+              priority={true}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent opacity-80 mix-blend-multiply"></div>
           </div>

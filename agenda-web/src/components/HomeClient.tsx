@@ -50,6 +50,10 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
     if (searchParams.get('envivo') === '1') {
       setSoloEnVivo(true);
     }
+    const comp = searchParams.get('competicion');
+    if (comp) {
+      setFiltroCompeticion(comp);
+    }
   }, [searchParams]);
 
   useEffect(() => {
@@ -349,29 +353,17 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
           </>
         )}
 
-        {/* HUBS DE DEPORTES */}
+        {/* HUBS DE COMPETICIONES */}
         <section className="mb-12">
-          <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-3">Explora por Deporte</h2>
+          <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-3">Competiciones Destacadas</h2>
           <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-            <Link href="/futbol" className="flex-shrink-0 bg-slate-900/50 border border-slate-800 px-5 py-3 rounded-xl text-center hover:border-[#a3e635]/30 transition-all group">
-              <div className="text-xl mb-1">⚽️</div>
-              <div className="text-[9px] font-black uppercase text-slate-400 group-hover:text-white transition-colors whitespace-nowrap">Fútbol</div>
+            <Link href="/mundial-2026" className="flex-shrink-0 bg-gradient-to-br from-yellow-500/10 to-yellow-700/5 border border-yellow-500/20 px-6 py-4 rounded-2xl text-center hover:border-yellow-500/40 transition-all group shadow-lg shadow-yellow-900/5">
+              <div className="text-2xl mb-1.5">🏆</div>
+              <div className="text-[10px] font-black uppercase text-yellow-500 group-hover:text-yellow-400 transition-colors whitespace-nowrap">Mundial 2026</div>
             </Link>
-            <Link href="/nba" className="flex-shrink-0 bg-slate-900/50 border border-slate-800 px-5 py-3 rounded-xl text-center hover:border-blue-500/30 transition-all group">
-              <div className="text-xl mb-1">🏀</div>
-              <div className="text-[9px] font-black uppercase text-slate-400 group-hover:text-white transition-colors whitespace-nowrap">NBA</div>
-            </Link>
-            <Link href="/mlb" className="flex-shrink-0 bg-slate-900/50 border border-slate-800 px-5 py-3 rounded-xl text-center hover:border-blue-500/30 transition-all group">
-              <div className="text-xl mb-1">⚾️</div>
-              <div className="text-[9px] font-black uppercase text-slate-400 group-hover:text-white transition-colors whitespace-nowrap">MLB</div>
-            </Link>
-            <Link href="/f1" className="flex-shrink-0 bg-slate-900/50 border border-slate-800 px-5 py-3 rounded-xl text-center hover:border-red-500/30 transition-all group">
-              <div className="text-xl mb-1">🏎️</div>
-              <div className="text-[9px] font-black uppercase text-slate-400 group-hover:text-white transition-colors whitespace-nowrap">Fórmula 1</div>
-            </Link>
-            <Link href="/mundial-2026" className="flex-shrink-0 bg-gradient-to-br from-yellow-500/10 to-yellow-700/5 border border-yellow-500/20 px-5 py-3 rounded-xl text-center hover:border-yellow-500/40 transition-all group">
-              <div className="text-xl mb-1">🏆</div>
-              <div className="text-[9px] font-black uppercase text-yellow-500 group-hover:text-yellow-400 transition-colors whitespace-nowrap">Mundial 2026</div>
+            <Link href="/?competicion=Liga MX" className="flex-shrink-0 bg-slate-900/50 border border-slate-800 px-6 py-4 rounded-2xl text-center hover:border-blue-500/30 transition-all group shadow-lg">
+              <div className="text-2xl mb-1.5">🛡️</div>
+              <div className="text-[10px] font-black uppercase text-slate-400 group-hover:text-white transition-colors whitespace-nowrap">Liga MX</div>
             </Link>
           </div>
         </section>

@@ -45,6 +45,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   const [showGoTop, setShowGoTop] = useState(false);
   const [showFechaDropdown, setShowFechaDropdown] = useState(false);
   const [showCompDropdown, setShowCompDropdown] = useState(false);
+  const [busquedaLigas, setBusquedaLigas] = useState("");
 
   useEffect(() => {
     if (searchParams.get('envivo') === '1') {
@@ -268,17 +269,32 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
 
             {competicionesUnicas.length > 1 && (
               <div className="relative">
-                <button data-comp-toggle onClick={() => setShowCompDropdown(!showCompDropdown)} className={`flex items-center gap-1 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${filtroCompeticion !== "Todos" ? "text-blue-400 bg-blue-600/10 border border-blue-500/30" : "bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800"}`}>
-                  🛡️ <span className="hidden sm:inline">{filtroCompeticion === "Todos" ? "Torneos" : filtroCompeticion}</span><span className="sm:hidden">Torneos</span>
+                <button data-comp-toggle onClick={() => { setShowCompDropdown(!showCompDropdown); setBusquedaLigas(""); }} className={`flex items-center gap-1 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${filtroCompeticion !== "Todos" ? "text-blue-400 bg-blue-600/10 border border-blue-500/30" : "bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800"}`}>
+                  🛡️ <span className="hidden sm:inline">{filtroCompeticion === "Todos" ? "Ligas" : filtroCompeticion}</span><span className="sm:hidden">Ligas</span>
                   <ChevronRight size={12} className={`transition-transform ${showCompDropdown ? 'rotate-[-90deg]' : 'rotate-90'}`} />
                 </button>
                 {showCompDropdown && (
-                  <div data-comp-dropdown className="absolute top-full left-0 mt-1 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 py-1 min-w-[200px] max-h-[240px] overflow-y-auto">
-                    {competicionesUnicas.map((c: any) => (
-                      <button key={c} onClick={() => { setFiltroCompeticion(c); setShowCompDropdown(false); }} className={`w-full text-left px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${filtroCompeticion === c ? "text-blue-400 bg-blue-600/10" : "text-slate-400 hover:bg-slate-800"}`}>
-                        {c === "Todos" ? "🛡️ Todos los torneos" : c}
-                      </button>
-                    ))}
+                  <div data-comp-dropdown className="absolute top-full left-0 mt-1 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 py-1 min-w-[200px] max-h-[300px] flex flex-col">
+                    <div className="px-2 pb-2 border-b border-slate-700">
+                      <div className="relative">
+                        <Search size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500" />
+                        <input
+                          type="text"
+                          placeholder="Buscar liga..."
+                          value={busquedaLigas}
+                          onChange={(e) => setBusquedaLigas(e.target.value)}
+                          className="w-full bg-slate-800 border border-slate-600 rounded-lg py-1.5 pl-7 pr-2 text-[10px] text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                          autoFocus
+                        />
+                      </div>
+                    </div>
+                    <div className="overflow-y-auto max-h-[200px]">
+                      {competicionesUnicas.filter((c: any) => c.toLowerCase().includes(busquedaLigas.toLowerCase())).map((c: any) => (
+                        <button key={c} onClick={() => { setFiltroCompeticion(c); setShowCompDropdown(false); setBusquedaLigas(""); }} className={`w-full text-left px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${filtroCompeticion === c ? "text-blue-400 bg-blue-600/10" : "text-slate-400 hover:bg-slate-800"}`}>
+                          {c === "Todos" ? "🛡️ Todas las ligas" : c}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>

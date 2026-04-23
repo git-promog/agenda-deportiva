@@ -52,8 +52,8 @@ export default function Header({ ultimaAct, showSearch = false, busqueda = '', o
             <Link href="/" className="text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-[#a3e635] transition-colors flex items-center gap-1.5">
               <Radio size={14} /> Agenda
             </Link>
-            <button onClick={() => { window.dispatchEvent(new CustomEvent('scroll-to-live')); }} className="text-[10px] font-black text-red-400 uppercase tracking-widest hover:text-red-300 transition-colors flex items-center gap-1.5">
-              <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div> En Vivo
+            <button onClick={() => { window.dispatchEvent(new CustomEvent('scroll-to-live')); }} className="bg-red-600 text-white rounded-xl px-3 py-2 font-black uppercase text-[10px] tracking-widest shadow-[0_0_20px_rgba(220,38,38,0.5)] animate-pulse flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div> En Vivo
             </button>
             <Link href="/noticias" className="text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-[#a3e635] transition-colors flex items-center gap-1.5">
               <Newspaper size={14} /> Noticias

@@ -235,11 +235,11 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
           <div className="flex items-center gap-2 mb-2">
             <button
               onClick={toggleEnVivo}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${soloEnVivo ? "bg-red-600 text-white shadow-lg shadow-red-900/40 border border-red-500" : "bg-slate-900 border border-slate-800 text-red-400 hover:bg-slate-800"}`}
+              className="bg-red-600 text-white rounded-xl px-3 py-2 font-black uppercase text-[10px] tracking-widest shadow-[0_0_20px_rgba(220,38,38,0.5)] animate-pulse flex items-center gap-1.5"
             >
-              <div className={`w-1.5 h-1.5 rounded-full ${soloEnVivo ? "bg-white animate-ping" : "bg-red-500"}`}></div>
-              <span className="hidden sm:inline">{soloEnVivo ? "En Vivo" : "En Vivo"}</span>
-              <Radio size={14} className="sm:hidden animate-pulse" />
+              <div className="w-1.5 h-1.5 bg-white rounded-full animate-ping"></div>
+              <span className="hidden sm:inline">En Vivo</span>
+              <Radio size={14} className="sm:hidden" />
             </button>
 
             <div className="hidden md:flex items-center gap-1">

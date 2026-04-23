@@ -36,11 +36,8 @@ export default function NavMobile() {
           </div>
         </button>
 
-        <button onClick={() => { window.dispatchEvent(new CustomEvent('scroll-to-live')); }} className="group flex flex-col items-center gap-1 w-14 transition-all hover:-translate-y-2 relative">
-          <div className="absolute top-1 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse z-10"></div>
-          <div className="p-2 rounded-2xl transition-all bg-red-600/20 border border-red-500/30 group-hover:bg-red-600/30 group-hover:shadow-[0_0_15px_rgba(220,38,38,0.4)]">
-            <Radio size={22} className="text-red-500" />
-          </div>
+        <button onClick={() => { window.dispatchEvent(new CustomEvent('scroll-to-live')); }} className="group flex flex-col items-center gap-1 w-14 bg-red-600 text-white rounded-xl px-3 py-2 border border-red-500 shadow-[0_0_20px_rgba(220,38,38,0.5)] animate-pulse hover:shadow-[0_0_35px_rgba(220,38,38,0.4)]">
+          <Radio size={22} />
         </button>
 
         <Link href="/noticias" className={`group flex flex-col items-center gap-1 w-14 transition-all hover:-translate-y-2 ${pathname.includes('/noticias') ? 'text-blue-400' : 'text-slate-400 hover:text-white'}`}>

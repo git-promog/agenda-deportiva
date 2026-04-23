@@ -323,15 +323,17 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
 
           {/* ROW 3: Breadcrumb de filtros activos */}
           {activeFilters.length > 0 && (
-            <div className="flex items-center gap-2 mt-2 pt-2 border-t border-slate-700/50">
-              <span className="text-[10px] font-black text-[#a3e635] uppercase tracking-wider">Mostrando:</span>
+            <div className="flex items-center gap-3 mt-2 pt-2 border-t border-slate-700/50 bg-slate-900/30 px-3 py-2 rounded-xl">
+              <span className="text-[10px] font-black text-[#a3e635] uppercase tracking-wider flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 bg-[#a3e635] rounded-full"></span>Mostrando:
+              </span>
               <div className="flex flex-wrap gap-1.5">
                 {activeFilters.map((f, i) => (
                   <span key={i} className="text-[10px] font-black text-white bg-blue-600/30 px-2.5 py-1 rounded-lg border border-blue-500/30">{f}</span>
                 ))}
               </div>
-              <button onClick={() => { setFiltroDeporte("Todos"); setFiltroFecha("Todos"); setFiltroCompeticion("Todos"); setSoloTvAbierta(false); setSoloEnVivo(false); }} className="text-[10px] font-black text-red-400 hover:text-red-300 transition-colors ml-auto uppercase">
-                Limpiar ✕
+              <button onClick={() => { setFiltroDeporte("Todos"); setFiltroFecha("Todos"); setFiltroCompeticion("Todos"); setSoloTvAbierta(false); setSoloEnVivo(false); }} className="text-[10px] font-black text-white bg-red-600 hover:bg-red-500 transition-colors ml-auto uppercase px-3 py-1.5 rounded-lg border border-red-500 shadow-[0_0_10px_rgba(220,38,38,0.3)] flex items-center gap-1">
+                <span>✕</span>Limpiar
               </button>
             </div>
           )}

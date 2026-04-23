@@ -77,6 +77,9 @@ def actualizar_base_de_datos():
         eventos_finales = []
         eventos_para_ia = [] # Solo los de hoy que están en modo auto
         
+        # Identificar eventos manuales que NO vienen del scraper para preservarlos
+        eventos_manual_keys = {k for k, v in eventos_existentes.items() if v.get('ajuste_manual') == True}
+        
         for ev in datos_scraper:
             key = f"{ev['evento']}||{ev['fecha']}||{ev['competicion']}"
             
@@ -139,15 +142,31 @@ def actualizar_base_de_datos():
         
         datos_subir = [{k: v for k, v in ev.items() if k in columnas} for ev in eventos_finales]
         
-        try:
-            # Borrar e insertar (Atomicidad simulada)
-            supabase.table("eventos").delete().neq("id", 0).execute()
-            for i in range(0, len(datos_subir), 100):
-                supabase.table("eventos").insert(datos_subir[i:i+100]).execute()
-            
-            print("✅ Inserción completada con éxito.")
-        except Exception as e:
-            print(f"❌ Error al actualizar DB: {e}")
+        # Agregar eventos que existen en la DB pero NO vienen del scraper (creados/editados manualmente)
+        # Estos se preservan automáticamente para que no se pierdan al actualizar
+        eventos_en_scraper = {f"{ev['evento']}||{ev['fecha']}||{ev['competicion']}" for ev in datos_scraper}
+        
+        for key, existente in eventos_existentes.items():
+            if key not in eventos_en_scraper:
+                # El evento está en DB pero no en scraper = fue creado/editado manualmente, lo preservamos
+                evento_manual = {k: v for k, v in existente.items() if k in columnas}
+                evento_manual['destacado'] = existente.get('destacado')
+                evento_manual['destacado_dia'] = existente.get('destacado_dia', False)
+                evento_manual['estelar_dia'] = existente.get('estelar_dia', False)
+                evento_manual['destacado_finde'] = existente.get('destacado_finde', False)
+                evento_manual['carrusel_ig'] = existente.get('carrusel_ig', False)
+                evento_manual['ajuste_manual'] = True  # Se marca como manual para futuras actualizaciones
+                datos_subir.append(evento_manual)
+                print(f"   ✅ Preservando evento manual: {evento_manual['evento']} ({evento_manual['fecha']})")
+        
+        # Primero eliminar todos los eventos existentes (solo los del scraper, no los manuales)
+        supabase.table("eventos").delete().neq("id", 0).execute()
+        
+        # Luego insertar los eventos combinados (scraper + manuales preservados)
+        for i in range(0, len(datos_subir), 100):
+            supabase.table("eventos").insert(datos_subir[i:i+100]).execute()
+        
+        print(f"✅ Sincronización completada: {len(datos_subir)} eventos totales.")
 
         # 4. Actualizar Status
         tz_mx = pytz.timezone('America/Mexico_City')

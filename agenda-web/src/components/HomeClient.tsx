@@ -98,8 +98,8 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
       const scrollTo = direction === 'left' ? scrollRef.current.scrollLeft - 150 : scrollRef.current.scrollLeft + 150;
       scrollRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
     }
-  };
-
+};
+  
   const getTodayStr = () => {
     try {
       const mxDate = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Mexico_City"}));
@@ -108,10 +108,9 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
       return new Date().toISOString().split('T')[0];
     }
   };
-
   const hoyStr = getTodayStr();
   const deportesUnicos = ["Todos", ...new Set(eventos.map(e => e.deporte))];
-  const fechasUnicas = ["Todos", ...new Set(eventos.map(e => (e.fecha || "")))].filter(f => f !== "");
+  const fechasUnicas = ["Todos", ...new Set(eventos.map(e => e.fecha))].filter(f => f !== "" && f >= hoyStr);
   const competicionesUnicas = ["Todos", ...new Set(eventos.map(e => e.competicion).filter(Boolean))];
 
   useEffect(() => {
@@ -158,7 +157,9 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
 
   const eventosFiltrados = eventos.filter(e => {
     const coincideDeporte = filtroDeporte === "Todos" || e.deporte === filtroDeporte;
-    const coincideFecha = filtroFecha === "Todos" || e.fecha === filtroFecha;
+    // Solo mostrar eventos de hoy y futuros (nunca pasados)
+    const esFechaPasada = e.fecha < hoyStr;
+    const coincideFecha = (filtroFecha === "Todos" ? !esFechaPasada : e.fecha === filtroFecha);
     const coincideCompeticion = filtroCompeticion === "Todos" || e.competicion === filtroCompeticion;
     const coincideBusqueda = e.evento.toLowerCase().includes(busqueda.toLowerCase()) || 
                              e.competicion.toLowerCase().includes(busqueda.toLowerCase());

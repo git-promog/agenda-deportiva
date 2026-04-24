@@ -23,7 +23,7 @@ export default function CookieConsent() {
   if (!show) return null;
 
   return (
-    <div className="fixed bottom-0 sm:bottom-4 left-0 right-0 sm:left-4 sm:right-auto z-[60] bg-slate-900 border border-slate-700/50 p-4 sm:rounded-2xl shadow-2xl max-w-sm w-full">
+    <div className="fixed bottom-0 sm:bottom-4 left-0 right-0 sm:left-4 sm:right-auto z-[100] bg-slate-900 border border-slate-700/50 p-4 sm:rounded-2xl shadow-2xl max-w-sm w-full" style={{ paddingBottom: 'env(safe-area-inset-bottom, 1rem)' }}>
       <h3 className="text-white font-bold text-sm mb-2 flex items-center gap-2">
         <span>🍪</span> Privacidad y Cookies
       </h3>

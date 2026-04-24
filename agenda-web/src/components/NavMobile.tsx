@@ -22,29 +22,31 @@ export default function NavMobile() {
   };
 
   return (
-    <div className="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] bg-black/40 backdrop-blur-2xl border border-white/10 rounded-full py-3 px-6 z-[80] shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
-      <div className="flex justify-between items-center w-full">
-        <Link href="/" className={`group flex flex-col items-center gap-1 w-14 transition-all hover:-translate-y-2 ${pathname === '/' ? 'text-[#a3e635]' : 'text-slate-400 hover:text-white'}`}>
-          <div className={`p-2 rounded-2xl transition-all ${pathname === '/' ? 'bg-[#a3e635]/20 shadow-[0_0_15px_rgba(163,230,53,0.3)]' : 'group-hover:bg-white/10'}`}>
-            <Home size={22} className={pathname === '/' ? 'fill-[#a3e635]/20' : ''} />
-          </div>
-        </Link>
-        
-        <button onClick={() => scrollToSection('buscar')} className="group flex flex-col items-center gap-1 w-14 text-slate-400 hover:text-white transition-all hover:-translate-y-2">
-          <div className="p-2 rounded-2xl transition-all group-hover:bg-white/10">
-            <Search size={22} />
-          </div>
-        </button>
+    <div className="md:hidden fixed left-0 right-0 bottom-0 z-[80] flex justify-center pointer-events-none" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0.5rem)' }}>
+      <div className="w-[90%] max-w-[400px] bg-black/40 backdrop-blur-2xl border border-white/10 rounded-full py-3 px-6 shadow-[0_20px_50px_rgba(0,0,0,0.8)] pointer-events-auto">
+        <div className="flex justify-between items-center w-full">
+          <Link href="/" className={`group flex flex-col items-center gap-1 w-14 transition-all hover:-translate-y-2 ${pathname === '/' ? 'text-[#a3e635]' : 'text-slate-400 hover:text-white'}`}>
+            <div className={`p-2 rounded-2xl transition-all ${pathname === '/' ? 'bg-[#a3e635]/20 shadow-[0_0_15px_rgba(163,230,53,0.3)]' : 'group-hover:bg-white/10'}`}>
+              <Home size={22} className={pathname === '/' ? 'fill-[#a3e635]/20' : ''} />
+            </div>
+          </Link>
+          
+          <button onClick={() => scrollToSection('buscar')} className="group flex flex-col items-center gap-1 w-14 text-slate-400 hover:text-white transition-all hover:-translate-y-2">
+            <div className="p-2 rounded-2xl transition-all group-hover:bg-white/10">
+              <Search size={22} />
+            </div>
+          </button>
 
-        <button onClick={() => { window.dispatchEvent(new CustomEvent('scroll-to-live')); }} className="group flex flex-col items-center gap-1 w-14 bg-red-600 text-white rounded-xl px-3 py-2 border border-red-500 shadow-[0_0_20px_rgba(220,38,38,0.5)] animate-pulse hover:shadow-[0_0_35px_rgba(220,38,38,0.4)]">
-          <Radio size={22} />
-        </button>
+          <button onClick={() => { window.dispatchEvent(new CustomEvent('scroll-to-live')); }} className="group flex flex-col items-center gap-1 w-14 bg-red-600 text-white rounded-xl px-3 py-2 border border-red-500 shadow-[0_0_20px_rgba(220,38,38,0.5)] animate-pulse hover:shadow-[0_0_35px_rgba(220,38,38,0.4)]">
+            <Radio size={22} />
+          </button>
 
-        <Link href="/noticias" className={`group flex flex-col items-center gap-1 w-14 transition-all hover:-translate-y-2 ${pathname.includes('/noticias') ? 'text-blue-400' : 'text-slate-400 hover:text-white'}`}>
-          <div className={`p-2 rounded-2xl transition-all ${pathname.includes('/noticias') ? 'bg-blue-600/20 shadow-[0_0_15px_rgba(59,130,246,0.3)] border border-blue-500/30' : 'group-hover:bg-white/10'}`}>
-            <Newspaper size={22} className={pathname.includes('/noticias') ? 'fill-blue-400/20' : ''} />
-          </div>
-        </Link>
+          <Link href="/noticias" className={`group flex flex-col items-center gap-1 w-14 transition-all hover:-translate-y-2 ${pathname.includes('/noticias') ? 'text-blue-400' : 'text-slate-400 hover:text-white'}`}>
+            <div className={`p-2 rounded-2xl transition-all ${pathname.includes('/noticias') ? 'bg-blue-600/20 shadow-[0_0_15px_rgba(59,130,246,0.3)] border border-blue-500/30' : 'group-hover:bg-white/10'}`}>
+              <Newspaper size={22} className={pathname.includes('/noticias') ? 'fill-blue-400/20' : ''} />
+            </div>
+          </Link>
+        </div>
       </div>
     </div>
   );

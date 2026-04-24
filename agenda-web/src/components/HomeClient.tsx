@@ -413,13 +413,14 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
         </div>
       </main>
 
-      {/* BOTÓN IR ARRIBA - POSICIONAMIENTO UNIVERSAL EXTREMO */}
+{/* BOTÓN IR ARRIBA - POSICIONAMIENTO UNIVERSAL EXTREMO */}
       <button 
         onClick={() => {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
-        className={`fixed bottom-16 right-6 p-4 bg-slate-900/95 backdrop-blur-2xl border border-slate-700/50 rounded-2xl text-[#a3e635] shadow-[0_20px_60px_rgba(0,0,0,8)] transition-all duration-500 z-[90] md:bottom-10 md:right-10 ${showGoTop ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-24 opacity-0 scale-50 pointer-events-none'}`}
         aria-label="Ir Arriba"
+        className={`fixed right-6 p-4 bg-slate-900/95 backdrop-blur-2xl border border-slate-700/50 rounded-2xl text-[#a3e635] shadow-[0_20px_60px_rgba(0,0,0,8)] transition-all duration-500 z-[90] md:bottom-10 md:right-10 ${showGoTop ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        style={{ bottom: showGoTop ? '5rem' : '-3rem' }}
       >
         <ArrowUp size={24} strokeWidth={3} />
       </button>

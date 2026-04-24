@@ -31,6 +31,7 @@ interface Evento {
 interface Props {
   evento: Evento;
   isLive: boolean;
+  onFiltrarLiga?: (liga: string) => void;
 }
 
 const formatChannels = (canalesStr: string, theme: any) => {
@@ -54,7 +55,7 @@ const formatChannels = (canalesStr: string, theme: any) => {
   });
 };
 
-export default function SportEventCard({ evento, isLive }: Props) {
+export default function SportEventCard({ evento, isLive, onFiltrarLiga }: Props) {
   const theme = THEMES[evento.deporte] || DEFAULT_THEME;
 
   const liveBorder = isLive ? "border-red-500/50 shadow-[0_0_20px_rgba(220,38,38,0.25)]" : "border-white/5";
@@ -92,7 +93,15 @@ export default function SportEventCard({ evento, isLive }: Props) {
 
       {/* Main Info */}
       <div className="flex-1 flex flex-col justify-center min-w-0 pr-2">
-        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 truncate">{evento.competicion}</span>
+        <button 
+          onClick={() => onFiltrarLiga?.(evento.competicion)}
+          className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 truncate hover:text-blue-400 transition-colors text-left flex items-center gap-1"
+        >
+          {evento.competicion}
+          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-0 group-hover:opacity-100 transition-opacity">
+            <path d="m15 18-6-6 6-6"/>
+          </svg>
+        </button>
         
         {isMatch ? (
           <div className="flex items-center gap-3 md:gap-6 my-2">

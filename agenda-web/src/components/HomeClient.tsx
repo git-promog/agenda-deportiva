@@ -397,7 +397,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
               <div className="grid gap-3">
                 {eventosAgrupados[fecha].map((evento: any, index: number) => (
                   <div key={evento.id} id={`evento-${evento.id}`} data-envivo={estaEnVivo(evento.fecha, evento.hora) ? 'true' : 'false'}>
-                    <SportEventCard evento={evento} isLive={estaEnVivo(evento.fecha, evento.hora)} />
+                    <SportEventCard evento={evento} isLive={estaEnVivo(evento.fecha, evento.hora)} onFiltrarLiga={(liga) => { setFiltroCompeticion(liga); setShowCompDropdown(false); }} />
                     {(index + 1) % 8 === 0 && index !== eventosAgrupados[fecha].length - 1 && <AdPlacement />}
                   </div>
                 ))}

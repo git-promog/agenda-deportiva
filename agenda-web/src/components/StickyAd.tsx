@@ -17,7 +17,7 @@ export default function StickyAd() {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center w-full px-4 pb-16 md:pb-4 pointer-events-none transition-transform duration-500 transform translate-y-0">
+    <div className="fixed bottom-0 left-0 right-0 z-[70] flex justify-center w-full px-4 pb-14 md:pb-4 pointer-events-none transition-transform duration-500 transform translate-y-0">
       <div className="relative bg-[#0f172a]/95 backdrop-blur-md border border-slate-700/50 p-2 rounded-t-xl md:rounded-xl shadow-2xl pointer-events-auto max-w-full sm:max-w-[320px] w-full flex flex-col items-center">
         
         {/* Close Button */}

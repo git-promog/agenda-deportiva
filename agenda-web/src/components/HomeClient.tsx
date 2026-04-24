@@ -225,7 +225,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   return (
     <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-    <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-32 w-full overflow-x-hidden">
+    <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-24 w-full overflow-x-hidden">
       
       <Header ultimaAct={initialUltimaAct} showSearch={true} busqueda={busqueda} onBusquedaChange={setBusqueda} />
 
@@ -418,7 +418,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
         onClick={() => {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
-        className={`fixed bottom-28 right-6 p-4 bg-slate-900/95 backdrop-blur-2xl border border-slate-700/50 rounded-2xl text-[#a3e635] shadow-[0_20px_60px_rgba(0,0,0,0.8)] transition-all duration-500 z-[9999] md:bottom-10 md:right-10 ${showGoTop ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-24 opacity-0 scale-50 pointer-events-none'}`}
+        className={`fixed bottom-16 right-6 p-4 bg-slate-900/95 backdrop-blur-2xl border border-slate-700/50 rounded-2xl text-[#a3e635] shadow-[0_20px_60px_rgba(0,0,0,8)] transition-all duration-500 z-[90] md:bottom-10 md:right-10 ${showGoTop ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-24 opacity-0 scale-50 pointer-events-none'}`}
         aria-label="Ir Arriba"
       >
         <ArrowUp size={24} strokeWidth={3} />

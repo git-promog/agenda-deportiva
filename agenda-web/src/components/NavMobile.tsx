@@ -22,7 +22,7 @@ export default function NavMobile() {
   };
 
   return (
-    <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] bg-black/40 backdrop-blur-2xl border border-white/10 rounded-full py-3 px-6 z-[100] shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
+    <div className="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] bg-black/40 backdrop-blur-2xl border border-white/10 rounded-full py-3 px-6 z-[80] shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
       <div className="flex justify-between items-center w-full">
         <Link href="/" className={`group flex flex-col items-center gap-1 w-14 transition-all hover:-translate-y-2 ${pathname === '/' ? 'text-[#a3e635]' : 'text-slate-400 hover:text-white'}`}>
           <div className={`p-2 rounded-2xl transition-all ${pathname === '/' ? 'bg-[#a3e635]/20 shadow-[0_0_15px_rgba(163,230,53,0.3)]' : 'group-hover:bg-white/10'}`}>

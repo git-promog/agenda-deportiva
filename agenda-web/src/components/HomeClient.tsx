@@ -225,7 +225,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   return (
     <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-    <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-24 w-full">
+    <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-32 w-full overflow-x-hidden">
       
       <Header ultimaAct={initialUltimaAct} showSearch={true} busqueda={busqueda} onBusquedaChange={setBusqueda} />
 

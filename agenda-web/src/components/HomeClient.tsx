@@ -230,11 +230,20 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
       
       <Header ultimaAct={initialUltimaAct} showSearch={true} busqueda={busqueda} onBusquedaChange={setBusqueda} />
 
-      <div ref={filtrosRef} className="bg-[#020617] border-b border-slate-800 shadow-lg z-50" style={{ position: filtrosFixed ? 'fixed' : 'static', top: 0, left: 0, right: 0, width: filtrosFixed ? '100%' : undefined }}>
-        <div className="max-w-4xl mx-auto px-4 py-2">
+      <div ref={filtrosRef} className={`bg-[#020617]/95 backdrop-blur-xl border-b border-slate-800 shadow-2xl z-[60] transition-all duration-300 ${filtrosFixed ? 'fixed top-0 left-0 right-0 py-2' : 'relative py-4'}`}>
+        <div className="max-w-4xl mx-auto px-4">
+          
+          {/* Logo que aparece solo en Scroll para Navegación Universal */}
+          {filtrosFixed && (
+            <div className="flex justify-center mb-3 animate-in fade-in slide-in-from-top-2 duration-500">
+              <Link href="/" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
+                <NextImage src="/GuiaSports-logo.svg" alt="GuíaSports" width={100} height={30} className="h-6 w-auto opacity-80 hover:opacity-100 transition-opacity" />
+              </Link>
+            </div>
+          )}
 
           {/* ROW 1: Barra de acción rápida */}
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-3 overflow-x-auto scrollbar-hide">
             <button
               onClick={toggleEnVivo}
               className="bg-red-600 text-white rounded-xl px-3 py-2 font-black uppercase text-[10px] tracking-widest shadow-[0_0_20px_rgba(220,38,38,0.5)] animate-pulse flex items-center gap-1.5"
@@ -342,7 +351,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
       </div>
       {filtrosFixed && <div style={{ height: filtrosRef.current?.offsetHeight }}></div>}
 
-      <main id="envivo" className="max-w-4xl mx-auto px-4 pt-24 pb-8">
+      <main id="envivo" className="w-full max-w-4xl mx-auto px-4 pt-24 pb-8 overflow-x-hidden">
         {!busqueda && (filtroFecha === "Todos" || filtroFecha === hoyStr) && (
           <>
             <HomeHero evento={eventoHero} tipo={tipoHero} />
@@ -352,15 +361,15 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
             )}
 
             {noticias.length > 0 && (
-              <div className="mb-12">
-                <h2 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] mb-6 flex items-center gap-2"><Newspaper className="w-3 h-3" /> Previas y Análisis</h2>
-                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
+              <div className="mb-12 w-full">
+                <h2 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] mb-6 flex items-center gap-2 px-2"><Newspaper className="w-3 h-3" /> Previas y Análisis</h2>
+                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4 snap-x">
                   {noticias.map((n: any) => (
-                    <Link key={n.id} href={`/noticias/${n.slug}`} className="min-w-[85vw] sm:min-w-[300px] bg-slate-900/50 border border-slate-800 p-5 rounded-[32px] flex gap-4 items-center hover:bg-slate-800/80 hover:border-slate-700 transition-all cursor-pointer group flex-shrink-0">
+                    <Link key={n.id} href={`/noticias/${n.slug}`} className="min-w-[280px] w-[85vw] max-w-[350px] bg-slate-900/50 border border-slate-800 p-5 rounded-[32px] flex gap-4 items-center hover:bg-slate-800/80 hover:border-slate-700 transition-all cursor-pointer group flex-shrink-0 snap-center">
                       <div className="w-16 h-16 bg-blue-600/20 rounded-2xl flex-shrink-0 flex items-center justify-center border border-blue-500/20 group-hover:scale-105 group-hover:bg-blue-600/30 transition-all">
                         <Newspaper className="text-blue-500" size={28} />
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <h3 className="text-xs font-black uppercase italic leading-tight mb-1 text-slate-200 group-hover:text-white line-clamp-2">{n.titulo}</h3>
                         <p className="text-[9px] text-slate-500 uppercase font-bold">{n.fecha} • Leer más →</p>
                       </div>
@@ -373,9 +382,9 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
         )}
 
         {/* HUBS DE COMPETICIONES */}
-        <section className="mb-12">
-          <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-3">Competiciones Destacadas</h2>
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+        <section className="mb-12 w-full">
+          <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-3 px-2">Competiciones Destacadas</h2>
+          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4">
             <Link href="/mundial-2026" className="flex-shrink-0 bg-gradient-to-br from-yellow-500/10 to-yellow-700/5 border border-yellow-500/20 px-6 py-4 rounded-2xl text-center hover:border-yellow-500/40 transition-all group shadow-lg shadow-yellow-900/5">
               <div className="text-2xl mb-1.5">🏆</div>
               <div className="text-[10px] font-black uppercase text-yellow-500 group-hover:text-yellow-400 transition-colors whitespace-nowrap">Mundial 2026</div>
@@ -387,17 +396,17 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
           </div>
         </section>
 
-        <div id="listado-eventos-principal" className="max-w-4xl mx-auto px-4 w-full">
+        <div id="listado-eventos-principal" className="w-full">
         {Object.keys(eventosAgrupados).length > 0 ? (
           Object.keys(eventosAgrupados).sort().map((fecha) => (
             <section key={fecha} className="mb-12 w-full">
               <div className="flex items-center gap-4 mb-6">
-                <h2 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] flex items-center gap-2"><CalendarDays className="w-4 h-4 text-blue-500" /> {new Date(fecha + 'T12:00:00').toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}</h2>
+                <h2 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] flex items-center gap-2 whitespace-nowrap"><CalendarDays className="w-4 h-4 text-blue-500" /> {new Date(fecha + 'T12:00:00').toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}</h2>
                 <div className="h-px w-full bg-slate-800/30"></div>
               </div>
-              <div className="grid gap-3">
+              <div className="grid gap-3 w-full">
                 {eventosAgrupados[fecha].map((evento: any, index: number) => (
-                  <div key={evento.id} id={`evento-${evento.id}`} data-envivo={estaEnVivo(evento.fecha, evento.hora) ? 'true' : 'false'}>
+                  <div key={evento.id} id={`evento-${evento.id}`} data-envivo={estaEnVivo(evento.fecha, evento.hora) ? 'true' : 'false'} className="w-full">
                     <SportEventCard evento={evento} isLive={estaEnVivo(evento.fecha, evento.hora)} onFiltrarLiga={(liga) => { setFiltroCompeticion(liga); setShowCompDropdown(false); }} />
                     {(index + 1) % 8 === 0 && index !== eventosAgrupados[fecha].length - 1 && <AdPlacement />}
                   </div>

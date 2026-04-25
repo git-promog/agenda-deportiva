@@ -10,10 +10,10 @@ export default function HomeDestacados({ destacados }: Props) {
 
   return (
     <div className="mb-12">
-      <h2 className="text-[10px] font-black text-yellow-500 uppercase tracking-[0.3em] mb-4 flex items-center gap-2"><Star className="w-3 h-3 fill-yellow-500" /> Imperdibles de Hoy</h2>
-      <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
+      <h2 className="text-[10px] font-black text-yellow-500 uppercase tracking-[0.3em] mb-4 flex items-center gap-2 px-2"><Star className="w-3 h-3 fill-yellow-500" /> Imperdibles de Hoy</h2>
+      <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4 snap-x">
         {destacados.map((e) => (
-          <div key={e.id} className="min-w-[85vw] sm:min-w-[300px] bg-gradient-to-br from-blue-600 to-blue-900 justify-between p-[1px] rounded-3xl relative overflow-hidden group">
+          <div key={e.id} className="min-w-[280px] w-[85vw] max-w-[350px] bg-gradient-to-br from-blue-600 to-blue-900 justify-between p-[1px] rounded-3xl relative overflow-hidden group flex-shrink-0 snap-center">
             <div className="bg-[#020617]/80 backdrop-blur-sm p-5 rounded-[23px] h-full flex flex-col justify-between italic text-white hover:bg-transparent transition-colors duration-500 relative z-10">
               <div>
                 <div className="text-[9px] font-black text-blue-400 uppercase mb-2">{e.competicion}</div>

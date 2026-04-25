@@ -77,8 +77,10 @@ def actualizar_base_de_datos():
         eventos_finales = []
         eventos_para_ia = [] # Solo los de hoy que están en modo auto
         
-        # Identificar eventos manuales que NO vienen del scraper para preservarlos
-        eventos_manual_keys = {k for k, v in eventos_existentes.items() if v.get('ajuste_manual') == True}
+        # Identificar fechas que ya tienen al menos un ajuste manual
+        fechas_con_ajuste_manual = {v.get('fecha') for v in eventos_existentes.values() if v.get('ajuste_manual') == True}
+        if fechas_con_ajuste_manual:
+            print(f"   ℹ️ Detectados ajustes manuales en fechas: {', '.join(sorted(list(fechas_con_ajuste_manual)))}. La IA se deshabilitará para estos días.")
         
         for ev in datos_scraper:
             key = f"{ev['evento']}||{ev['fecha']}||{ev['competicion']}"
@@ -108,18 +110,22 @@ def actualizar_base_de_datos():
             # --- MOTOR DE RELEVANCIA INTELIGENTE ---
             # Solo aplicamos lógica si el usuario lo dejó en "Modo Auto" (destacado is None)
             if ev['destacado'] is None:
-                # A. Relevancia por Palabras Clave (Local)
-                nombre_low = ev['evento'].lower()
-                comp_low = ev['competicion'].lower()
-                
-                if any(t.lower() in nombre_low for t in TOP_TEAMS) or \
-                   any(c.lower() in comp_low for c in TOP_COMPETICIONES) or \
-                   any(tv.lower() in ev['canales'].lower() for tv in ["Canal 5", "Azteca 7", "TUDN"]):
-                    ev['destacado'] = True
-                
-                # B. Si es de hoy y sigue sin decidirse, lo mandamos a la IA
-                if ev['destacado'] is None and ev['fecha'] == hoy_mx:
-                    eventos_para_ia.append(ev)
+                # REGLA DE ORO: Si la fecha ya tiene ajustes manuales, NO auto-destacamos nada nuevo
+                if ev['fecha'] in fechas_con_ajuste_manual:
+                    ev['destacado'] = False 
+                else:
+                    # A. Relevancia por Palabras Clave (Local)
+                    nombre_low = ev['evento'].lower()
+                    comp_low = ev['competicion'].lower()
+                    
+                    if any(t.lower() in nombre_low for t in TOP_TEAMS) or \
+                       any(c.lower() in comp_low for c in TOP_COMPETICIONES) or \
+                       any(tv.lower() in ev['canales'].lower() for tv in ["Canal 5", "Azteca 7", "TUDN"]):
+                        ev['destacado'] = True
+                    
+                    # B. Si es de hoy y sigue sin decidirse, lo mandamos a la IA
+                    if ev['destacado'] is None and ev['fecha'] == hoy_mx:
+                        eventos_para_ia.append(ev)
             
             eventos_finales.append(ev)
 

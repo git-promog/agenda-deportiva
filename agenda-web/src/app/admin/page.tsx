@@ -150,7 +150,15 @@ export default function AdminPanel() {
 
   async function actualizarDestacado(id: string, valor: boolean | null) {
     console.log("Intentando actualizar:", { id, valor, tipoId: typeof id });
-    const { data, error } = await supabase.from('eventos').update({ destacado: valor }).eq('id', String(id)).select();
+    const { data, error } = await supabase
+      .from('eventos')
+      .update({ 
+        destacado: valor,
+        ajuste_manual: true // <--- AHORA MARCADO COMO MANUAL SIEMPRE QUE TOQUES
+      })
+      .eq('id', String(id))
+      .select();
+    
     console.log("Respuesta Supabase:", { data, error });
     if (error) {
       showToast("Error: " + error.message, "error");
@@ -158,7 +166,7 @@ export default function AdminPanel() {
       showToast("No se encontró el evento. Revisa permisos RLS en Supabase", "error");
     } else {
       const label = valor === true ? "Destacado" : valor === false ? "No destacado" : "Modo auto";
-      showToast(`${label} aplicado`);
+      showToast(`${label} aplicado (Manual)`);
       cargarEventos();
     }
   }
@@ -166,9 +174,15 @@ export default function AdminPanel() {
   async function aplicarDestacadoAMuchos(valor: boolean | null) {
     if (!confirm(`¿Aplicar estado a todos los ${eventosFiltrados.length} eventos visibles?`)) return;
     const ids = eventosFiltrados.map(e => e.id);
-    const { error } = await supabase.from('eventos').update({ destacado: valor }).in('id', ids);
+    const { error } = await supabase
+      .from('eventos')
+      .update({ 
+        destacado: valor,
+        ajuste_manual: true // <--- BLOQUEO GLOBAL DE IA PARA ESTOS EVENTOS
+      })
+      .in('id', ids);
     if (error) showToast("Error al actualizar", "error");
-    else { showToast(`${ids.length} eventos actualizados`); cargarEventos(); }
+    else { showToast(`${ids.length} eventos actualizados (Manual)`); cargarEventos(); }
   }
 
   async function toggleMarketing(id: string, campo: string, valorActual: boolean | undefined) {

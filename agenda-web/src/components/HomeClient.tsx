@@ -261,20 +261,11 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
               ))}
             </div>
 
-            <div className="md:hidden relative">
+            <div className="md:hidden">
               <button data-fecha-toggle onClick={() => setShowFechaDropdown(!showFechaDropdown)} className={`flex items-center gap-1 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${filtroFecha !== "Todos" ? "text-[#a3e635] bg-[#a3e635]/10 border border-[#a3e635]/30" : "bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800"}`}>
                 📅 {filtroFecha === "Todos" ? "Hoy" : formatearLabelFecha(filtroFecha)}
                 <ChevronRight size={12} className={`transition-transform ${showFechaDropdown ? 'rotate-[-90deg]' : 'rotate-90'}`} />
               </button>
-              {showFechaDropdown && (
-                <div data-fecha-dropdown className="absolute top-full left-0 mt-1 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 py-1 min-w-[160px]">
-                  {fechasUnicas.map((f: any) => (
-                    <button key={f} onClick={() => { setFiltroFecha(f); setShowFechaDropdown(false); }} className={`w-full text-left px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${filtroFecha === f ? "text-[#a3e635] bg-[#a3e635]/10" : "text-slate-400 hover:bg-slate-800"}`}>
-                      {formatearBotonFecha(f)}
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
 
             {competicionesUnicas.length > 1 && (
@@ -283,30 +274,6 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
                   🛡️ <span className="hidden sm:inline">{filtroCompeticion === "Todos" ? "Ligas" : filtroCompeticion}</span><span className="sm:hidden">Ligas</span>
                   <ChevronRight size={12} className={`transition-transform ${showCompDropdown ? 'rotate-[-90deg]' : 'rotate-90'}`} />
                 </button>
-                {showCompDropdown && (
-                  <div data-comp-dropdown className="absolute top-full left-0 mt-1 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 py-1 min-w-[200px] max-h-[300px] flex flex-col">
-                    <div className="px-2 pb-2 border-b border-slate-700">
-                      <div className="relative">
-                        <Search size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500" />
-                        <input
-                          type="text"
-                          placeholder="Buscar liga..."
-                          value={busquedaLigas}
-                          onChange={(e) => setBusquedaLigas(e.target.value)}
-                          className="w-full bg-slate-800 border border-slate-600 rounded-lg py-1.5 pl-7 pr-2 text-[10px] text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
-                          autoFocus
-                        />
-                      </div>
-                    </div>
-                    <div className="overflow-y-auto max-h-[200px]">
-                      {competicionesUnicas.filter((c: any) => c.toLowerCase().includes(busquedaLigas.toLowerCase())).map((c: any) => (
-                        <button key={c} onClick={() => { setFiltroCompeticion(c); setShowCompDropdown(false); setBusquedaLigas(""); }} className={`w-full text-left px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${filtroCompeticion === c ? "text-blue-400 bg-blue-600/10" : "text-slate-400 hover:bg-slate-800"}`}>
-                          {c === "Todos" ? "🛡️ Todas las ligas" : c}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             )}
 
@@ -316,6 +283,44 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
             >
               <Tv size={12} /> <span className="hidden sm:inline">{soloTvAbierta ? "TV Abierta" : "TV Abierta"}</span><span className="sm:hidden">📺</span>
             </button>
+          </div>
+
+          {/* CONTENEDOR DE MENÚS DESPLEGABLES (Fuera del scroll) */}
+          <div className="relative">
+            {showFechaDropdown && (
+              <div data-fecha-dropdown className="absolute top-0 left-0 mt-1 bg-slate-900 border border-slate-700 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-[100] py-1 min-w-[180px]">
+                {fechasUnicas.map((f: any) => (
+                  <button key={f} onClick={() => { setFiltroFecha(f); setShowFechaDropdown(false); }} className={`w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest border-b border-white/5 last:border-0 transition-all ${filtroFecha === f ? "text-[#a3e635] bg-[#a3e635]/10" : "text-slate-400 hover:bg-slate-800"}`}>
+                    {formatearBotonFecha(f)}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {showCompDropdown && (
+              <div data-comp-dropdown className="absolute top-0 left-0 mt-1 bg-slate-900 border border-slate-700 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-[100] py-1 min-w-[240px] max-h-[380px] flex flex-col overflow-hidden">
+                <div className="px-3 py-3 border-b border-slate-700 bg-slate-950/50">
+                  <div className="relative">
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                    <input
+                      type="text"
+                      placeholder="Buscar liga..."
+                      value={busquedaLigas}
+                      onChange={(e) => setBusquedaLigas(e.target.value)}
+                      className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2.5 pl-9 pr-3 text-base text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 shadow-inner"
+                      autoFocus
+                    />
+                  </div>
+                </div>
+                <div className="overflow-y-auto max-h-[280px] scrollbar-hide">
+                  {competicionesUnicas.filter((c: any) => c.toLowerCase().includes(busquedaLigas.toLowerCase())).map((c: any) => (
+                    <button key={c} onClick={() => { setFiltroCompeticion(c); setShowCompDropdown(false); setBusquedaLigas(""); }} className={`w-full text-left px-5 py-4 text-[10px] font-black uppercase tracking-widest border-b border-white/5 last:border-0 transition-all ${filtroCompeticion === c ? "text-blue-400 bg-blue-600/10" : "text-slate-400 hover:bg-slate-800"}`}>
+                      {c === "Todos" ? "🛡️ Todas las ligas" : c}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* ROW 2: Filtro de deportes con scroll */}

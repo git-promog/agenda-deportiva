@@ -321,7 +321,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
           {/* ROW 2: Filtro de deportes con scroll */}
           <div className="relative flex items-center">
             <button onClick={() => scrollDeportes('left')} className="absolute left-0 z-10 bg-slate-900/80 p-2 rounded-full shadow-lg"><ChevronLeft size={16} /></button>
-            <div ref={scrollRef} className="flex gap-2 overflow-x-auto py-1 px-8 scrollbar-hide scroll-smooth w-full text-center">
+            <div ref={scrollRef} className="flex gap-2 overflow-x-auto py-1 px-4 scrollbar-hide scroll-smooth w-full">
               {deportesUnicos.map((dep: any) => (
                 <button key={dep} onClick={() => setFiltroDeporte(dep)} className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap border uppercase tracking-wider ${filtroDeporte === dep ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-900/40" : "bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800"}`}>
                   {emojis[dep] || "🏆"} {dep}
@@ -351,7 +351,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
       </div>
       {filtrosFixed && <div style={{ height: filtrosRef.current?.offsetHeight }}></div>}
 
-      <main id="envivo" className="w-full max-w-4xl mx-auto px-4 pt-24 pb-8 overflow-x-hidden">
+      <main id="envivo" className="w-full max-w-4xl mx-auto px-4 pt-24 pb-8">
         {!busqueda && (filtroFecha === "Todos" || filtroFecha === hoyStr) && (
           <>
             <HomeHero evento={eventoHero} tipo={tipoHero} />
@@ -363,9 +363,9 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
             {noticias.length > 0 && (
               <div className="mb-12 w-full">
                 <h2 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] mb-6 flex items-center gap-2 px-2"><Newspaper className="w-3 h-3" /> Previas y Análisis</h2>
-                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4 snap-x">
+                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
                   {noticias.map((n: any) => (
-                    <Link key={n.id} href={`/noticias/${n.slug}`} className="min-w-[280px] w-[85vw] max-w-[350px] bg-slate-900/50 border border-slate-800 p-5 rounded-[32px] flex gap-4 items-center hover:bg-slate-800/80 hover:border-slate-700 transition-all cursor-pointer group flex-shrink-0 snap-center">
+                    <Link key={n.id} href={`/noticias/${n.slug}`} className="min-w-[280px] w-[85vw] max-w-[340px] bg-slate-900/50 border border-slate-800 p-5 rounded-[32px] flex gap-4 items-center hover:bg-slate-800/80 hover:border-slate-700 transition-all cursor-pointer group flex-shrink-0">
                       <div className="w-16 h-16 bg-blue-600/20 rounded-2xl flex-shrink-0 flex items-center justify-center border border-blue-500/20 group-hover:scale-105 group-hover:bg-blue-600/30 transition-all">
                         <Newspaper className="text-blue-500" size={28} />
                       </div>
@@ -404,7 +404,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
                 <h2 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] flex items-center gap-2 whitespace-nowrap"><CalendarDays className="w-4 h-4 text-blue-500" /> {new Date(fecha + 'T12:00:00').toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}</h2>
                 <div className="h-px w-full bg-slate-800/30"></div>
               </div>
-              <div className="grid gap-3 w-full">
+              <div className="flex flex-col gap-3 w-full">
                 {eventosAgrupados[fecha].map((evento: any, index: number) => (
                   <div key={evento.id} id={`evento-${evento.id}`} data-envivo={estaEnVivo(evento.fecha, evento.hora) ? 'true' : 'false'} className="w-full">
                     <SportEventCard evento={evento} isLive={estaEnVivo(evento.fecha, evento.hora)} onFiltrarLiga={(liga) => { setFiltroCompeticion(liga); setShowCompDropdown(false); }} />

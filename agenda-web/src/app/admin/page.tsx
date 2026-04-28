@@ -93,7 +93,7 @@ export default function AdminPanel() {
   if (!mounted) return null;
 
   async function cargarEventos() {
-    const { data, error } = await supabase.from('eventos').select('*').order('fecha', { ascending: true }).order('hora', { ascending: true });
+    const { data, error } = await supabase.from('eventos').select('*').gte('fecha', hoyStr).order('fecha', { ascending: true }).order('hora', { ascending: true });
     if (error) {
       console.error("Error cargando eventos:", error);
       return;

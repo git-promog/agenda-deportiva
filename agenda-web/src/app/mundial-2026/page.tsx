@@ -268,29 +268,56 @@ export default function Mundial2026() {
     {
       "@context": "https://schema.org",
       "@type": "SportsEvent",
-      "name": "Copa Mundial de la FIFA 2026",
+      "name": "Copa Mundial de la FIFA 2026™",
       "startDate": "2026-06-11T19:00:00Z",
       "endDate": "2026-07-19T21:00:00Z",
       "eventStatus": "https://schema.org/EventScheduled",
+      "image": "https://www.guiasports.com/images/mundial/Copa_Mundial_FIFA_2026-logo.webp",
       "location": SEDES.map(s => ({
         "@type": "Place",
         "name": s.estadio,
-        "address": { "@type": "PostalAddress", "addressLocality": s.ciudad, "addressCountry": s.pais === 'México' ? 'MX' : (s.pais === 'Canadá' ? 'CA' : 'US') }
+        "address": { 
+          "@type": "PostalAddress", 
+          "addressLocality": s.ciudad, 
+          "addressCountry": s.pais === 'México' ? 'MX' : (s.pais === 'Canadá' ? 'CA' : 'US') 
+        }
       })),
-      "organizer": { "@type": "SportsOrganization", "name": "FIFA", "url": "https://www.fifa.com" },
+      "organizer": { "@type": "Organization", "name": "FIFA", "url": "https://www.fifa.com" },
       "description": "La Copa Mundial de la FIFA 2026 se disputará en México, Estados Unidos y Canadá con 48 selecciones y 104 partidos del 11 de junio al 19 de julio de 2026."
     },
-    ...MATCHES.slice(0, 20).map(m => ({
-      "@type": "SportsEvent",
-      "name": `${m.fase}: ${m.equipo1} vs ${m.equipo2}`,
-      "startDate": `${m.fecha}T${m.hora}:00-06:00`,
-      "location": { "@type": "Place", "name": m.estadio, "address": m.ciudad },
-      "sport": "Fútbol",
-      "competitor": [
-        { "@type": "SportsTeam", "name": m.equipo1 },
-        { "@type": "SportsTeam", "name": m.equipo2 }
-      ]
-    }))
+    ...MATCHES.slice(0, 30).map(m => {
+      // Intentamos calcular una hora de fin aproximada (2 horas después)
+      const startDate = new Date(`${m.fecha}T${m.hora}:00-06:00`);
+      const endDate = new Date(startDate.getTime() + (120 * 60 * 1000));
+      
+      return {
+        "@type": "SportsEvent",
+        "name": `Mundial 2026: ${m.equipo1} vs ${m.equipo2}`,
+        "description": `${m.fase} - Copa Mundial de la FIFA 2026™ en ${m.estadio}`,
+        "startDate": startDate.toISOString(),
+        "endDate": endDate.toISOString(),
+        "eventStatus": "https://schema.org/EventScheduled",
+        "image": "https://www.guiasports.com/images/mundial/Copa_Mundial_FIFA_2026-logo.webp",
+        "location": { 
+          "@type": "Place", 
+          "name": m.estadio, 
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": m.ciudad,
+            "addressCountry": m.estadio.includes('Azteca') || m.estadio.includes('Akron') || m.estadio.includes('BBVA') ? 'MX' : 'US'
+          }
+        },
+        "performer": [
+          { "@type": "SportsTeam", "name": m.equipo1, "image": getFlagUrl(m.equipo1) },
+          { "@type": "SportsTeam", "name": m.equipo2, "image": getFlagUrl(m.equipo2) }
+        ],
+        "organizer": {
+          "@type": "Organization",
+          "name": "FIFA",
+          "url": "https://www.fifa.com"
+        }
+      };
+    })
   ];
 
   return (

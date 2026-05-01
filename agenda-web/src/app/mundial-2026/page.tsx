@@ -18,7 +18,8 @@ import {
   Star,
   X,
   Search,
-  ArrowUp
+  ArrowUp,
+  Radio
 } from 'lucide-react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { createClient } from '@supabase/supabase-js';
@@ -150,19 +151,27 @@ export default function Mundial2026() {
       setShowGoTop(window.scrollY > 400);
       
       if (tabsRef.current) {
-        // Marcamos las pestañas como fijas cuando llegamos a su posición
-        // Usamos un offset de seguridad
-        setTabsFixed(window.scrollY > 450);
+        // Marcamos las pestañas como fijas más pronto
+        setTabsFixed(window.scrollY > 300);
       }
       
       if (filtersRef.current) {
-        // Los filtros se fijan cuando el scroll llega a ellos
-        setFiltersFixed(window.scrollY > 850);
+        // Los filtros se fijan justo después de las pestañas
+        setFiltersFixed(window.scrollY > 420);
       }
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Efecto para aterrizaje suave al filtrar
+  useEffect(() => {
+    if ((filtroFecha !== 'Todas' || searchQuery !== '' || venueFilter !== null) && filtersFixed) {
+      // Si el usuario cambia un filtro y ya está en la zona de resultados,
+      // lo subimos al inicio del listado (ajustado por el menú fijo)
+      window.scrollTo({ top: 860, behavior: 'smooth' });
+    }
+  }, [filtroFecha, searchQuery, venueFilter]);
 
   // Helper para countdown por sede
   const getSedeCountdown = (estadio: string) => {
@@ -298,10 +307,22 @@ export default function Mundial2026() {
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-yellow-500/5 blur-[100px] rounded-full translate-y-1/2 -translate-x-1/2"></div>
 
         <div className="max-w-4xl mx-auto px-4 pt-10 relative z-10">
-          <Breadcrumbs 
-            items={activeTab !== 'overview' ? [{ label: 'Mundial 2026', href: '/mundial-2026' }] : []} 
-            current={activeTab === 'overview' ? 'Mundial 2026' : TAB_CONFIG.find(t => t.id === activeTab)?.label || 'Mundial 2026'} 
-          />
+          <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest mb-8">
+            <Link href="/" className="text-slate-600 hover:text-blue-400 transition-colors">Inicio</Link>
+            <span className="text-slate-700">/</span>
+            <button 
+              onClick={() => { setActiveTab('overview'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              className={`transition-colors ${activeTab === 'overview' ? 'text-slate-300 cursor-default' : 'text-slate-500 hover:text-blue-400'}`}
+            >
+              Mundial 2026
+            </button>
+            {activeTab !== 'overview' && (
+              <>
+                <span className="text-slate-700">/</span>
+                <span className="text-slate-300">{TAB_CONFIG.find(t => t.id === activeTab)?.label}</span>
+              </>
+            )}
+          </nav>
 
           <header className="mb-10">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
@@ -377,7 +398,7 @@ export default function Mundial2026() {
               </nav>
             </div>
           </div>
-          {tabsFixed && <div className="h-[100px]"></div>}
+          {tabsFixed && <div className="h-[80px]"></div>}
 
           {/* MAIN CONTENT AREA */}
           <main className="min-h-[500px]">
@@ -532,7 +553,7 @@ export default function Mundial2026() {
               <div className="pb-12">
                 <div 
                   ref={filtersRef}
-                  className={`${filtersFixed ? 'fixed top-[88px] md:top-[98px] left-0 right-0 z-[90] bg-[#020617]/95 backdrop-blur-xl border-b border-white/5 px-4 py-3 shadow-xl' : 'relative mb-6'}`}
+                  className={`${filtersFixed ? 'fixed top-[82px] md:top-[90px] left-0 right-0 z-[90] bg-[#020617]/95 backdrop-blur-xl border-b border-white/5 px-4 py-3 shadow-xl' : 'relative mb-6'}`}
                 >
                   <div className="max-w-4xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className={filtersFixed ? 'hidden md:block' : 'block'}>
@@ -540,7 +561,7 @@ export default function Mundial2026() {
                       <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest bg-blue-500/10 px-3 py-1 rounded-lg mt-2 inline-block">FIFA 2026™</span>
                     </div>
 
-                    <div className="flex flex-row items-center gap-2 overflow-x-auto scrollbar-hide pb-1 md:pb-0">
+                    <div className="flex flex-row items-center gap-2 overflow-x-auto scrollbar-hide pb-1 md:pb-0 min-w-0">
                       {/* FILTRO POR FECHA */}
                       <div className="flex items-center gap-2 bg-slate-900/80 border border-slate-700/50 px-3 py-2 rounded-xl shrink-0">
                         <Calendar size={12} className="text-[#a3e635] shrink-0" />
@@ -552,7 +573,7 @@ export default function Mundial2026() {
                         >
                           {fechasUnicas.map(f => (
                             <option key={f} value={f} className="bg-slate-900 text-white">
-                              {f === 'Todas' ? '📅 Todas' : new Date(f + 'T12:00:00').toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric' }).toUpperCase()}
+                              {f === 'Todas' ? '📅 Fecha' : new Date(f + 'T12:00:00').toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric' }).toUpperCase()}
                             </option>
                           ))}
                         </select>
@@ -588,18 +609,18 @@ export default function Mundial2026() {
                         />
                       </div>
 
-                      {(venueFilter || filtroFecha !== 'Todas') && (
+                      {(venueFilter || filtroFecha !== 'Todas' || searchQuery !== '') && (
                         <button 
                           onClick={() => { setVenueFilter(null); setFiltroFecha('Todas'); setSearchQuery(''); }}
-                          className="bg-red-600/10 border border-red-500/30 text-red-400 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest shrink-0"
+                          className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shrink-0 shadow-lg shadow-red-900/40 transition-all active:scale-95 flex items-center gap-1 ml-2 mr-6"
                         >
-                          ✕
+                          <X size={12} /> Limpiar
                         </button>
                       )}
                     </div>
                   </div>
                 </div>
-                {filtersFixed && <div className="h-[100px]"></div>}
+                {filtersFixed && <div className="h-[80px]"></div>}
 
                 {/* Agrupación por fecha con separadores visuales */}
                 <div className="flex flex-col gap-0 mb-12 [overflow-anchor:auto]">
@@ -767,12 +788,33 @@ export default function Mundial2026() {
             )}
           </main>
 
-          {/* Call to action footer linking back to Home */}
-          <section className="mt-20 pt-10 border-t border-slate-800/50 text-center">
-            <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-6">¿Quieres ver la agenda de hoy?</h2>
-            <Link href="/" className="inline-flex items-center gap-2 bg-blue-600 px-10 py-5 rounded-2xl font-black uppercase italic text-sm hover:bg-blue-500 transition-all shadow-xl shadow-blue-900/40">
-              Ver Agenda Principal <ChevronRight size={18} />
-            </Link>
+          {/* Call to action footer - Optimizado para permanencia en el HUB */}
+          <section className="mt-20 pt-16 border-t border-slate-800/50">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+               <div 
+                 onClick={() => { setActiveTab('groups'); window.scrollTo({ top: 400, behavior: 'smooth' }); }}
+                 className="bg-slate-900/50 border border-slate-800 p-8 rounded-[32px] hover:border-blue-500/30 transition-all cursor-pointer group"
+               >
+                 <Table className="text-blue-500 mb-4" size={32} />
+                 <h3 className="text-lg font-black italic uppercase text-white mb-2">Tabla de Grupos</h3>
+                 <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Consulta las 48 selecciones →</p>
+               </div>
+               <div 
+                 onClick={() => { setActiveTab('venues'); window.scrollTo({ top: 400, behavior: 'smooth' }); }}
+                 className="bg-slate-900/50 border border-slate-800 p-8 rounded-[32px] hover:border-yellow-500/30 transition-all cursor-pointer group"
+               >
+                 <MapPin className="text-yellow-500 mb-4" size={32} />
+                 <h3 className="text-lg font-black italic uppercase text-white mb-2">Sedes Oficiales</h3>
+                 <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Explora los estadios →</p>
+               </div>
+            </div>
+
+            <div className="text-center">
+              <h2 className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] mb-6">¿Deseas volver a la programación general?</h2>
+              <Link href="/" className="inline-flex items-center gap-3 text-slate-400 hover:text-white transition-all text-[10px] font-black uppercase tracking-[0.2em] bg-slate-900/50 px-8 py-4 rounded-2xl border border-slate-800 hover:border-slate-600">
+                <Radio size={14} className="text-red-500" /> Ver Agenda Principal GuíaSports
+              </Link>
+            </div>
           </section>
         </div>
 

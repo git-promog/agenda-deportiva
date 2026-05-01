@@ -390,9 +390,22 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
         <section className="mb-12 w-full">
           <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-3 px-2">Competiciones Destacadas</h2>
           <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4">
-            <Link href="/mundial-2026" className="flex-shrink-0 bg-gradient-to-br from-yellow-500/10 to-yellow-700/5 border border-yellow-500/20 px-6 py-4 rounded-2xl text-center hover:border-yellow-500/40 transition-all group shadow-lg shadow-yellow-900/5">
-              <div className="text-2xl mb-1.5">🏆</div>
-              <div className="text-[10px] font-black uppercase text-yellow-500 group-hover:text-yellow-400 transition-colors whitespace-nowrap">Mundial 2026</div>
+            <Link 
+              href="/mundial-2026" 
+              className="flex-shrink-0 relative overflow-hidden group bg-slate-900 border border-yellow-500/30 px-6 py-4 rounded-2xl text-center transition-all duration-500 hover:border-yellow-400 hover:shadow-[0_0_25px_rgba(234,179,8,0.3)] hover:-translate-y-0.5 active:scale-95 shadow-xl shadow-black/20"
+            >
+              {/* Animated background glow */}
+              <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/10 via-transparent to-yellow-600/5 opacity-50 group-hover:opacity-100 transition-opacity"></div>
+              
+              {/* Shimmer effect */}
+              <div className="absolute -inset-[100%] group-hover:animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-[25deg] pointer-events-none"></div>
+
+              <div className="relative z-10 flex flex-col items-center">
+                <div className="h-10 w-auto mb-1.5 transform group-hover:scale-110 transition-transform duration-500 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">
+                  <img src="/images/mundial/Copa_Mundial_FIFA_2026-logo.webp" alt="FIFA 2026" className="h-full w-auto object-contain" />
+                </div>
+                <div className="text-[10px] font-black uppercase text-yellow-500 tracking-widest group-hover:text-yellow-400 transition-colors whitespace-nowrap">Mundial 2026</div>
+              </div>
             </Link>
             <Link href="/?competicion=Liga MX" className="flex-shrink-0 bg-slate-900/50 border border-slate-800 px-6 py-4 rounded-2xl text-center hover:border-blue-500/30 transition-all group shadow-lg">
               <div className="text-2xl mb-1.5">🛡️</div>

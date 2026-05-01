@@ -44,3 +44,13 @@ html {
   scroll-padding-top: 100px;
   scroll-padding-bottom: 250px;
 }
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%) skewX(25deg);
+  }
+  100% {
+    transform: translateX(100%) skewX(25deg);
+  }
+}
+

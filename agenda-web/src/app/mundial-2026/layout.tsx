@@ -1,20 +1,19 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Hub del Mundial 2026 — Calendario, Grupos y Sedes | GuíaSports',
+  title: 'Copa Mundial de la FIFA 2026™ | Calendario, Grupos y Sedes | GuíaSports',
   description:
-    'Calendario oficial de los 104 partidos del Mundial de Fútbol 2026 en México, USA y Canadá. Horarios en tu zona horaria, tabla de posiciones en tiempo real, sedes y más.',
+    'Calendario oficial de los 104 partidos de la Copa Mundial de la FIFA 2026™ en México, USA y Canadá. Horarios en tu zona horaria, tabla de posiciones y sedes.',
   keywords: [
+    'Copa Mundial de la FIFA 2026™',
     'Mundial 2026',
-    'Copa del Mundo 2026',
-    'calendario FIFA 2026',
-    'partidos México Mundial 2026',
-    'grupos Mundial 2026',
-    'sedes Mundial 2026',
-    'horarios Mundial 2026 México',
-    'Mundial 2026 USA Canadá',
     'FIFA World Cup 2026',
-    'cuando es el Mundial 2026',
+    'calendario oficial Mundial 2026',
+    'partidos México Mundial 2026',
+    'sedes Copa del Mundo 2026',
+    'FIFA 2026 schedule',
+    'horarios Mundial 2026 México',
+    'donde ver el Mundial 2026',
   ],
   authors: [{ name: 'GuíaSports', url: 'https://www.guiasports.com' }],
   creator: 'GuíaSports',

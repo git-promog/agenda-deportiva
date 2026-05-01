@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import NextImage from 'next/image';
+import Header from '@/components/Header';
 import { 
   Calendar, 
   MapPin, 
@@ -15,7 +17,8 @@ import {
   Clock,
   Star,
   X,
-  Search
+  Search,
+  ArrowUp
 } from 'lucide-react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { createClient } from '@supabase/supabase-js';
@@ -43,6 +46,12 @@ export default function Mundial2026() {
   const [venueFilter, setVenueFilter] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [timezone, setTimezone] = useState('America/Mexico_City');
+  const [filtroFecha, setFiltroFecha] = useState('Todas');
+  const [showGoTop, setShowGoTop] = useState(false);
+  const [tabsFixed, setTabsFixed] = useState(false);
+  const tabsRef = useRef<HTMLDivElement>(null);
+  const filtersRef = useRef<HTMLDivElement>(null);
+  const [filtersFixed, setFiltersFixed] = useState(false);
 
   const TIMEZONES = [
     { value: 'America/Mexico_City', label: 'CDMX (UTC-6)',    short: 'CDMX' },
@@ -113,7 +122,9 @@ export default function Mundial2026() {
     .filter(m => {
       // 1. Filtro por sede
       if (venueFilter && m.estadio !== venueFilter && m.ciudad !== venueFilter) return false;
-      // 2. Filtro de búsqueda (equipo, fase, sede, grupo)
+      // 2. Filtro por fecha
+      if (filtroFecha !== 'Todas' && m.fecha !== filtroFecha) return false;
+      // 3. Filtro de búsqueda (equipo, fase, sede, grupo)
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         const matchesQuery = 
@@ -127,6 +138,42 @@ export default function Mundial2026() {
       return true;
     })
     .sort((a, b) => getUtcMs(a) - getUtcMs(b));
+
+  const fechasUnicas = ["Todas", ...new Set(MATCHES.map(m => m.fecha))].sort((a, b) => {
+    if (a === 'Todas') return -1;
+    if (b === 'Todas') return 1;
+    return a.localeCompare(b);
+  });
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowGoTop(window.scrollY > 400);
+      
+      if (tabsRef.current) {
+        // Marcamos las pestañas como fijas cuando llegamos a su posición
+        // Usamos un offset de seguridad
+        setTabsFixed(window.scrollY > 450);
+      }
+      
+      if (filtersRef.current) {
+        // Los filtros se fijan cuando el scroll llega a ellos
+        setFiltersFixed(window.scrollY > 850);
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Helper para countdown por sede
+  const getSedeCountdown = (estadio: string) => {
+    const primerPartido = MATCHES.find(m => m.estadio === estadio);
+    if (!primerPartido) return null;
+    const start = getUtcMs(primerPartido);
+    const diff = start - now.getTime();
+    if (diff < 0) return 'Iniciado';
+    const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+    return `${dias} días`;
+  };
 
   useEffect(() => {
     async function fetchWCNews() {
@@ -223,7 +270,18 @@ export default function Mundial2026() {
       })),
       "organizer": { "@type": "SportsOrganization", "name": "FIFA", "url": "https://www.fifa.com" },
       "description": "La Copa Mundial de la FIFA 2026 se disputará en México, Estados Unidos y Canadá con 48 selecciones y 104 partidos del 11 de junio al 19 de julio de 2026."
-    }
+    },
+    ...MATCHES.slice(0, 20).map(m => ({
+      "@type": "SportsEvent",
+      "name": `${m.fase}: ${m.equipo1} vs ${m.equipo2}`,
+      "startDate": `${m.fecha}T${m.hora}:00-06:00`,
+      "location": { "@type": "Place", "name": m.estadio, "address": m.ciudad },
+      "sport": "Fútbol",
+      "competitor": [
+        { "@type": "SportsTeam", "name": m.equipo1 },
+        { "@type": "SportsTeam", "name": m.equipo2 }
+      ]
+    }))
   ];
 
   return (
@@ -234,32 +292,45 @@ export default function Mundial2026() {
       />
       
       <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-24 relative">
+        <Header />
         {/* Background Accents */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2"></div>
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-yellow-500/5 blur-[100px] rounded-full translate-y-1/2 -translate-x-1/2"></div>
 
         <div className="max-w-4xl mx-auto px-4 pt-10 relative z-10">
-          <Breadcrumbs items={[]} current="Mundial 2026" />
+          <Breadcrumbs 
+            items={activeTab !== 'overview' ? [{ label: 'Mundial 2026', href: '/mundial-2026' }] : []} 
+            current={activeTab === 'overview' ? 'Mundial 2026' : TAB_CONFIG.find(t => t.id === activeTab)?.label || 'Mundial 2026'} 
+          />
 
           <header className="mb-10">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
               <div className="flex items-center gap-6">
-                <div className="bg-gradient-to-br from-yellow-500 to-yellow-700 p-5 rounded-3xl shadow-2xl shadow-yellow-900/20 text-5xl">
-                  🏆
+                <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-3 rounded-3xl shadow-2xl shadow-black/20 w-24 h-24 md:w-32 md:h-32 flex items-center justify-center overflow-hidden">
+                  <img 
+                    src="/images/mundial/Copa_Mundial_FIFA_2026-logo.webp" 
+                    alt="Copa Mundial de la FIFA 2026™" 
+                    className="w-full h-full object-contain transform hover:scale-110 transition-transform duration-700"
+                  />
                 </div>
                 <div>
                   <h1 className="text-4xl md:text-6xl font-black italic uppercase leading-[0.9] tracking-tighter bg-gradient-to-r from-white via-white to-slate-500 bg-clip-text text-transparent">
                     Mundial <span className="text-yellow-500">2026</span>
                   </h1>
+                  <p className="text-[10px] font-black text-white/90 uppercase tracking-widest mt-1 bg-blue-600/20 w-fit px-3 py-1 rounded-lg border border-blue-500/20">
+                    Copa Mundial de la FIFA 2026™
+                  </p>
                   <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em] mt-3 flex items-center gap-2">
                     <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span>
                     México • Estados Unidos • Canadá
                   </p>
                 </div>
               </div>
-              <div className="flex md:flex-col items-center md:items-end gap-2 bg-slate-900/50 backdrop-blur-xl border border-slate-800 p-4 rounded-3xl px-6">
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Inicia en</span>
-                <span className="text-2xl font-black italic text-white leading-none">JUN 11</span>
+              <div className="flex flex-col items-center gap-3">
+                <div className="flex md:flex-col items-center md:items-end gap-2 bg-slate-900/50 backdrop-blur-xl border border-slate-800 p-4 rounded-3xl px-6">
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Inicia en</span>
+                  <span className="text-2xl font-black italic text-white leading-none">JUN 11</span>
+                </div>
               </div>
             </div>
 
@@ -279,21 +350,34 @@ export default function Mundial2026() {
             </div>
           </header>
 
-          {/* INTERNAL NAVIGATION TABS - WRAPPER FOR STICKY STABILITY */}
-          <div className="sticky top-0 z-[9999] -mx-4 px-4 bg-[#020617] backdrop-blur-3xl border-b border-white/5 mb-12 shadow-2xl">
-            <nav className="flex items-center gap-2 py-5 overflow-x-auto scrollbar-hide">
-              {TAB_CONFIG.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as WCTab)}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 whitespace-nowrap shadow-sm ${activeTab === tab.id ? 'bg-blue-600 text-white border border-blue-400/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'}`}
-                >
-                  <tab.icon size={14} />
-                  {tab.label}
-                </button>
-              ))}
-            </nav>
+          <div 
+            ref={tabsRef}
+            className={`${tabsFixed ? 'fixed top-0 left-0 right-0 z-[100] bg-[#020617]/95 backdrop-blur-3xl border-b border-white/5 shadow-2xl px-4 py-3' : 'relative mb-12'}`}
+          >
+            <div className="max-w-4xl mx-auto flex flex-col items-center">
+              {tabsFixed && (
+                <Link href="/" className="mb-2 animate-in fade-in slide-in-from-top-2 duration-500">
+                  <NextImage src="/GuiaSports-logo.svg" alt="GuíaSports" width={90} height={25} className="h-5 w-auto opacity-80 hover:opacity-100 transition-opacity" />
+                </Link>
+              )}
+              <nav className="flex items-center gap-2 py-1 overflow-x-auto scrollbar-hide w-full justify-center">
+                <div className="hidden md:block mr-4 border-r border-white/10 pr-4">
+                  <img src="/images/mundial/Copa_Mundial_FIFA_2026-logo.webp" alt="FIFA 2026" className="h-8 w-auto" />
+                </div>
+                {TAB_CONFIG.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => { setActiveTab(tab.id as WCTab); if (tabsFixed) window.scrollTo({ top: 380, behavior: 'smooth' }); }}
+                    className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 whitespace-nowrap shadow-sm ${activeTab === tab.id ? 'bg-blue-600 text-white border border-blue-400/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'}`}
+                  >
+                    <tab.icon size={12} />
+                    {tab.label}
+                  </button>
+                ))}
+              </nav>
+            </div>
           </div>
+          {tabsFixed && <div className="h-[100px]"></div>}
 
           {/* MAIN CONTENT AREA */}
           <main className="min-h-[500px]">
@@ -446,62 +530,76 @@ export default function Mundial2026() {
 
             {activeTab === 'schedule' && (
               <div className="pb-12">
-                <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-                  <div>
-                    <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Calendario Oficial</h2>
-                    <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest bg-blue-500/10 px-3 py-1 rounded-lg mt-2 inline-block">104 Partidos totales</span>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-3">
-                    {/* SELECTOR DE ZONA HORARIA — SEO + UX */}
-                    <div className="flex items-center gap-2 bg-slate-900/50 border border-slate-700/50 px-3 py-2 rounded-2xl" title="Zona horaria para los horarios del mundial">
-                      <Clock size={12} className="text-blue-400 shrink-0" />
-                      <label htmlFor="tz-selector" className="text-[9px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Hora en:</label>
-                      <select
-                        id="tz-selector"
-                        value={timezone}
-                        onChange={e => setTimezone(e.target.value)}
-                        className="bg-transparent text-[10px] font-black text-white uppercase outline-none cursor-pointer"
-                        aria-label="Seleccionar zona horaria para el calendario del Mundial 2026"
-                      >
-                        {TIMEZONES.map(tz => (
-                          <option key={tz.value} value={tz.value} className="bg-slate-900 text-white">
-                            {tz.label}
-                          </option>
-                        ))}
-                      </select>
+                <div 
+                  ref={filtersRef}
+                  className={`${filtersFixed ? 'fixed top-[88px] md:top-[98px] left-0 right-0 z-[90] bg-[#020617]/95 backdrop-blur-xl border-b border-white/5 px-4 py-3 shadow-xl' : 'relative mb-6'}`}
+                >
+                  <div className="max-w-4xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className={filtersFixed ? 'hidden md:block' : 'block'}>
+                      <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Calendario Oficial</h2>
+                      <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest bg-blue-500/10 px-3 py-1 rounded-lg mt-2 inline-block">FIFA 2026™</span>
                     </div>
 
-                    {/* BUSCADOR AVANZADO */}
-                    <div className="flex items-center gap-2 bg-slate-900/50 border border-slate-700/50 px-3 py-2 rounded-2xl md:min-w-[200px]">
-                      <Search size={12} className="text-slate-400 shrink-0" />
-                      <input
-                        type="text"
-                        placeholder="Buscar equipo o fase..."
-                        value={searchQuery}
-                        onChange={e => setSearchQuery(e.target.value)}
-                        className="bg-transparent text-[10px] font-black text-white uppercase outline-none placeholder:text-slate-600 w-full"
-                      />
-                      {searchQuery && (
-                        <button onClick={() => setSearchQuery('')} className="text-slate-500 hover:text-white">
-                          <X size={12} />
+                    <div className="flex flex-row items-center gap-2 overflow-x-auto scrollbar-hide pb-1 md:pb-0">
+                      {/* FILTRO POR FECHA */}
+                      <div className="flex items-center gap-2 bg-slate-900/80 border border-slate-700/50 px-3 py-2 rounded-xl shrink-0">
+                        <Calendar size={12} className="text-[#a3e635] shrink-0" />
+                        <select
+                          value={filtroFecha}
+                          onChange={e => setFiltroFecha(e.target.value)}
+                          className="bg-transparent text-[10px] font-black text-white uppercase outline-none cursor-pointer"
+                          aria-label="Filtrar por fecha"
+                        >
+                          {fechasUnicas.map(f => (
+                            <option key={f} value={f} className="bg-slate-900 text-white">
+                              {f === 'Todas' ? '📅 Todas' : new Date(f + 'T12:00:00').toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric' }).toUpperCase()}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* SELECTOR DE ZONA HORARIA */}
+                      <div className="flex items-center gap-2 bg-slate-900/50 border border-slate-700/50 px-3 py-2 rounded-xl shrink-0" title="Zona horaria">
+                        <Clock size={12} className="text-blue-400 shrink-0" />
+                        <select
+                          id="tz-selector"
+                          value={timezone}
+                          onChange={e => setTimezone(e.target.value)}
+                          className="bg-transparent text-[10px] font-black text-white uppercase outline-none cursor-pointer"
+                          aria-label="Seleccionar zona horaria"
+                        >
+                          {TIMEZONES.map(tz => (
+                            <option key={tz.value} value={tz.value} className="bg-slate-900 text-white">
+                              {tz.short}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* BUSCADOR AVANZADO */}
+                      <div className="flex items-center gap-2 bg-slate-900/50 border border-slate-700/50 px-3 py-2 rounded-xl min-w-[140px] md:min-w-[200px] shrink-0">
+                        <Search size={12} className="text-slate-400 shrink-0" />
+                        <input
+                          type="text"
+                          placeholder="Buscar..."
+                          value={searchQuery}
+                          onChange={e => setSearchQuery(e.target.value)}
+                          className="bg-transparent text-[10px] font-black text-white uppercase outline-none placeholder:text-slate-600 w-full"
+                        />
+                      </div>
+
+                      {(venueFilter || filtroFecha !== 'Todas') && (
+                        <button 
+                          onClick={() => { setVenueFilter(null); setFiltroFecha('Todas'); setSearchQuery(''); }}
+                          className="bg-red-600/10 border border-red-500/30 text-red-400 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest shrink-0"
+                        >
+                          ✕
                         </button>
                       )}
                     </div>
-
-                    {venueFilter && (
-                      <div className="flex items-center gap-3 bg-blue-600/10 border border-blue-500/30 px-4 py-2 rounded-2xl animate-in zoom-in-95 duration-300">
-                        <span className="text-[9px] font-black text-blue-400 uppercase tracking-tight">Sede: {venueFilter}</span>
-                        <button 
-                          onClick={clearFilter}
-                          className="bg-blue-600 text-white p-1 rounded-full hover:bg-blue-500 transition-colors"
-                        >
-                          <X size={10} />
-                        </button>
-                      </div>
-                    )}
                   </div>
                 </div>
+                {filtersFixed && <div className="h-[100px]"></div>}
 
                 {/* Agrupación por fecha con separadores visuales */}
                 <div className="flex flex-col gap-0 mb-12 [overflow-anchor:auto]">
@@ -635,9 +733,15 @@ export default function Mundial2026() {
                             </div>
                             <h3 className="text-3xl font-black italic uppercase text-white leading-none tracking-tighter">{s.estadio}</h3>
                           </div>
-                          <div className="bg-white/5 border border-white/10 px-5 py-3 rounded-2xl backdrop-blur-md hidden sm:block">
-                            <span className="text-[9px] font-black text-slate-500 block uppercase tracking-widest mb-1">Capacidad</span>
-                            <span className="text-lg font-black text-white italic">{s.capacidad}</span>
+                          <div className="flex flex-col items-end gap-2">
+                            <div className="bg-white/5 border border-white/10 px-5 py-3 rounded-2xl backdrop-blur-md hidden sm:block">
+                              <span className="text-[9px] font-black text-slate-500 block uppercase tracking-widest mb-1">Capacidad</span>
+                              <span className="text-lg font-black text-white italic">{s.capacidad}</span>
+                            </div>
+                            <div className={`px-4 py-2 rounded-xl border ${borderColor} bg-slate-900/50 flex flex-col items-center min-w-[100px]`}>
+                               <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-0.5">Inicia en</span>
+                               <span className={`text-sm font-black italic ${textColor}`}>{getSedeCountdown(s.estadio)}</span>
+                            </div>
                           </div>
                         </div>
                         <p className="text-slate-400 text-sm leading-relaxed mb-8 font-medium">{s.detalles}</p>
@@ -671,6 +775,15 @@ export default function Mundial2026() {
             </Link>
           </section>
         </div>
+
+        {/* BOTÓN IR ARRIBA */}
+        <button 
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className={`fixed bottom-8 right-8 p-4 bg-blue-600 text-white rounded-2xl shadow-2xl transition-all duration-300 z-[100] hover:scale-110 active:scale-95 ${showGoTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
+          aria-label="Ir arriba"
+        >
+          <ArrowUp className="w-6 h-6" />
+        </button>
       </div>
     </>
   );

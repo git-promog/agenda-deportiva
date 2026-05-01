@@ -562,6 +562,16 @@ export default function Mundial2026() {
                     </div>
 
                     <div className="flex flex-row items-center gap-2 overflow-x-auto scrollbar-hide pb-1 md:pb-0 min-w-0">
+                      {/* FILTRO DE LIMPIAR — PRIMERO EN MÓVIL SI HAY FILTROS */}
+                      {(venueFilter || filtroFecha !== 'Todas' || searchQuery !== '') && (
+                        <button 
+                          onClick={() => { setVenueFilter(null); setFiltroFecha('Todas'); setSearchQuery(''); }}
+                          className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shrink-0 shadow-lg shadow-red-900/40 transition-all active:scale-95 flex items-center gap-1 mr-2"
+                        >
+                          <X size={12} /> Limpiar
+                        </button>
+                      )}
+
                       {/* FILTRO POR FECHA */}
                       <div className="flex items-center gap-2 bg-slate-900/80 border border-slate-700/50 px-3 py-2 rounded-xl shrink-0">
                         <Calendar size={12} className="text-[#a3e635] shrink-0" />
@@ -608,15 +618,6 @@ export default function Mundial2026() {
                           className="bg-transparent text-[10px] font-black text-white uppercase outline-none placeholder:text-slate-600 w-full"
                         />
                       </div>
-
-                      {(venueFilter || filtroFecha !== 'Todas' || searchQuery !== '') && (
-                        <button 
-                          onClick={() => { setVenueFilter(null); setFiltroFecha('Todas'); setSearchQuery(''); }}
-                          className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shrink-0 shadow-lg shadow-red-900/40 transition-all active:scale-95 flex items-center gap-1 ml-2 mr-6"
-                        >
-                          <X size={12} /> Limpiar
-                        </button>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -793,27 +794,34 @@ export default function Mundial2026() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
                <div 
                  onClick={() => { setActiveTab('groups'); window.scrollTo({ top: 400, behavior: 'smooth' }); }}
-                 className="bg-slate-900/50 border border-slate-800 p-8 rounded-[32px] hover:border-blue-500/30 transition-all cursor-pointer group"
+                 className="relative overflow-hidden bg-slate-900/50 border border-slate-800 p-8 rounded-[32px] hover:border-blue-500/30 transition-all cursor-pointer group"
                >
+                 <div className="absolute -right-4 -bottom-4 w-32 h-32 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <img src="/images/mundial/Copa_Mundial_FIFA_2026-logo.webp" alt="FIFA 2026" className="w-full h-full object-contain" />
+                 </div>
                  <Table className="text-blue-500 mb-4" size={32} />
                  <h3 className="text-lg font-black italic uppercase text-white mb-2">Tabla de Grupos</h3>
                  <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Consulta las 48 selecciones →</p>
                </div>
                <div 
                  onClick={() => { setActiveTab('venues'); window.scrollTo({ top: 400, behavior: 'smooth' }); }}
-                 className="bg-slate-900/50 border border-slate-800 p-8 rounded-[32px] hover:border-yellow-500/30 transition-all cursor-pointer group"
+                 className="relative overflow-hidden bg-slate-900/50 border border-slate-800 p-8 rounded-[32px] hover:border-yellow-500/30 transition-all cursor-pointer group"
                >
+                 <div className="absolute -right-4 -bottom-4 w-32 h-32 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <img src="/images/mundial/Copa_Mundial_FIFA_2026-logo.webp" alt="FIFA 2026" className="w-full h-full object-contain" />
+                 </div>
                  <MapPin className="text-yellow-500 mb-4" size={32} />
                  <h3 className="text-lg font-black italic uppercase text-white mb-2">Sedes Oficiales</h3>
                  <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Explora los estadios →</p>
                </div>
             </div>
 
-            <div className="text-center">
+            <div className="text-center flex flex-col items-center">
               <h2 className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] mb-6">¿Deseas volver a la programación general?</h2>
-              <Link href="/" className="inline-flex items-center gap-3 text-slate-400 hover:text-white transition-all text-[10px] font-black uppercase tracking-[0.2em] bg-slate-900/50 px-8 py-4 rounded-2xl border border-slate-800 hover:border-slate-600">
+              <Link href="/" className="inline-flex items-center gap-3 text-slate-400 hover:text-white transition-all text-[10px] font-black uppercase tracking-[0.2em] bg-slate-900/50 px-8 py-4 rounded-2xl border border-slate-800 hover:border-slate-600 mb-6">
                 <Radio size={14} className="text-red-500" /> Ver Agenda Principal GuíaSports
               </Link>
+              <NextImage src="/GuiaSports-logo.svg" alt="GuíaSports" width={100} height={30} className="h-6 w-auto opacity-30" />
             </div>
           </section>
         </div>

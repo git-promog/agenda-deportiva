@@ -188,6 +188,17 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
     return new Date(fStr + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
   };
 
+  const resetFilters = () => {
+    setFiltroDeporte("Todos");
+    setFiltroFecha("Todos");
+    setFiltroCompeticion("Todos");
+    setSoloTvAbierta(false);
+    setSoloEnVivo(false);
+    setBusqueda("");
+    // Limpiar URL
+    window.history.replaceState({}, '', window.location.pathname);
+  };
+
   const toggleEnVivo = () => {
     const eventosEnVivo = document.querySelectorAll('[data-envivo="true"]');
     if (eventosEnVivo.length > 0) {
@@ -369,7 +380,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
                   <span key={i} className="text-[10px] font-black text-white bg-blue-600/30 px-2.5 py-1 rounded-lg border border-blue-500/30">{f}</span>
                 ))}
               </div>
-              <button onClick={() => { setFiltroDeporte("Todos"); setFiltroFecha("Todos"); setFiltroCompeticion("Todos"); setSoloTvAbierta(false); setSoloEnVivo(false); }} className="text-[10px] font-black text-white bg-red-600 hover:bg-red-500 transition-colors ml-auto uppercase px-3 py-1.5 rounded-lg border border-red-500 shadow-[0_0_10px_rgba(220,38,38,0.3)] flex items-center gap-1">
+              <button onClick={resetFilters} className="text-[10px] font-black text-white bg-red-600 hover:bg-red-500 transition-colors ml-auto uppercase px-3 py-1.5 rounded-lg border border-red-500 shadow-[0_0_10px_rgba(220,38,38,0.3)] flex items-center gap-1">
                 <span>✕</span>Limpiar
               </button>
             </div>
@@ -389,9 +400,14 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
 
             {noticias.length > 0 && (
               <div className="mb-12 w-full">
-                <h2 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] mb-6 flex items-center gap-2 px-2"><Newspaper className="w-3 h-3" /> Previas y Análisis</h2>
+                <div className="flex items-center justify-between mb-6 px-2">
+                  <h2 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] flex items-center gap-2"><Newspaper className="w-3 h-3" /> Últimas Noticias</h2>
+                  <Link href="/noticias" className="text-[9px] font-black text-slate-500 uppercase tracking-widest hover:text-blue-400 transition-colors flex items-center gap-1">
+                    Ver todas <ChevronRight size={10} />
+                  </Link>
+                </div>
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
-                  {noticias.map((n: any) => (
+                  {noticias.slice(0, 5).map((n: any) => (
                     <Link key={n.id} href={`/noticias/${n.slug}`} className="min-w-[280px] w-[85vw] max-w-[340px] bg-slate-900/50 border border-slate-800 p-5 rounded-[32px] flex gap-4 items-center hover:bg-slate-800/80 hover:border-slate-700 transition-all cursor-pointer group flex-shrink-0">
                       <div className="w-16 h-16 bg-blue-600/20 rounded-2xl flex-shrink-0 flex items-center justify-center border border-blue-500/20 group-hover:scale-105 group-hover:bg-blue-600/30 transition-all">
                         <Newspaper className="text-blue-500" size={28} />
@@ -402,6 +418,14 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
                       </div>
                     </Link>
                   ))}
+                  
+                  {/* Card de "Ver más" al final */}
+                  <Link href="/noticias" className="min-w-[150px] bg-slate-900/20 border border-dashed border-slate-800 p-5 rounded-[32px] flex flex-col items-center justify-center hover:bg-slate-800/40 hover:border-slate-700 transition-all cursor-pointer group flex-shrink-0">
+                    <div className="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                      <Zap className="text-blue-500" size={20} />
+                    </div>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest group-hover:text-white transition-colors">+ Ver más</span>
+                  </Link>
                 </div>
               </div>
             )}

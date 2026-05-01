@@ -105,18 +105,18 @@ export default function SportEventCard({ evento, isLive, onFiltrarLiga }: Props)
         
         {isMatch ? (
           <div className="flex items-center gap-3 md:gap-6 my-2">
-            <div className="flex items-center gap-2 flex-1 justify-end">
-              <span className="text-sm md:text-base font-black uppercase italic text-white line-clamp-1 text-right">{teams[0].trim()}</span>
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-1 justify-end min-w-0">
+              <span className="text-[11px] sm:text-sm md:text-base font-black uppercase italic text-white line-clamp-2 text-right leading-tight">{teams[0].trim()}</span>
               <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center border-2 border-white/10 shadow-lg text-[10px] font-black shrink-0 text-slate-300">
                 {teams[0].trim().substring(0,2).toUpperCase()}
               </div>
             </div>
             <div className="text-[10px] font-black italic text-slate-700 select-none">VS</div>
-            <div className="flex items-center gap-2 flex-1">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
               <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center border-2 border-white/10 shadow-lg text-[10px] font-black shrink-0 text-slate-300">
                 {teams[1].trim().substring(0,2).toUpperCase()}
               </div>
-              <span className="text-sm md:text-base font-black uppercase italic text-white line-clamp-1">{teams[1].trim()}</span>
+              <span className="text-[11px] sm:text-sm md:text-base font-black uppercase italic text-white line-clamp-2 leading-tight">{teams[1].trim()}</span>
             </div>
           </div>
         ) : (

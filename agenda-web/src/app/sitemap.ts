@@ -13,9 +13,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const { data: noticias, error } = await supabase
       .from('noticias')
-      .select('slug, created_at')
+      .select('slug, created_at, fecha')
       .order('created_at', { ascending: false })
-      .limit(1000); // Limit to latest 1000 for safety
+      .limit(5000); // Increased limit to ensure more articles are included
 
     if (error) {
       console.error("Error fetching noticias for sitemap:", error);
@@ -24,9 +24,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         .filter(n => n.slug) // Ensure slug exists
         .map((noticia) => ({
           url: `https://www.guiasports.com/noticias/${noticia.slug}`,
-          lastModified: noticia.created_at ? new Date(noticia.created_at) : new Date(),
+          lastModified: noticia.created_at ? new Date(noticia.created_at) : (noticia.fecha ? new Date(noticia.fecha) : new Date()),
           changeFrequency: 'weekly' as const,
-          priority: 0.8,
+          priority: 0.7, // Articles are slightly lower priority than main hubs
         }));
     }
   } catch (err) {

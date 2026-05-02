@@ -42,7 +42,6 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   const filtrosRef = useRef<HTMLDivElement>(null);
   const [filtrosFixed, setFiltrosFixed] = useState(false);
   const filtrosOffsetTop = useRef(0);
-  const [showGoTop, setShowGoTop] = useState(false);
   const [showFechaDropdown, setShowFechaDropdown] = useState(false);
   const [showCompDropdown, setShowCompDropdown] = useState(false);
   const [busquedaLigas, setBusquedaLigas] = useState("");
@@ -113,15 +112,6 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   const fechasUnicas = ["Todos", ...new Set(eventos.map(e => e.fecha))].filter(f => f !== "" && f >= hoyStr);
   const competicionesUnicas = ["Todos", ...new Set(eventos.map(e => e.competicion).filter(Boolean))];
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setShowGoTop(window.scrollY > 350);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   const estaEnVivo = (fecha: string, hora: string) => {
     if (fecha !== hoyStr) return false;
     const ahora = new Date();
@@ -186,6 +176,17 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
     if (fStr === "Todos") return "Todo";
     if (fStr === hoyStr) return "Hoy";
     return new Date(fStr + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+  };
+  
+  const guessSportEmoji = (title: string) => {
+    const t = title.toLowerCase();
+    if (t.includes('fútbol') || t.includes('soccer') || t.includes('liga mx') || t.includes('champions')) return "⚽️";
+    if (t.includes('f1') || t.includes('fórmula 1') || t.includes('checo')) return "🏎️";
+    if (t.includes('nba') || t.includes('básquetbol')) return "🏀";
+    if (t.includes('mlb') || t.includes('béisbol') || t.includes('diablos')) return "⚾️";
+    if (t.includes('nfl') || t.includes('fútbol americano') || t.includes('super bowl')) return "🏈";
+    if (t.includes('box') || t.includes('ufc') || t.includes('canelo')) return "🥊";
+    return null;
   };
 
   const resetFilters = () => {
@@ -407,17 +408,39 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
                   </Link>
                 </div>
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
-                  {noticias.slice(0, 5).map((n: any) => (
-                    <Link key={n.id} href={`/noticias/${n.slug}`} className="min-w-[280px] w-[85vw] max-w-[340px] bg-slate-900/50 border border-slate-800 p-5 rounded-[32px] flex gap-4 items-center hover:bg-slate-800/80 hover:border-slate-700 transition-all cursor-pointer group flex-shrink-0">
-                      <div className="w-16 h-16 bg-blue-600/20 rounded-2xl flex-shrink-0 flex items-center justify-center border border-blue-500/20 group-hover:scale-105 group-hover:bg-blue-600/30 transition-all">
-                        <Newspaper className="text-blue-500" size={28} />
-                      </div>
-                      <div className="min-w-0">
-                        <h3 className="text-xs font-black uppercase italic leading-tight mb-1 text-slate-200 group-hover:text-white line-clamp-2">{n.titulo}</h3>
-                        <p className="text-[9px] text-slate-500 uppercase font-bold">{n.fecha} • Leer más →</p>
-                      </div>
-                    </Link>
-                  ))}
+                  {noticias.slice(0, 5).map((n: any) => {
+                    const emoji = guessSportEmoji(n.titulo);
+                    return (
+                      <Link key={n.id} href={`/noticias/${n.slug}`} className="min-w-[280px] w-[85vw] max-w-[340px] bg-slate-900/50 border border-slate-800 p-4 rounded-[32px] flex gap-4 items-center hover:bg-slate-800/80 hover:border-slate-700 transition-all cursor-pointer group flex-shrink-0">
+                        <div className="w-20 h-20 bg-slate-800 rounded-2xl flex-shrink-0 flex items-center justify-center border border-white/5 group-hover:scale-105 transition-all overflow-hidden relative">
+                          {n.imagen_url ? (
+                            <NextImage 
+                              src={n.imagen_url} 
+                              alt={n.titulo} 
+                              fill 
+                              className="object-cover opacity-80 group-hover:opacity-100 transition-opacity" 
+                              sizes="80px"
+                            />
+                          ) : (
+                            <div className="flex flex-col items-center">
+                              {emoji ? (
+                                <span className="text-2xl mb-1">{emoji}</span>
+                              ) : (
+                                <Newspaper className="text-blue-500/50" size={24} />
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-[11px] font-black uppercase italic leading-tight mb-2 text-slate-200 group-hover:text-white line-clamp-2">{n.titulo}</h3>
+                          <div className="flex items-center justify-between">
+                             <p className="text-[9px] text-slate-500 uppercase font-bold">{n.fecha}</p>
+                             <span className="text-[9px] text-blue-500 font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Leer →</span>
+                          </div>
+                        </div>
+                      </Link>
+                    )
+                  })}
                   
                   {/* Card de "Ver más" al final */}
                   <Link href="/noticias" className="min-w-[150px] bg-slate-900/20 border border-dashed border-slate-800 p-5 rounded-[32px] flex flex-col items-center justify-center hover:bg-slate-800/40 hover:border-slate-700 transition-all cursor-pointer group flex-shrink-0">
@@ -487,17 +510,6 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
         </div>
       </main>
 
-{/* BOTÓN IR ARRIBA - POSICIONAMIENTO UNIVERSAL EXTREMO */}
-      <button 
-        onClick={() => {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
-        aria-label="Ir Arriba"
-        className={`fixed right-6 p-4 bg-slate-900/95 backdrop-blur-2xl border border-slate-700/50 rounded-2xl text-[#a3e635] shadow-[0_20px_60px_rgba(0,0,0,8)] transition-all duration-500 z-[90] md:bottom-10 md:right-10 ${showGoTop ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-        style={{ bottom: showGoTop ? '5rem' : '-3rem' }}
-      >
-        <ArrowUp size={24} strokeWidth={3} />
-      </button>
     </div>
     </>
   );

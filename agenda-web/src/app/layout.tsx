@@ -4,6 +4,7 @@ import { GoogleAnalytics } from "@next/third-parties/google";
 import "./globals.css";
 import Footer from "@/components/Footer";
 import NavMobile from "@/components/NavMobile";
+import ScrollToTop from "@/components/ScrollToTop";
 import StickyAd from "@/components/StickyAd";
 import CookieConsent from "@/components/CookieConsent";
 
@@ -65,6 +66,7 @@ export default function RootLayout({
         <StickyAd />
         <CookieConsent />
         <NavMobile />
+        <ScrollToTop />
       </body>
       <GoogleAnalytics gaId="G-ZTLD10YLJC" />
     </html>

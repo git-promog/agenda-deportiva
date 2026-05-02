@@ -58,7 +58,7 @@ const formatChannels = (canalesStr: string, theme: any) => {
 export default function SportEventCard({ evento, isLive, onFiltrarLiga }: Props) {
   const theme = THEMES[evento.deporte] || DEFAULT_THEME;
 
-  const liveBorder = isLive ? "border-red-500/50 shadow-[0_0_20px_rgba(220,38,38,0.25)]" : "border-white/5";
+  const liveBorder = isLive ? "border-red-500/50 shadow-[0_0_20px_rgba(220,38,38,0.25)]" : "border-slate-800/80";
   const liveHover = isLive ? "hover:border-red-400/80 hover:shadow-[0_0_35px_rgba(220,38,38,0.4)]" : `${theme.borderHover} ${theme.neonGlow}`;
 
   const teams = evento.evento.split(/ vs /i);

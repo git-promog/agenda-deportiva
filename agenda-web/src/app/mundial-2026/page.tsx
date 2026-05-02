@@ -853,14 +853,6 @@ export default function Mundial2026() {
           </section>
         </div>
 
-        {/* BOTÓN IR ARRIBA */}
-        <button 
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className={`fixed bottom-8 right-8 p-4 bg-blue-600 text-white rounded-2xl shadow-2xl transition-all duration-300 z-[100] hover:scale-110 active:scale-95 ${showGoTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
-          aria-label="Ir arriba"
-        >
-          <ArrowUp className="w-6 h-6" />
-        </button>
       </div>
     </>
   );

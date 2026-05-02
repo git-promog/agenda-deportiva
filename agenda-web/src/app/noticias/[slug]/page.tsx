@@ -477,7 +477,7 @@ export default async function NoticiaDetalle({ params }: Props) {
         )}
 
         {/* BANNER INFERIOR Y COMPARTIR */}
-        <div className="p-8 bg-gradient-to-br from-blue-600 to-blue-900 rounded-[32px] flex flex-col md:flex-row justify-between items-center gap-6 shadow-xl relative overflow-hidden">
+        <div className="p-8 bg-gradient-to-br from-blue-600 to-blue-900 rounded-[32px] flex flex-col md:flex-row justify-between items-center gap-6 shadow-xl relative">
             <div className="absolute top-0 right-0 w-64 h-64 bg-blue-400 opacity-20 blur-3xl rounded-full transform translate-x-1/2 -translate-y-1/2"></div>
             <div className="text-center md:text-left relative z-10">
               <h2 className="text-white font-black uppercase italic text-lg leading-none">¿Te sirvió la guía?</h2>

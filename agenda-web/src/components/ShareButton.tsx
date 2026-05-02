@@ -91,24 +91,22 @@ export default function ShareButton({ titulo, slug, url, className = '', variant
         </button>
 
         {abierto && (
-          <div className="fixed inset-0 z-[9999]" onClick={() => setAbierto(false)}>
-            <div 
-              className="fixed bottom-6 right-5 z-[10000] bg-[#0f172a] border border-slate-700/80 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] p-2 min-w-[180px] backdrop-blur-xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="text-[8px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2 px-3">Compartir</div>
-              <div className="space-y-0.5">
-                {opciones.map((op, i) => (
-                  <button 
-                    key={i} 
-                    onClick={(e) => { e.stopPropagation(); op.action(); }}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:bg-slate-800/80 transition-colors"
-                  >
-                    {op.icon}
-                    {op.label}
-                  </button>
-                ))}
-              </div>
+          <div 
+            className="absolute bottom-full right-0 z-[100] mb-2 bg-[#0f172a] border border-slate-700/80 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] p-2 min-w-[180px] backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200 origin-bottom-right"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-[8px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2 px-3">Compartir</div>
+            <div className="space-y-0.5">
+              {opciones.map((op, i) => (
+                <button 
+                  key={i} 
+                  onClick={(e) => { e.stopPropagation(); op.action(); }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:bg-slate-800/80 transition-colors"
+                >
+                  {op.icon}
+                  {op.label}
+                </button>
+              ))}
             </div>
           </div>
         )}
@@ -126,24 +124,22 @@ export default function ShareButton({ titulo, slug, url, className = '', variant
       </button>
 
       {abierto && (
-        <div className="fixed inset-0 z-[9999]" onClick={() => setAbierto(false)}>
-          <div 
-            className="fixed bottom-6 right-5 z-[10000] bg-[#0f172a] border border-slate-700/80 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] p-3 min-w-[200px] backdrop-blur-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3 px-2">Compartir en</div>
-            <div className="space-y-0.5">
-              {opciones.map((op, i) => (
-                <button 
-                  key={i} 
-                  onClick={op.action}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:bg-slate-800/80 transition-colors"
-                >
-                  {op.icon}
-                  {op.label}
-                </button>
-              ))}
-            </div>
+        <div 
+          className="absolute bottom-full right-0 z-[100] mb-2 bg-[#0f172a] border border-slate-700/80 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] p-3 min-w-[200px] backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200 origin-bottom-right"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3 px-2">Compartir en</div>
+          <div className="space-y-0.5">
+            {opciones.map((op, i) => (
+              <button 
+                key={i} 
+                onClick={op.action}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:bg-slate-800/80 transition-colors"
+              >
+                {op.icon}
+                {op.label}
+              </button>
+            ))}
           </div>
         </div>
       )}

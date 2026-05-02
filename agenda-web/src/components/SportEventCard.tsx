@@ -66,7 +66,7 @@ export default function SportEventCard({ evento, isLive, onFiltrarLiga }: Props)
 
   return (
     <article
-      className={`group bg-slate-900/40 backdrop-blur-xl border ${liveBorder} ${liveHover} rounded-2xl p-4 md:p-5 hover:bg-slate-900/60 transition-all duration-300 relative overflow-hidden flex flex-col md:flex-row md:items-center gap-4 shadow-xl`}
+      className={`group bg-slate-900/40 backdrop-blur-xl border ${liveBorder} ${liveHover} rounded-2xl p-4 md:p-5 hover:bg-slate-900/60 transition-all duration-300 relative flex flex-col md:flex-row md:items-center gap-4 shadow-xl`}
       itemScope
       itemType="https://schema.org/SportsEvent"
     >

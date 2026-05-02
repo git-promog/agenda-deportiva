@@ -18,7 +18,7 @@ export default function HomeHero({ evento, tipo }: Props) {
   if (!evento) return null;
 
   return (
-    <div className="mb-12 relative w-full h-[320px] md:h-[400px] rounded-[40px] overflow-hidden group shadow-2xl border border-slate-800">
+    <div className="mb-12 relative w-full h-[320px] md:h-[400px] rounded-[40px] group shadow-2xl border border-slate-800">
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 to-[#020617] animate-pulse opacity-50"></div>
       <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#ffffff_2px,transparent_2px)] [background-size:24px_24px]"></div>
       <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-[#020617]/80 to-transparent z-10"></div>

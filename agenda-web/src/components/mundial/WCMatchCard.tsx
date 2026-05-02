@@ -1,6 +1,7 @@
 import React from 'react';
 import { WCMatch, getFlagUrl } from '@/data/mundialData';
-import { Calendar, MapPin, Clock, Tv, Trophy } from 'lucide-react';
+import { Calendar, MapPin, Clock, Tv, Trophy, Share2 } from 'lucide-react';
+import ShareButton from '@/components/ShareButton';
 
 interface Props {
   match: WCMatch;
@@ -36,7 +37,7 @@ export default function WCMatchCard({ match, horaConvertida, notaHora, tzShort =
 
   return (
     <article
-      className="group bg-slate-900/40 backdrop-blur-md border border-white/5 rounded-2xl p-4 md:p-5 hover:bg-slate-900/60 transition-all duration-300 relative overflow-hidden flex flex-col md:flex-row md:items-center gap-6 shadow-lg"
+      className="group bg-slate-900/40 backdrop-blur-md border border-slate-800/80 rounded-2xl p-4 md:p-5 hover:bg-slate-900/60 transition-all duration-300 relative flex flex-col md:flex-row md:items-center gap-6 shadow-lg"
       itemScope
       itemType="https://schema.org/SportsEvent"
     >
@@ -121,6 +122,16 @@ export default function WCMatchCard({ match, horaConvertida, notaHora, tzShort =
           <Tv size={11} className="text-blue-400 shrink-0" />
           <span className="text-[9px] font-black text-blue-400 uppercase whitespace-nowrap">{getBroadcasters()}</span>
         </div>
+      </div>
+
+      {/* Share Action */}
+      <div className="absolute bottom-4 right-4 md:static">
+        <ShareButton 
+          titulo={`${match.equipo1} vs ${match.equipo2} — Mundial 2026`} 
+          url={`https://www.guiasports.com/mundial-2026?match=${match.id}`} 
+          variant="icon"
+          className="!bg-slate-800/50 hover:!bg-white/10 !border-slate-700/50"
+        />
       </div>
     </article>
   );

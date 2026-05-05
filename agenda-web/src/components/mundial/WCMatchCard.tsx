@@ -38,13 +38,7 @@ export default function WCMatchCard({ match, horaConvertida, notaHora, tzShort =
   return (
     <article
       className="group bg-slate-900/40 backdrop-blur-md border border-slate-800/80 rounded-2xl p-4 md:p-5 hover:bg-slate-900/60 transition-all duration-300 relative flex flex-col md:flex-row md:items-center gap-6 shadow-lg"
-      itemScope
-      itemType="https://schema.org/SportsEvent"
     >
-      <meta itemProp="name" content={`${match.equipo1} vs ${match.equipo2} — ${match.fase}`} />
-      <meta itemProp="startDate" content={`${match.fecha}T${match.hora}:00`} />
-      <meta itemProp="location" content={match.estadio} />
-
       <div className="absolute top-0 right-0 p-4 opacity-[0.02] pointer-events-none">
         <Trophy size={40} className="text-blue-500" />
       </div>
@@ -68,7 +62,7 @@ export default function WCMatchCard({ match, horaConvertida, notaHora, tzShort =
           {new Date(match.fecha + 'T12:00:00').toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }).replace('.', '').toUpperCase()}
         </div>
         <div className="flex flex-col items-start">
-          <div className="flex items-center gap-2 text-white font-black text-lg" itemProp="startTime" content={horaFinal}>
+          <div className="flex items-center gap-2 text-white font-black text-lg">
             <Clock size={16} className="text-slate-600" />
             {horaFinal}
           </div>
@@ -86,7 +80,7 @@ export default function WCMatchCard({ match, horaConvertida, notaHora, tzShort =
           ) : (
             <span className="text-2xl">🏳️</span>
           )}
-          <span className="text-xs md:text-sm font-black uppercase italic text-white line-clamp-1" itemProp="homeTeam">{match.equipo1}</span>
+          <span className="text-xs md:text-sm font-black uppercase italic text-white line-clamp-1">{match.equipo1}</span>
         </div>
 
         <div className="flex flex-col items-center gap-1">
@@ -102,7 +96,7 @@ export default function WCMatchCard({ match, horaConvertida, notaHora, tzShort =
           ) : (
             <span className="text-2xl">🏳️</span>
           )}
-          <span className="text-xs md:text-sm font-black uppercase italic text-white line-clamp-1" itemProp="awayTeam">{match.equipo2}</span>
+          <span className="text-xs md:text-sm font-black uppercase italic text-white line-clamp-1">{match.equipo2}</span>
         </div>
       </div>
 

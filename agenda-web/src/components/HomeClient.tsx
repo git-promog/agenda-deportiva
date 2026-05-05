@@ -214,52 +214,8 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   if (soloTvAbierta) activeFilters.push("📺 TV Abierta");
   if (soloEnVivo) activeFilters.push("🔴 En Vivo");
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    "itemListElement": eventosFiltrados.slice(0, 40).map((evento: any, index: number) => {
-      const startDate = new Date(`${evento.fecha}T${evento.hora}:00-06:00`);
-      const endDate = new Date(startDate.getTime() + (120 * 60 * 1000));
-      const teams = evento.evento.split(/ vs | v | contra /i);
-
-      return {
-        "@type": "ListItem",
-        "position": index + 1,
-        "item": {
-          "@type": "SportsEvent",
-          "name": `${evento.evento} - ${evento.competicion}`,
-          "description": `Transmisión de ${evento.evento} (${evento.competicion}) por ${evento.canales}`,
-          "startDate": startDate.toISOString(),
-          "endDate": endDate.toISOString(),
-          "eventStatus": "https://schema.org/EventScheduled",
-          "image": "https://www.guiasports.com/GuiaSports-logo.svg",
-          "sport": evento.deporte,
-          "location": {
-            "@type": "Place",
-            "name": "Transmisión en México",
-            "address": {
-              "@type": "PostalAddress",
-              "addressLocality": "México",
-              "addressCountry": "MX"
-            }
-          },
-          "performer": teams.length > 1 ? teams.map((t: string) => ({
-            "@type": "SportsTeam",
-            "name": t.trim()
-          })) : { "@type": "SportsTeam", "name": evento.evento },
-          "organizer": {
-            "@type": "Organization",
-            "name": "GuíaSports",
-            "url": "https://www.guiasports.com"
-          }
-        }
-      };
-    })
-  };
-
   return (
     <>
-    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-24 w-full overflow-x-hidden">
       
       <Header ultimaAct={initialUltimaAct} showSearch={true} busqueda={busqueda} onBusquedaChange={setBusqueda} />

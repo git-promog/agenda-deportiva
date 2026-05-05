@@ -67,13 +67,7 @@ export default function SportEventCard({ evento, isLive, onFiltrarLiga }: Props)
   return (
     <article
       className={`group bg-slate-900/40 backdrop-blur-xl border ${liveBorder} ${liveHover} rounded-2xl p-4 md:p-5 hover:bg-slate-900/60 transition-all duration-300 relative flex flex-col md:flex-row md:items-center gap-4 shadow-xl`}
-      itemScope
-      itemType="https://schema.org/SportsEvent"
     >
-      <meta itemProp="name" content={`${evento.evento} - ${evento.competicion}`} />
-      <meta itemProp="startDate" content={`${evento.fecha}T${evento.hora}:00-06:00`} />
-      <meta itemProp="sport" content={evento.deporte} />
-
       {isLive && (
         <div className="absolute top-0 left-0 bg-red-600 text-white text-[8px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-br-xl rounded-tl-2xl flex items-center gap-1 shadow-lg shadow-red-900/50 z-10">
           <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" /> EN VIVO
@@ -84,7 +78,7 @@ export default function SportEventCard({ evento, isLive, onFiltrarLiga }: Props)
       <div className="flex flex-row md:flex-col items-center md:items-start justify-between md:justify-center border-b md:border-b-0 md:border-r border-white/10 pb-3 md:pb-0 md:pr-6 gap-2 w-full md:w-auto md:min-w-[120px]">
         <div className="flex items-center gap-3 md:block">
           <div className="text-3xl md:text-4xl opacity-80 md:mb-1">{EMOJIS[evento.deporte] || "🏆"}</div>
-          <div className="flex items-center gap-2 text-slate-300 font-black text-xl tracking-tighter" itemProp="startTime" content={evento.hora}>
+          <div className="flex items-center gap-2 text-slate-300 font-black text-xl tracking-tighter">
             <Clock size={16} className={isLive ? "text-red-400" : "text-slate-600"} />
             <span className={isLive ? "text-red-400" : ""}>{evento.hora}</span>
           </div>

@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import { WCMatch, getFlagUrl } from '@/data/mundialData';
 import { Calendar, MapPin, Clock, Tv, Trophy, Star } from 'lucide-react';

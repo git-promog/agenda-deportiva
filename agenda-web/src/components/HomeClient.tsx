@@ -12,6 +12,7 @@ import ShareButton from '@/components/ShareButton';
 import SportEventCard from '@/components/SportEventCard';
 import HomeHero from '@/components/HomeHero';
 import HomeDestacados from '@/components/HomeDestacados';
+import SportEventModal from '@/components/SportEventModal';
 
 const emojis: { [key: string]: string } = {
   "Fútbol": "⚽️", "Básquetbol": "🏀", "Béisbol": "⚾️", "Fórmula 1": "🏎️", 
@@ -45,6 +46,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   const [showFechaDropdown, setShowFechaDropdown] = useState(false);
   const [showCompDropdown, setShowCompDropdown] = useState(false);
   const [busquedaLigas, setBusquedaLigas] = useState("");
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
 
   useEffect(() => {
     if (searchParams.get('envivo') === '1') {
@@ -349,10 +351,10 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
       <main id="envivo" className="w-full max-w-4xl mx-auto px-4 pt-24 pb-8">
         {!busqueda && (filtroFecha === "Todos" || filtroFecha === hoyStr) && (
           <>
-            <HomeHero evento={eventoHero} tipo={tipoHero} />
+            <HomeHero evento={eventoHero} tipo={tipoHero} onClick={() => setSelectedEvent(eventoHero)} />
 
             {filtroFecha === "Todos" && filtroDeporte === "Todos" && (
-              <HomeDestacados destacados={destacados} />
+              <HomeDestacados destacados={destacados} onEventClick={setSelectedEvent} />
             )}
 
             {noticias.length > 0 && (
@@ -450,7 +452,12 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
               <div className="flex flex-col gap-3 w-full">
                 {eventosAgrupados[fecha].map((evento: any, index: number) => (
                   <div key={evento.id} id={`evento-${evento.id}`} data-envivo={estaEnVivo(evento.fecha, evento.hora) ? 'true' : 'false'} className="w-full">
-                    <SportEventCard evento={evento} isLive={estaEnVivo(evento.fecha, evento.hora)} onFiltrarLiga={(liga) => { setFiltroCompeticion(liga); setShowCompDropdown(false); }} />
+                    <SportEventCard 
+                      evento={evento} 
+                      isLive={estaEnVivo(evento.fecha, evento.hora)} 
+                      onFiltrarLiga={(liga) => { setFiltroCompeticion(liga); setShowCompDropdown(false); }} 
+                      onClick={() => setSelectedEvent(evento)}
+                    />
                     {(index + 1) % 8 === 0 && index !== eventosAgrupados[fecha].length - 1 && <AdPlacement />}
                   </div>
                 ))}
@@ -467,6 +474,11 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
       </main>
 
     </div>
+    <SportEventModal 
+      evento={selectedEvent} 
+      isOpen={!!selectedEvent} 
+      onClose={() => setSelectedEvent(null)} 
+    />
     </>
   );
 }

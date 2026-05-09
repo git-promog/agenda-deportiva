@@ -32,6 +32,7 @@ interface Props {
   evento: Evento;
   isLive: boolean;
   onFiltrarLiga?: (liga: string) => void;
+  onClick?: () => void;
 }
 
 const formatChannels = (canalesStr: string, theme: any) => {
@@ -55,7 +56,7 @@ const formatChannels = (canalesStr: string, theme: any) => {
   });
 };
 
-export default function SportEventCard({ evento, isLive, onFiltrarLiga }: Props) {
+export default function SportEventCard({ evento, isLive, onFiltrarLiga, onClick }: Props) {
   const theme = THEMES[evento.deporte] || DEFAULT_THEME;
 
   const liveBorder = isLive ? "border-red-500/50 shadow-[0_0_20px_rgba(220,38,38,0.25)]" : "border-slate-800/80";
@@ -66,7 +67,8 @@ export default function SportEventCard({ evento, isLive, onFiltrarLiga }: Props)
 
   return (
     <article
-      className={`group bg-slate-900/40 backdrop-blur-xl border ${liveBorder} ${liveHover} rounded-2xl p-4 md:p-5 hover:bg-slate-900/60 transition-all duration-300 relative flex flex-col md:flex-row md:items-center gap-4 shadow-xl`}
+      onClick={onClick}
+      className={`group bg-slate-900/40 backdrop-blur-xl border ${liveBorder} ${liveHover} rounded-2xl p-4 md:p-5 hover:bg-slate-900/60 transition-all duration-300 relative flex flex-col md:flex-row md:items-center gap-4 shadow-xl cursor-pointer`}
     >
       {isLive && (
         <div className="absolute top-0 left-0 bg-red-600 text-white text-[8px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-br-xl rounded-tl-2xl flex items-center gap-1 shadow-lg shadow-red-900/50 z-10">
@@ -88,7 +90,7 @@ export default function SportEventCard({ evento, isLive, onFiltrarLiga }: Props)
       {/* Main Info */}
       <div className="flex-1 flex flex-col justify-center min-w-0 pr-2">
         <button 
-          onClick={() => onFiltrarLiga?.(evento.competicion)}
+          onClick={(e) => { e.stopPropagation(); onFiltrarLiga?.(evento.competicion); }}
           className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 truncate hover:text-blue-400 transition-colors text-left flex items-center gap-1"
         >
           {evento.competicion}

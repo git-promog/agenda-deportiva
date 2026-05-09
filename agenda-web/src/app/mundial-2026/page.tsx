@@ -28,18 +28,27 @@ import WCGroupTable from '@/components/mundial/WCGroupTable';
 import WCMatchCard from '@/components/mundial/WCMatchCard';
 import WCBracket from '@/components/mundial/WCBracket';
 import WCCountdown from '@/components/mundial/WCCountdown';
+import WCFormat from '@/components/mundial/WCFormat';
+import WCMatchModal from '@/components/mundial/WCMatchModal';
+import { useFavorites } from '@/hooks/useFavorites';
+import { Play } from 'lucide-react';
 
 const TAB_CONFIG = [
   { id: 'overview', label: 'General', icon: LayoutGrid },
+  { id: 'format', label: 'Formato', icon: Info },
   { id: 'groups', label: 'Grupos', icon: Table },
   { id: 'schedule', label: 'Calendario', icon: Calendar },
   { id: 'bracket', label: 'Eliminatorias', icon: GitBranch },
   { id: 'venues', label: 'Sedes', icon: MapPin },
 ];
 
-type WCTab = 'overview' | 'groups' | 'schedule' | 'bracket' | 'venues';
+type WCTab = 'overview' | 'format' | 'groups' | 'schedule' | 'bracket' | 'venues';
 
 export default function Mundial2026() {
+  const { favorites, toggleFavorite, isLoaded } = useFavorites();
+  const [selectedMatchData, setSelectedMatchData] = useState<{match: any, hora: string, nota: string} | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [activeTab, setActiveTab] = useState<WCTab>('overview');
   const [noticias, setNoticias] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,6 +57,7 @@ export default function Mundial2026() {
   const [searchQuery, setSearchQuery] = useState('');
   const [timezone, setTimezone] = useState('America/Mexico_City');
   const [filtroFecha, setFiltroFecha] = useState('Todas');
+  const [filtroFase, setFiltroFase] = useState('Todas');
   const [showGoTop, setShowGoTop] = useState(false);
   const [tabsFixed, setTabsFixed] = useState(false);
   const tabsRef = useRef<HTMLDivElement>(null);
@@ -121,11 +131,15 @@ export default function Mundial2026() {
 
   const filteredMatches = MATCHES
     .filter(m => {
+      // 0. Filtro favoritos
+      if (showFavoritesOnly && !favorites.includes(m.id)) return false;
       // 1. Filtro por sede
       if (venueFilter && m.estadio !== venueFilter && m.ciudad !== venueFilter) return false;
       // 2. Filtro por fecha
       if (filtroFecha !== 'Todas' && m.fecha !== filtroFecha) return false;
-      // 3. Filtro de búsqueda (equipo, fase, sede, grupo)
+      // 3. Filtro por fase
+      if (filtroFase !== 'Todas' && !m.fase.toLowerCase().includes(filtroFase.toLowerCase())) return false;
+      // 4. Filtro de búsqueda (equipo, fase, sede, grupo)
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         const matchesQuery = 
@@ -218,6 +232,9 @@ export default function Mundial2026() {
   const clearFilter = () => {
     setVenueFilter(null);
     setSearchQuery('');
+    setShowFavoritesOnly(false);
+    setFiltroFase('Todas');
+    setFiltroFecha('Todas');
     setVisibleMatches(10);
   };
 
@@ -351,48 +368,57 @@ export default function Mundial2026() {
             )}
           </nav>
 
-          <header className="mb-10">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
+          <header className="mb-10 relative bg-slate-900/40 rounded-[40px] border border-white/5 p-8 md:p-12 overflow-hidden shadow-2xl">
+            {/* Animated CSS Background & Video */}
+            <div className="absolute inset-0 z-0 bg-[#020617]">
+              <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-60">
+                <source src="/video/heromundial.mp4" type="video/mp4" />
+              </video>
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-900/40 via-[#020617]/70 to-[#020617]/90"></div>
+              <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-500/20 via-transparent to-transparent"></div>
+            </div>
+
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
               <div className="flex items-center gap-6">
                 <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-3 rounded-3xl shadow-2xl shadow-black/20 w-24 h-24 md:w-32 md:h-32 flex items-center justify-center overflow-hidden">
                   <img 
                     src="/images/mundial/Copa_Mundial_FIFA_2026-logo.webp" 
                     alt="Copa Mundial de la FIFA 2026™" 
-                    className="w-full h-full object-contain transform hover:scale-110 transition-transform duration-700"
+                    className="w-full h-full object-contain transform hover:scale-110 transition-transform duration-700 drop-shadow-xl"
                   />
                 </div>
                 <div>
-                  <h1 className="text-4xl md:text-6xl font-black italic uppercase leading-[0.9] tracking-tighter bg-gradient-to-r from-white via-white to-slate-500 bg-clip-text text-transparent">
+                  <h1 className="text-4xl md:text-6xl font-black italic uppercase leading-[0.9] tracking-tighter bg-gradient-to-r from-white via-white to-slate-400 bg-clip-text text-transparent drop-shadow-sm">
                     Mundial <span className="text-yellow-500">2026</span>
                   </h1>
-                  <p className="text-[10px] font-black text-white/90 uppercase tracking-widest mt-1 bg-blue-600/20 w-fit px-3 py-1 rounded-lg border border-blue-500/20">
+                  <p className="text-[10px] font-black text-white/90 uppercase tracking-widest mt-2 bg-blue-600/30 w-fit px-3 py-1 rounded-lg border border-blue-500/30 backdrop-blur-md">
                     Copa Mundial de la FIFA 2026™
                   </p>
-                  <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em] mt-3 flex items-center gap-2">
+                  <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.4em] mt-4 flex items-center gap-2">
                     <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span>
                     México • Estados Unidos • Canadá
                   </p>
                 </div>
               </div>
               <div className="flex flex-col items-center gap-3">
-                <div className="flex md:flex-col items-center md:items-end gap-2 bg-slate-900/50 backdrop-blur-xl border border-slate-800 p-4 rounded-3xl px-6">
-                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Inicia en</span>
+                <div className="flex md:flex-col items-center md:items-end gap-2 bg-slate-900/60 backdrop-blur-xl border border-slate-700/50 p-4 rounded-3xl px-6 shadow-inner">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Inicia en</span>
                   <span className="text-2xl font-black italic text-white leading-none">JUN 11</span>
                 </div>
               </div>
             </div>
 
             {/* Stat Pills */}
-            <div className="flex flex-wrap gap-3">
+            <div className="relative z-10 flex flex-wrap gap-3">
               {[
                 { valor: '48',  label: 'Selecciones', color: 'from-blue-600/20 to-blue-600/5   border-blue-500/20  text-blue-400'  },
                 { valor: '104', label: 'Partidos',    color: 'from-yellow-500/20 to-yellow-500/5 border-yellow-500/20 text-yellow-400' },
                 { valor: '16',  label: 'Sedes',       color: 'from-green-600/20 to-green-600/5  border-green-500/20 text-green-400'  },
                 { valor: '39',  label: 'Días',        color: 'from-purple-600/20 to-purple-600/5 border-purple-500/20 text-purple-400' },
               ].map(({ valor, label, color }) => (
-                <div key={label} className={`flex items-center gap-2 bg-gradient-to-r ${color} border px-4 py-2 rounded-2xl`}>
+                <div key={label} className={`flex items-center gap-2 bg-gradient-to-r ${color} border px-4 py-2 rounded-2xl backdrop-blur-sm`}>
                   <span className={`text-lg font-black italic leading-none ${color.includes('blue') ? 'text-blue-400' : color.includes('yellow') ? 'text-yellow-400' : color.includes('green') ? 'text-green-400' : 'text-purple-400'}`}>{valor}</span>
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{label}</span>
+                  <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">{label}</span>
                 </div>
               ))}
             </div>
@@ -408,7 +434,7 @@ export default function Mundial2026() {
                   <NextImage src="/GuiaSports-logo.svg" alt="GuíaSports" width={90} height={25} className="h-5 w-auto opacity-80 hover:opacity-100 transition-opacity" />
                 </Link>
               )}
-              <nav className="flex items-center gap-2 py-1 overflow-x-auto scrollbar-hide w-full justify-center">
+              <nav className="flex items-center gap-2 py-1 overflow-x-auto scrollbar-hide w-full md:justify-center">
                 <div className="hidden md:block mr-4 border-r border-white/10 pr-4">
                   <img src="/images/mundial/Copa_Mundial_FIFA_2026-logo.webp" alt="FIFA 2026" className="h-8 w-auto" />
                 </div>
@@ -568,6 +594,12 @@ export default function Mundial2026() {
               </div>
             )}
 
+            {activeTab === 'format' && (
+              <div className="animate-in fade-in duration-500 pb-12">
+                <WCFormat />
+              </div>
+            )}
+
             {activeTab === 'groups' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in duration-500 pb-12">
                 {GRUPOS.map(g => (
@@ -590,14 +622,42 @@ export default function Mundial2026() {
 
                     <div className="flex flex-row items-center gap-2 overflow-x-auto scrollbar-hide pb-1 md:pb-0 min-w-0">
                       {/* FILTRO DE LIMPIAR — PRIMERO EN MÓVIL SI HAY FILTROS */}
-                      {(venueFilter || filtroFecha !== 'Todas' || searchQuery !== '') && (
+                      {(venueFilter || filtroFecha !== 'Todas' || filtroFase !== 'Todas' || searchQuery !== '' || showFavoritesOnly) && (
                         <button 
-                          onClick={() => { setVenueFilter(null); setFiltroFecha('Todas'); setSearchQuery(''); }}
+                          onClick={clearFilter}
                           className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shrink-0 shadow-lg shadow-red-900/40 transition-all active:scale-95 flex items-center gap-1 mr-2"
                         >
                           <X size={12} /> Limpiar
                         </button>
                       )}
+
+                      {/* FILTRO FAVORITOS */}
+                      {isLoaded && favorites.length > 0 && (
+                        <button
+                          onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                          className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shrink-0 transition-all border ${showFavoritesOnly ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40' : 'bg-slate-900/80 text-slate-400 border-slate-700/50 hover:border-yellow-500/30 hover:text-yellow-400'}`}
+                        >
+                          <Star size={12} className={showFavoritesOnly ? "fill-yellow-500 text-yellow-500" : "text-slate-400"} />
+                          Mis Favoritos
+                        </button>
+                      )}
+
+                      {/* FILTRO POR FASE */}
+                      <div className="flex items-center gap-2 bg-slate-900/80 border border-slate-700/50 px-3 py-2 rounded-xl shrink-0">
+                        <Trophy size={12} className="text-yellow-500 shrink-0" />
+                        <select
+                          value={filtroFase}
+                          onChange={e => setFiltroFase(e.target.value)}
+                          className="bg-transparent text-[10px] font-black text-white uppercase outline-none cursor-pointer"
+                          aria-label="Filtrar por fase"
+                        >
+                          {['Todas', 'Fase de Grupos', 'Dieciseisavos', 'Octavos', 'Cuartos', 'Semifinal', 'Tercer', 'Final'].map(f => (
+                            <option key={f} value={f} className="bg-slate-900 text-white">
+                              {f === 'Todas' ? '🏆 Fase' : f}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
 
                       {/* FILTRO POR FECHA */}
                       <div className="flex items-center gap-2 bg-slate-900/80 border border-slate-700/50 px-3 py-2 rounded-xl shrink-0">
@@ -701,6 +761,9 @@ export default function Mundial2026() {
                                   notaHora={nota}
                                   tzShort={tzShort}
                                   matchStatus={status}
+                                  onClick={() => { setSelectedMatchData({ match: m, hora, nota }); setIsModalOpen(true); }}
+                                  isFavorite={favorites.includes(m.id)}
+                                  onToggleFavorite={(e) => { e.stopPropagation(); toggleFavorite(m.id); }}
                                 />
                               );
                             })}
@@ -818,7 +881,18 @@ export default function Mundial2026() {
 
           {/* Call to action footer - Optimizado para permanencia en el HUB */}
           <section className="mt-20 pt-16 border-t border-slate-800/50">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-12">
+               <div 
+                 onClick={() => { setActiveTab('schedule'); window.scrollTo({ top: 400, behavior: 'smooth' }); }}
+                 className="relative overflow-hidden bg-slate-900/50 border border-slate-800 p-8 rounded-[32px] hover:border-green-500/30 transition-all cursor-pointer group"
+               >
+                 <div className="absolute -right-4 -bottom-4 w-32 h-32 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <img src="/images/mundial/Copa_Mundial_FIFA_2026-logo.webp" alt="FIFA 2026" className="w-full h-full object-contain" />
+                 </div>
+                 <Calendar className="text-green-500 mb-4" size={32} />
+                 <h3 className="text-lg font-black italic uppercase text-white mb-2">Calendario</h3>
+                 <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Ver todos los partidos →</p>
+               </div>
                <div 
                  onClick={() => { setActiveTab('groups'); window.scrollTo({ top: 400, behavior: 'smooth' }); }}
                  className="relative overflow-hidden bg-slate-900/50 border border-slate-800 p-8 rounded-[32px] hover:border-blue-500/30 transition-all cursor-pointer group"
@@ -854,6 +928,16 @@ export default function Mundial2026() {
         </div>
 
       </div>
+      <WCMatchModal 
+        match={selectedMatchData?.match ?? null} 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        isFavorite={selectedMatchData ? favorites.includes(selectedMatchData.match.id) : false}
+        onToggleFavorite={() => selectedMatchData && toggleFavorite(selectedMatchData.match.id)}
+        horaConvertida={selectedMatchData?.hora}
+        notaHora={selectedMatchData?.nota}
+        tzShort={TIMEZONES.find(t => t.value === timezone)?.short ?? 'CDMX'}
+      />
     </>
   );
 }

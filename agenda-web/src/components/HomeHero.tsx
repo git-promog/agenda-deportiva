@@ -12,16 +12,21 @@ const EMOJIS: { [key: string]: string } = {
 interface Props {
   evento: any;
   tipo: string;
+  onClick?: () => void;
 }
 
-export default function HomeHero({ evento, tipo }: Props) {
+export default function HomeHero({ evento, tipo, onClick }: Props) {
   if (!evento) return null;
 
   return (
-    <div className="mb-12 relative w-full h-[320px] md:h-[400px] rounded-[40px] group shadow-2xl border border-slate-800">
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 to-[#020617] animate-pulse opacity-50"></div>
-      <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#ffffff_2px,transparent_2px)] [background-size:24px_24px]"></div>
-      <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-[#020617]/80 to-transparent z-10"></div>
+    <div onClick={onClick} className="mb-12 relative w-full h-[320px] md:h-[400px] rounded-[40px] group shadow-2xl border border-slate-800 overflow-hidden cursor-pointer">
+      <div className="absolute inset-0 z-0 bg-[#020617]">
+        <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-60">
+          <source src="/video/herohome.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/40 via-[#020617]/70 to-[#020617]/90"></div>
+        <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#ffffff_2px,transparent_2px)] [background-size:24px_24px]"></div>
+      </div>
       <div className="absolute inset-0 z-20 flex flex-col justify-between p-8 md:p-12">
         <div className="flex justify-between items-start">
           <div className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black tracking-widest uppercase border ${tipo === "EN VIVO AHORA" ? "bg-red-600 border-red-500 text-white shadow-[0_0_20px_rgba(220,38,38,0.5)] animate-pulse" : "bg-blue-600/20 text-blue-400 border-blue-500/50"} backdrop-blur-md`}>

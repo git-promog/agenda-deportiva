@@ -1,17 +1,29 @@
 import React from 'react';
 import { WCMatch, getFlagUrl } from '@/data/mundialData';
-import { Calendar, MapPin, Clock, Tv, Trophy, Share2 } from 'lucide-react';
+import { Calendar, MapPin, Clock, Tv, Trophy, Star } from 'lucide-react';
 import ShareButton from '@/components/ShareButton';
 
 interface Props {
   match: WCMatch;
-  horaConvertida?: string; // Hora ya convertida a la zona del usuario
-  notaHora?: string;       // Ej. "Hora local sede" si no hay UTC disponible
-  tzShort?: string;        // Ej. "CDMX", "EDT"
+  horaConvertida?: string;
+  notaHora?: string;
+  tzShort?: string;
   matchStatus?: 'none' | 'today' | 'live';
+  onClick?: () => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: (e: React.MouseEvent) => void;
 }
 
-export default function WCMatchCard({ match, horaConvertida, notaHora, tzShort = 'CDMX', matchStatus = 'none' }: Props) {
+export default function WCMatchCard({ 
+  match, 
+  horaConvertida, 
+  notaHora, 
+  tzShort = 'CDMX', 
+  matchStatus = 'none',
+  onClick,
+  isFavorite = false,
+  onToggleFavorite
+}: Props) {
   const horaFinal = horaConvertida ?? match.hora;
 
   const getBroadcasters = () => {
@@ -37,11 +49,22 @@ export default function WCMatchCard({ match, horaConvertida, notaHora, tzShort =
 
   return (
     <article
-      className="group bg-slate-900/40 backdrop-blur-md border border-slate-800/80 rounded-2xl p-4 md:p-5 hover:bg-slate-900/60 transition-all duration-300 relative flex flex-col md:flex-row md:items-center gap-6 shadow-lg"
+      onClick={onClick}
+      className={`group bg-slate-900/40 backdrop-blur-md border ${isFavorite ? 'border-yellow-500/50 shadow-yellow-500/10' : 'border-slate-800/80'} rounded-2xl p-4 md:p-5 hover:bg-slate-900/60 transition-all duration-300 relative flex flex-col md:flex-row md:items-center gap-6 shadow-lg ${onClick ? 'cursor-pointer' : ''}`}
     >
       <div className="absolute top-0 right-0 p-4 opacity-[0.02] pointer-events-none">
         <Trophy size={40} className="text-blue-500" />
       </div>
+
+      {onToggleFavorite && (
+        <button
+          onClick={onToggleFavorite}
+          className="absolute top-3 right-3 z-20 p-2 rounded-full bg-slate-800/50 hover:bg-slate-700/50 transition-colors"
+          aria-label={isFavorite ? "Quitar de favoritos" : "Añadir a favoritos"}
+        >
+          <Star size={16} className={isFavorite ? "fill-yellow-500 text-yellow-500" : "text-slate-500"} />
+        </button>
+      )}
 
       {matchStatus === 'live' && (
         <div className="absolute top-0 left-0 bg-red-600 text-white text-[8px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-br-xl rounded-tl-2xl flex items-center gap-1 shadow-lg shadow-red-900/50 z-10">
@@ -107,9 +130,9 @@ export default function WCMatchCard({ match, horaConvertida, notaHora, tzShort =
           {match.fase}
         </span>
 
-        <div className="flex items-center gap-1.5 text-[9px] font-black text-slate-500 uppercase tracking-widest truncate max-w-[160px]">
+        <div className="flex items-center gap-1.5 text-[9px] font-black text-slate-500 uppercase tracking-widest max-w-[200px] md:max-w-[160px]">
           <MapPin size={11} className="text-slate-700 shrink-0" />
-          <span className="truncate">{match.estadio}</span>
+          <span className="line-clamp-2">{match.estadio}</span>
         </div>
 
         <div className="flex items-center gap-2 bg-blue-600/10 border border-blue-500/20 px-3 py-1.5 rounded-lg">
@@ -119,7 +142,7 @@ export default function WCMatchCard({ match, horaConvertida, notaHora, tzShort =
       </div>
 
       {/* Share Action */}
-      <div className="absolute bottom-4 right-4 md:static">
+      <div className="absolute bottom-4 right-4 md:static" onClick={e => e.stopPropagation()}>
         <ShareButton 
           titulo={`${match.equipo1} vs ${match.equipo2} — Mundial 2026`} 
           url={`https://www.guiasports.com/mundial-2026?match=${match.id}`} 

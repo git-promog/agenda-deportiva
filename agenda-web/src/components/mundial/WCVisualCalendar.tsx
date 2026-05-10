@@ -140,20 +140,26 @@ export default function WCVisualCalendar({ onMatchClick, convertirHora }: Props)
   );
 
   return (
-    <div className="relative w-full h-[800px] bg-slate-950 rounded-[40px] border border-white/5 overflow-hidden shadow-2xl">
-      {/* Overlay de instrucciones */}
-      <div className="absolute top-6 left-6 z-40 flex items-center gap-3 bg-slate-900/80 backdrop-blur-xl border border-white/10 px-4 py-2.5 rounded-2xl shadow-xl pointer-events-none">
-        <MousePointer2 size={14} className="text-blue-400" />
-        <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Arrastra para navegar • Usa el zoom</span>
+    <div className="relative w-full h-[600px] md:h-[800px] bg-slate-950 rounded-[40px] border border-white/5 overflow-hidden shadow-2xl">
+      {/* Overlay de instrucciones - Reposicionado para evitar traslape */}
+      <div className="absolute bottom-8 left-8 z-40 flex flex-col gap-1 bg-slate-900/80 backdrop-blur-xl border border-blue-500/20 px-5 py-3 rounded-2xl shadow-2xl pointer-events-none animate-in fade-in slide-in-from-left-4 duration-1000">
+        <div className="flex items-center gap-2">
+          <MousePointer2 size={14} className="text-blue-400 animate-pulse" />
+          <span className="text-[10px] font-black text-white uppercase tracking-widest">Guía de Navegación</span>
+        </div>
+        <p className="text-[9px] font-bold text-slate-400 uppercase leading-tight mt-1">
+          Escritorio: Clic y arrastra • Scroll para zoom<br/>
+          Móvil: Arrastra un dedo • Pellizca para zoom
+        </p>
       </div>
 
       {/* Header del Calendario en el Canvas */}
-      <div className="absolute top-6 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center pointer-events-none">
-        <img src="/GuiaSports-logo.svg" alt="GuíaSports" className="h-6 w-auto mb-2 opacity-80" />
-        <h2 className="text-xl md:text-2xl font-black italic uppercase text-white tracking-tighter">
+      <div className="absolute top-8 left-0 right-0 z-40 flex flex-col items-center pointer-events-none">
+        <img src="/GuiaSports-logo.svg" alt="GuíaSports" className="h-5 md:h-7 w-auto mb-2 opacity-90 drop-shadow-md" />
+        <h2 className="text-lg md:text-3xl font-black italic uppercase text-white tracking-tighter text-center">
           Calendario <span className="text-yellow-500">Interactivo</span>
         </h2>
-        <div className="h-px w-24 bg-gradient-to-r from-transparent via-blue-500 to-transparent mt-2" />
+        <div className="h-1 w-20 bg-gradient-to-r from-transparent via-blue-500 to-transparent mt-2 rounded-full" />
       </div>
 
       <TransformWrapper

@@ -1,0 +1,40 @@
+name: Sincronizar Datos FIFA Mundial 2026
+
+on:
+  schedule:
+    - cron: '0 */4 * * *' # Se ejecuta cada 4 horas
+  workflow_dispatch: # Permite que tú lo ejecutes manualmente cuando quieras
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: agenda-web/package-lock.json
+
+      - name: Instalar dependencias
+        working-directory: agenda-web
+        run: npm ci
+
+      - name: Ejecutar Sincronización FIFA
+        working-directory: agenda-web
+        run: npm run sync-fifa
+
+      - name: Verificar cambios y hacer Commit
+        run: |
+          git config --global user.name "FIFA Sync Bot"
+          git config --global user.email "bot@guiasports.com"
+          git add agenda-web/src/data/mundialData.ts
+          if git diff --staged --quiet; then
+            echo "No hay cambios nuevos."
+          else
+            git commit -m "🤖 [Bot] Actualización de partidos Mundial 2026"
+            git push origin main
+          fi

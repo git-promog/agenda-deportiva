@@ -30,19 +30,21 @@ import WCBracket from '@/components/mundial/WCBracket';
 import WCCountdown from '@/components/mundial/WCCountdown';
 import WCFormat from '@/components/mundial/WCFormat';
 import WCMatchModal from '@/components/mundial/WCMatchModal';
+import WCVisualCalendar from '@/components/mundial/WCVisualCalendar';
 import { useFavorites } from '@/hooks/useFavorites';
-import { Play } from 'lucide-react';
+import { Play, Maximize2 } from 'lucide-react';
 
 const TAB_CONFIG = [
   { id: 'overview', label: 'General', icon: LayoutGrid },
   { id: 'format', label: 'Formato', icon: Info },
   { id: 'groups', label: 'Grupos', icon: Table },
   { id: 'schedule', label: 'Calendario', icon: Calendar },
+  { id: 'wallchart', label: 'Calendario Interactivo', icon: Maximize2 },
   { id: 'bracket', label: 'Eliminatorias', icon: GitBranch },
   { id: 'venues', label: 'Sedes', icon: MapPin },
 ];
 
-type WCTab = 'overview' | 'format' | 'groups' | 'schedule' | 'bracket' | 'venues';
+type WCTab = 'overview' | 'format' | 'groups' | 'schedule' | 'bracket' | 'venues' | 'wallchart';
 
 export default function Mundial2026() {
   const { favorites, toggleFavorite, isLoaded } = useFavorites();
@@ -793,6 +795,15 @@ export default function Mundial2026() {
                     <p className="text-[9px] text-slate-600 font-bold uppercase tracking-widest mt-4">Nuevos partidos aparecerán debajo</p>
                   </div>
                 )}
+              </div>
+            )}
+
+            {activeTab === 'wallchart' && (
+              <div className="animate-in fade-in duration-500 pb-12">
+                <WCVisualCalendar 
+                  onMatchClick={(match, hora, nota) => { setSelectedMatchData({ match, hora, nota }); setIsModalOpen(true); }} 
+                  convertirHora={convertirHora}
+                />
               </div>
             )}
 

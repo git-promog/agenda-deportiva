@@ -6,13 +6,13 @@ import { Metadata } from 'next';
 export const revalidate = 300; 
 
 export const metadata: Metadata = {
-  title: "GuíaSports | Dónde Ver Fútbol, NBA, MLB, F1 en Vivo por TV y Streaming México",
-  description: "¿Dónde ver el partido hoy? GuíaSports te dice en qué canal TV y streaming (ViX, ESPN, Disney+) transmiten fútbol, NBA, MLB, F1 en vivo en México.",
+  title: "GuíaSports | Agenda Deportiva Hoy en TV y Streaming",
+  description: "¿Dónde ver el partido hoy? GuíaSports te dice en qué canal TV y streaming transmiten fútbol, NBA, F1 en vivo en México.",
   alternates: {
     canonical: "https://www.guiasports.com",
   },
   openGraph: {
-    title: "GuíaSports - Dónde ver deportes en México",
+    title: "GuíaSports | Agenda Deportiva Hoy en TV y Streaming",
     description: "La agenda deportiva más completa de México. Televisión abierta, de paga y streaming.",
     type: "website",
     locale: "es_MX",
@@ -116,7 +116,7 @@ export default async function Home() {
 
   return (
     <>
-      <h1 className="sr-only">GuíaSports | Dónde Ver Fútbol, NBA, MLB, F1 en Vivo por TV y Streaming México</h1>
+      <h1 className="sr-only">GuíaSports | Agenda Deportiva Hoy en TV y Streaming</h1>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

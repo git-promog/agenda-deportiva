@@ -229,7 +229,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
           {filtrosFixed && (
             <div className="flex justify-center mb-3 animate-in fade-in slide-in-from-top-2 duration-500">
               <Link href="/" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
-                <NextImage src="/GuiaSports-logo.svg" alt="GuíaSports" width={100} height={30} className="h-6 w-auto opacity-80 hover:opacity-100 transition-opacity" />
+                <NextImage src="/GuiaSports-logo.svg" alt="GuíaSports - Agenda Deportiva de México en TV y Streaming" width={100} height={30} className="h-6 w-auto opacity-80 hover:opacity-100 transition-opacity" />
               </Link>
             </div>
           )}

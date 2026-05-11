@@ -44,7 +44,7 @@ export default function HomeHero({ evento, tipo, onClick }: Props) {
           <div className="text-[12px] font-black text-[#a3e635] uppercase tracking-widest mb-3 drop-shadow-lg flex items-center gap-2">
               <span className="text-2xl" suppressHydrationWarning>{EMOJIS[evento.deporte] || "🏆"}</span> {evento.competicion}
           </div>
-          <h1 className="text-3xl md:text-5xl font-black italic uppercase text-white leading-none mb-6 drop-shadow-2xl">{evento.evento}</h1>
+          <h2 className="text-3xl md:text-5xl font-black italic uppercase text-white leading-none mb-6 drop-shadow-2xl">{evento.evento}</h2>
           <div className="flex flex-wrap items-center gap-4">
             <div className="bg-[#a3e635] text-black px-6 py-3 rounded-2xl font-black text-sm uppercase italic flex items-center gap-2 shadow-[0_0_30px_rgba(163,230,53,0.3)]">
               <Tv size={18} /> {evento.canales}

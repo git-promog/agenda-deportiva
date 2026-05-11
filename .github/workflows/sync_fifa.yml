@@ -2,12 +2,16 @@ name: Sincronizar Datos FIFA Mundial 2026
 
 on:
   schedule:
-    - cron: '0 */4 * * *' # Se ejecuta cada 4 horas
-  workflow_dispatch: # Permite que tú lo ejecutes manualmente cuando quieras
+    - cron: '0 */4 * * *' # Cada 4 horas
+  workflow_dispatch: 
 
 jobs:
   sync:
     runs-on: ubuntu-latest
+    # ESTO ES LO QUE SOLUCIONA EL ERROR 128 (Permisos de escritura)
+    permissions:
+      contents: write
+    
     steps:
       - name: Checkout del código
         uses: actions/checkout@v4
@@ -15,7 +19,7 @@ jobs:
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24' # Actualizado a la versión más reciente para evitar warnings
           cache: 'npm'
           cache-dependency-path: agenda-web/package-lock.json
 

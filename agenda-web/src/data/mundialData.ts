@@ -89,7 +89,7 @@ export const GRUPOS: WCGroup[] = [
   { nombre:'L', equipos:[{nombre:'Inglaterra',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Croacia',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Ghana',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Panamá',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}]},
 ];
 
-// Generado automáticamente — 2026-05-12T06:31:21.457Z
+// Generado automáticamente — 2026-05-12T10:23:39.025Z
 export const MATCHES: WCMatch[] = [
   { id:'m1', fecha:'2026-06-11', hora:'13:00', utc:'2026-06-11T19:00:00Z', estadio:'Estadio Ciudad de México', ciudad:'Ciudad de México', equipo1:'México', equipo2:'Sudáfrica', fase:'Primera fase', grupo:'A', broadcasters:'Televisa, TV Azteca, ViX' },
   { id:'m2', fecha:'2026-06-11', hora:'20:00', utc:'2026-06-12T02:00:00Z', estadio:'Estadio Guadalajara', ciudad:'Guadalajara', equipo1:'República de Corea', equipo2:'Chequia', fase:'Primera fase', grupo:'A', broadcasters:'Televisa, TV Azteca, ViX' },

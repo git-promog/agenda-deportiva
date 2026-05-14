@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Clock, Tv, X, CalendarPlus, Trophy } from 'lucide-react';
+import { sendGAEvent } from '@next/third-parties/google';
 import ShareButton from '@/components/ShareButton';
 
 const EMOJIS: { [key: string]: string } = {
@@ -159,6 +160,10 @@ export default function SportEventModal({ evento, isOpen, onClose }: Props) {
                   href={buildCalendarLink()} 
                   target="_blank" 
                   rel="noopener noreferrer"
+                  onClick={() => sendGAEvent('event', 'add_to_calendar', { 
+                    event_name: evento.evento,
+                    competition: evento.competicion
+                  })}
                   className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-colors border border-slate-700"
                 >
                   <CalendarPlus size={16} /> Agendar

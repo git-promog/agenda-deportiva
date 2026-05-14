@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import NextImage from 'next/image';
 import { Newspaper, Radio, Mail, Users } from 'lucide-react';
+import { sendGAEvent } from '@next/third-parties/google';
 
 interface HeaderProps {
   ultimaAct?: string;
@@ -55,13 +56,25 @@ export default function Header({ ultimaAct, showSearch = false, busqueda = '', o
             <button onClick={() => { window.dispatchEvent(new CustomEvent('scroll-to-live')); }} className="bg-red-600 text-white rounded-xl px-3 py-2 font-black uppercase text-[10px] tracking-widest shadow-[0_0_20px_rgba(220,38,38,0.5)] animate-pulse flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div> En Vivo
             </button>
-            <Link href="/noticias" className="text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-[#a3e635] transition-colors flex items-center gap-1.5">
+            <Link 
+              href="/noticias" 
+              onClick={() => sendGAEvent('event', 'nav_click', { destination: 'noticias' })}
+              className="text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-[#a3e635] transition-colors flex items-center gap-1.5"
+            >
               <Newspaper size={14} /> Noticias
             </Link>
-            <Link href="/quienes-somos" className="text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-[#a3e635] transition-colors flex items-center gap-1.5">
+            <Link 
+              href="/quienes-somos" 
+              onClick={() => sendGAEvent('event', 'nav_click', { destination: 'quienes-somos' })}
+              className="text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-[#a3e635] transition-colors flex items-center gap-1.5"
+            >
               <Users size={14} /> Nosotros
             </Link>
-            <Link href="/contacto" className="text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-[#a3e635] transition-colors flex items-center gap-1.5">
+            <Link 
+              href="/contacto" 
+              onClick={() => sendGAEvent('event', 'nav_click', { destination: 'contacto' })}
+              className="text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-[#a3e635] transition-colors flex items-center gap-1.5"
+            >
               <Mail size={14} /> Contacto
             </Link>
           </nav>

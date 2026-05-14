@@ -2,6 +2,7 @@
 
 import { Share2, MessageCircle, Link2, Check, Mail } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
+import { sendGAEvent } from '@next/third-parties/google';
 
 interface ShareButtonProps {
   titulo: string;
@@ -29,22 +30,26 @@ export default function ShareButton({ titulo, slug, url, className = '', variant
 
   const compartirWhatsApp = () => {
     const texto = `Mira esto en GuíaSports: *${titulo}*\n\n${shareUrl}`;
+    sendGAEvent('event', 'share', { method: 'whatsapp', content_type: 'article', item_id: slug || titulo });
     window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
     setAbierto(false);
   };
 
   const compartirTwitter = () => {
     const texto = `${titulo} | GuíaSports`;
+    sendGAEvent('event', 'share', { method: 'twitter', content_type: 'article', item_id: slug || titulo });
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(texto)}&url=${encodeURIComponent(shareUrl)}`, '_blank');
     setAbierto(false);
   };
 
   const compartirFacebook = () => {
+    sendGAEvent('event', 'share', { method: 'facebook', content_type: 'article', item_id: slug || titulo });
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank');
     setAbierto(false);
   };
 
   const compartirEmail = () => {
+    sendGAEvent('event', 'share', { method: 'email', content_type: 'article', item_id: slug || titulo });
     const mailtoLink = `mailto:?subject=${encodeURIComponent(titulo + ' | GuíaSports')}&body=${encodeURIComponent(`Te comparto esta nota de GuíaSports:\n\n${titulo}\n${shareUrl}`)}`;
     const link = document.createElement('a');
     link.href = mailtoLink;
@@ -55,6 +60,7 @@ export default function ShareButton({ titulo, slug, url, className = '', variant
   };
 
   const copiarEnlace = async () => {
+    sendGAEvent('event', 'share', { method: 'copy_link', content_type: 'article', item_id: slug || titulo });
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopiado(true);

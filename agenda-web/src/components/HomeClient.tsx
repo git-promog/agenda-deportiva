@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { Tv, Calendar, Trophy, Clock, Zap, Filter, Star, Search, X, CalendarDays, ChevronLeft, ChevronRight, Newspaper, ArrowUp, Shield, Radio } from 'lucide-react';
 import Link from 'next/link';
 import NextImage from 'next/image';
+import { sendGAEvent } from '@next/third-parties/google';
 import AdPlacement from '@/components/AdPlacement';
 import NavMobile from '@/components/NavMobile';
 import Header from '@/components/Header';
@@ -93,6 +94,16 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Tracking de búsqueda con debounce manual
+  useEffect(() => {
+    if (busqueda.length > 2) {
+      const timer = setTimeout(() => {
+        sendGAEvent('event', 'search', { search_term: busqueda });
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [busqueda]);
 
   const scrollDeportes = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
@@ -203,6 +214,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   };
 
   const toggleEnVivo = () => {
+    sendGAEvent('event', 'click_en_vivo', { location: 'header_filters' });
     const eventosEnVivo = document.querySelectorAll('[data-envivo="true"]');
     if (eventosEnVivo.length > 0) {
       eventosEnVivo[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -247,7 +259,14 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
 
             <div className="hidden md:flex items-center gap-1">
               {fechasUnicas.slice(0, 4).map((f: any) => (
-                <button key={f} onClick={() => setFiltroFecha(f)} className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${filtroFecha === f ? "text-[#a3e635] bg-[#a3e635]/10 border border-[#a3e635]/30" : "bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800"}`}>
+                <button 
+                  key={f} 
+                  onClick={() => {
+                    sendGAEvent('event', 'filter_date', { date: f });
+                    setFiltroFecha(f);
+                  }} 
+                  className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${filtroFecha === f ? "text-[#a3e635] bg-[#a3e635]/10 border border-[#a3e635]/30" : "bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800"}`}
+                >
                   {formatearBotonFecha(f)}
                 </button>
               ))}
@@ -270,7 +289,11 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
             )}
 
             <button
-              onClick={() => setSoloTvAbierta(!soloTvAbierta)}
+              onClick={() => {
+                const newState = !soloTvAbierta;
+                sendGAEvent('event', 'filter_tv_abierta', { enabled: newState });
+                setSoloTvAbierta(newState);
+              }}
               className={`flex items-center gap-1 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${soloTvAbierta ? "bg-white text-black border border-white" : "text-slate-500 border border-slate-800 hover:text-slate-300 bg-slate-900/50"}`}
             >
               <Tv size={12} /> <span className="hidden sm:inline">{soloTvAbierta ? "TV Abierta" : "TV Abierta"}</span><span className="sm:hidden">📺</span>
@@ -282,7 +305,15 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
             {showFechaDropdown && (
               <div data-fecha-dropdown className="absolute top-0 left-0 mt-1 bg-slate-900 border border-slate-700 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-[100] py-1 min-w-[180px]">
                 {fechasUnicas.map((f: any) => (
-                  <button key={f} onClick={() => { setFiltroFecha(f); setShowFechaDropdown(false); }} className={`w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest border-b border-white/5 last:border-0 transition-all ${filtroFecha === f ? "text-[#a3e635] bg-[#a3e635]/10" : "text-slate-400 hover:bg-slate-800"}`}>
+                  <button 
+                    key={f} 
+                    onClick={() => { 
+                      sendGAEvent('event', 'filter_date', { date: f });
+                      setFiltroFecha(f); 
+                      setShowFechaDropdown(false); 
+                    }} 
+                    className={`w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest border-b border-white/5 last:border-0 transition-all ${filtroFecha === f ? "text-[#a3e635] bg-[#a3e635]/10" : "text-slate-400 hover:bg-slate-800"}`}
+                  >
                     {formatearBotonFecha(f)}
                   </button>
                 ))}
@@ -306,7 +337,16 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
                 </div>
                 <div className="overflow-y-auto max-h-[280px] scrollbar-hide">
                   {competicionesUnicas.filter((c: any) => c.toLowerCase().includes(busquedaLigas.toLowerCase())).map((c: any) => (
-                    <button key={c} onClick={() => { setFiltroCompeticion(c); setShowCompDropdown(false); setBusquedaLigas(""); }} className={`w-full text-left px-5 py-4 text-[10px] font-black uppercase tracking-widest border-b border-white/5 last:border-0 transition-all ${filtroCompeticion === c ? "text-blue-400 bg-blue-600/10" : "text-slate-400 hover:bg-slate-800"}`}>
+                    <button 
+                      key={c} 
+                      onClick={() => { 
+                        sendGAEvent('event', 'filter_league', { league: c });
+                        setFiltroCompeticion(c); 
+                        setShowCompDropdown(false); 
+                        setBusquedaLigas(""); 
+                      }} 
+                      className={`w-full text-left px-5 py-4 text-[10px] font-black uppercase tracking-widest border-b border-white/5 last:border-0 transition-all ${filtroCompeticion === c ? "text-blue-400 bg-blue-600/10" : "text-slate-400 hover:bg-slate-800"}`}
+                    >
                       {c === "Todos" ? "🛡️ Todas las ligas" : c}
                     </button>
                   ))}
@@ -320,7 +360,14 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
             <button onClick={() => scrollDeportes('left')} className="absolute left-0 z-10 bg-slate-900/80 p-2 rounded-full shadow-lg"><ChevronLeft size={16} /></button>
             <div ref={scrollRef} className="flex gap-2 overflow-x-auto py-1 px-4 scrollbar-hide scroll-smooth w-full">
               {deportesUnicos.map((dep: any) => (
-                <button key={dep} onClick={() => setFiltroDeporte(dep)} className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap border uppercase tracking-wider ${filtroDeporte === dep ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-900/40" : "bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800"}`}>
+                <button 
+                  key={dep} 
+                  onClick={() => {
+                    sendGAEvent('event', 'filter_sport', { sport: dep });
+                    setFiltroDeporte(dep);
+                  }} 
+                  className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap border uppercase tracking-wider ${filtroDeporte === dep ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-900/40" : "bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800"}`}
+                >
                   {emojis[dep] || "🏆"} {dep}
                 </button>
               ))}
@@ -419,6 +466,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
           <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4">
             <Link 
               href="/mundial-2026" 
+              onClick={() => sendGAEvent('event', 'click_hub', { hub_name: 'mundial_2026' })}
               className="flex-shrink-0 relative overflow-hidden group bg-slate-900 border border-yellow-500/30 px-6 py-4 rounded-2xl text-center transition-all duration-500 hover:border-yellow-400 hover:shadow-[0_0_25px_rgba(234,179,8,0.3)] hover:-translate-y-0.5 active:scale-95 shadow-xl shadow-black/20"
             >
               {/* Animated background glow */}
@@ -455,8 +503,19 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
                     <SportEventCard 
                       evento={evento} 
                       isLive={estaEnVivo(evento.fecha, evento.hora)} 
-                      onFiltrarLiga={(liga) => { setFiltroCompeticion(liga); setShowCompDropdown(false); }} 
-                      onClick={() => setSelectedEvent(evento)}
+                      onFiltrarLiga={(liga) => { 
+                        sendGAEvent('event', 'filter_league', { league: liga });
+                        setFiltroCompeticion(liga); 
+                        setShowCompDropdown(false); 
+                      }} 
+                      onClick={() => {
+                        sendGAEvent('event', 'view_event_detail', { 
+                          event_name: evento.evento,
+                          sport: evento.deporte,
+                          competition: evento.competicion
+                        });
+                        setSelectedEvent(evento);
+                      }}
                     />
                     {(index + 1) % 8 === 0 && index !== eventosAgrupados[fecha].length - 1 && <AdPlacement />}
                   </div>

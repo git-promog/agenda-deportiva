@@ -439,8 +439,15 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
                         <div className="min-w-0 flex-1">
                           <h3 className="text-[11px] font-black uppercase italic leading-tight mb-2 text-slate-200 group-hover:text-white line-clamp-2">{n.titulo}</h3>
                           <div className="flex items-center justify-between">
+                          <div className="flex flex-col gap-1">
                              <p className="text-[9px] text-slate-500 uppercase font-bold">{n.fecha}</p>
-                             <span className="text-[9px] text-blue-500 font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Leer →</span>
+                             {n.autor ? (
+                               <p className="text-[8px] font-black text-blue-500 uppercase tracking-widest">Por {n.autor}</p>
+                             ) : (
+                               <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest">GuíaSports</p>
+                             )}
+                          </div>
+                          <span className="text-[9px] text-blue-500 font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Leer →</span>
                           </div>
                         </div>
                       </Link>

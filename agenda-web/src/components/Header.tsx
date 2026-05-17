@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import NextImage from 'next/image';
-import { Newspaper, Radio, Mail, Users } from 'lucide-react';
+import { Newspaper, Radio, Mail, Users, Tv } from 'lucide-react';
 import { sendGAEvent } from '@next/third-parties/google';
 
 interface HeaderProps {
@@ -62,6 +62,13 @@ export default function Header({ ultimaAct, showSearch = false, busqueda = '', o
               className="text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-[#a3e635] transition-colors flex items-center gap-1.5"
             >
               <Newspaper size={14} /> Noticias
+            </Link>
+            <Link 
+              href="/plataformas" 
+              onClick={() => sendGAEvent('event', 'nav_click', { destination: 'plataformas' })}
+              className="text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-[#a3e635] transition-colors flex items-center gap-1.5"
+            >
+              <Tv size={14} /> Plataformas
             </Link>
             <Link 
               href="/quienes-somos" 

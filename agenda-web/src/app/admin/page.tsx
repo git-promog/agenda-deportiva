@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { Trash2, Star, Plus, Edit3, Check, X, LogIn, Zap, LogOut, Search, AlertCircle, Newspaper, CalendarDays, ImageIcon, Bot, ActivitySquare, ArrowRight } from 'lucide-react';
 import NextImage from 'next/image';
+import { EDITORIAL_TEAM } from '@/data/teamData';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -37,7 +38,7 @@ export default function AdminPanel() {
   // Estados para Noticias
   const [noticias, setNoticias] = useState<any[]>([]);
   const [isNoticiaModalOpen, setIsNoticiaModalOpen] = useState(false);
-  const [editandoNoticia, setEditandoNoticia] = useState<any>({ titulo: "", contenido: "", imagen_url: "", fecha: "" });
+  const [editandoNoticia, setEditandoNoticia] = useState<any>({ titulo: "", contenido: "", imagen_url: "", fecha: "", autor: "" });
 
   // Estados para Generador IA
   const [promptIA, setPromptIA] = useState("");
@@ -219,14 +220,14 @@ export default function AdminPanel() {
     if (noticia) {
       setEditandoNoticia(noticia);
     } else {
-      setEditandoNoticia({ titulo: "", contenido: "", imagen_url: "", fecha: new Date().toISOString().split('T')[0] });
+      setEditandoNoticia({ titulo: "", contenido: "", imagen_url: "", fecha: new Date().toISOString().split('T')[0], autor: EDITORIAL_TEAM[0].name });
     }
     setIsNoticiaModalOpen(true);
   }
 
   function cerrarModalNoticia() {
     setIsNoticiaModalOpen(false);
-    setEditandoNoticia({ titulo: "", contenido: "", imagen_url: "", fecha: "" });
+    setEditandoNoticia({ titulo: "", contenido: "", imagen_url: "", fecha: "", autor: "" });
   }
 
   async function guardarNoticia(e: React.FormEvent) {
@@ -255,6 +256,7 @@ export default function AdminPanel() {
           contenido: editandoNoticia.contenido,
           imagen_url: editandoNoticia.imagen_url,
           fecha: editandoNoticia.fecha,
+          autor: editandoNoticia.autor,
         }),
       });
       const data = await res.json();
@@ -271,6 +273,7 @@ export default function AdminPanel() {
           contenido: editandoNoticia.contenido,
           imagen_url: editandoNoticia.imagen_url,
           fecha: editandoNoticia.fecha,
+          autor: editandoNoticia.autor,
         }),
       });
       const data = await res.json();
@@ -788,6 +791,36 @@ export default function AdminPanel() {
                 <input type="text" placeholder="Ej: Dónde ver el Super Clásico: América vs Chivas..." className="w-full bg-[#020617] border border-slate-800 p-5 rounded-3xl outline-none focus:border-[#a3e635] text-white font-bold text-lg transition-colors shadow-inner" value={editandoNoticia.titulo} onChange={(e) => setEditandoNoticia({...editandoNoticia, titulo: e.target.value})} required />
               </div>
               
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Autor de la Nota</label>
+                <div className="flex gap-4">
+                  <select 
+                    className="flex-1 bg-[#020617] border border-slate-800 p-4 rounded-2xl outline-none text-white focus:border-blue-500 transition-colors shadow-inner"
+                    value={EDITORIAL_TEAM.some(a => a.name === editandoNoticia.autor) ? editandoNoticia.autor : "otro"}
+                    onChange={(e) => {
+                      if (e.target.value !== "otro") {
+                        setEditandoNoticia({...editandoNoticia, autor: e.target.value});
+                      }
+                    }}
+                  >
+                    {EDITORIAL_TEAM.map(author => (
+                      <option key={author.id} value={author.name}>{author.name} ({author.role})</option>
+                    ))}
+                    <option value="otro">Otro / Personalizado...</option>
+                  </select>
+                  {(!EDITORIAL_TEAM.some(a => a.name === editandoNoticia.autor) || editandoNoticia.autor === "otro") && (
+                    <input 
+                      type="text" 
+                      placeholder="Nombre del autor..." 
+                      className="flex-1 bg-[#020617] border border-slate-800 p-4 rounded-2xl outline-none text-white focus:border-[#a3e635] transition-colors shadow-inner"
+                      value={editandoNoticia.autor === "otro" ? "" : editandoNoticia.autor}
+                      onChange={(e) => setEditandoNoticia({...editandoNoticia, autor: e.target.value})}
+                      required
+                    />
+                  )}
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Cuerpo del artículo (Puedes usar saltos de línea)</label>
                 <textarea rows={12} placeholder="Escribe aquí toda la información, análisis y horarios..." className="w-full bg-[#020617] border border-slate-800 p-6 rounded-3xl outline-none focus:border-blue-500 text-sm leading-relaxed text-slate-300 transition-colors shadow-inner resize-none" value={editandoNoticia.contenido} onChange={(e) => setEditandoNoticia({...editandoNoticia, contenido: e.target.value})} required />

@@ -10,7 +10,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const { id, titulo, contenido, imagen_url, fecha } = await request.json();
+    const { id, titulo, contenido, imagen_url, fecha, autor } = await request.json();
 
     if (!id || !titulo || !contenido) {
       return NextResponse.json({ error: "Faltan campos requeridos" }, { status: 400 });
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
 
     const { data, error } = await supabase
       .from('noticias')
-      .update({ titulo, contenido, imagen_url, fecha, slug })
+      .update({ titulo, contenido, imagen_url, fecha, slug, autor })
       .eq('id', id)
       .select();
 

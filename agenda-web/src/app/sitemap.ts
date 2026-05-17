@@ -1,6 +1,8 @@
 import { MetadataRoute } from 'next';
 import { createClient } from '@supabase/supabase-js';
 import { SEDES } from '@/data/mundialData';
+import { PLATFORMS } from '@/data/platformsData';
+import { EDITORIAL_TEAM } from '@/data/teamData';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = createClient(
@@ -105,6 +107,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.8,
+    })),
+    {
+      url: 'https://www.guiasports.com/plataformas',
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    ...PLATFORMS.map(p => ({
+      url: `https://www.guiasports.com/plataformas/${p.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    })),
+    ...EDITORIAL_TEAM.map((a: any) => ({
+      url: `https://www.guiasports.com/team/${a.id}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
     })),
     ...noticiasUrls,
   ];

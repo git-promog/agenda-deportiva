@@ -43,7 +43,7 @@ export default async function Home() {
       .from('noticias')
       .select('*')
       .order('fecha', { ascending: false })
-      .limit(2);
+      .limit(5);
     
     // 3. Cargar Status
     const { data: stData } = await supabase

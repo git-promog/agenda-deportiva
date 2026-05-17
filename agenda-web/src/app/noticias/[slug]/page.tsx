@@ -17,6 +17,8 @@ import { Metadata, ResolvingMetadata } from 'next';
 import ShareButton from '@/components/ShareButton';
 import AdPlacement from '@/components/AdPlacement';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import AuthorBio from '@/components/AuthorBio';
+import { EDITORIAL_TEAM } from '@/data/teamData';
 import type { JSX } from 'react';
 
 // ISR update every 12 hours for news
@@ -458,6 +460,17 @@ export default async function NoticiaDetalle({ params }: Props) {
         <article className="prose prose-invert prose-lg md:prose-xl max-w-none text-slate-300 leading-relaxed mb-16">
           {renderArticleContent(noticia.contenido)}
         </article>
+
+        {/* AUTHOR BIO (E-E-A-T) */}
+        {(() => {
+          const autor = EDITORIAL_TEAM.find(a => a.name === noticia.autor) || {
+            name: noticia.autor || "Redacción GuíaSports",
+            role: "Equipo Editorial",
+            bio: "Especialistas en la cobertura de eventos deportivos nacionales e internacionales en México.",
+            specialty: "Deportes en General",
+          };
+          return <AuthorBio author={autor} />;
+        })()}
 
         {/* ARTÍCULOS RELACIONADOS */}
         {noticiasRelacionadas && noticiasRelacionadas.length > 0 && (

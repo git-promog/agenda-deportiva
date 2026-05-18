@@ -70,5 +70,13 @@ export const EDITORIAL_TEAM = [
     bio: "Periodista deportiva con enfoque en los torneos de Grand Slam, ATP y WTA. Su labor es publicar las guías de horarios de los partidos de Carlos Alcaraz, Djokovic o cualquier figura, detallando si va por ESPN, Star+ (ahora Disney+) o abierta.",
     specialty: "Tenis (ATP/WTA) / Pádel / Pickleball",
     avatar: "/images/team/fernanda.webp"
-  }
+  },
+  {
+  id: "roberto-herrera",
+  name: "Roberto Herrera",
+  role: "Analista de Béisbol",
+  bio: "Ex-cronista de béisbol en la Liga Mexicana del Pacífico con más de 12 años de experiencia. Ha cubierto Series del Mundo, Clásicos Mundiales y temporadas completas de MLB. Su pasión es conectar al fan mexicano con las Grandes Ligas y las ligas locales.",
+  specialty: "MLB / Liga Mexicana de Béisbol / Serie del Caribe",
+  avatar: "/images/team/roberto.webp"
+}
 ];

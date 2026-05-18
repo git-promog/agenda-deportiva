@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import NextImage from 'next/image';
 import { Newspaper, Radio, Mail, Users, Tv } from 'lucide-react';
-import { sendGAEvent } from '@next/third-parties/google';
+import { trackEvent } from '@/lib/analytics';
 
 interface HeaderProps {
   ultimaAct?: string;
@@ -58,28 +58,28 @@ export default function Header({ ultimaAct, showSearch = false, busqueda = '', o
             </button>
             <Link 
               href="/noticias" 
-              onClick={() => sendGAEvent('event', 'nav_click', { destination: 'noticias' })}
+              onClick={() => trackEvent('nav_click', { destination: 'noticias' })}
               className="text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-[#a3e635] transition-colors flex items-center gap-1.5"
             >
               <Newspaper size={14} /> Noticias
             </Link>
             <Link 
               href="/plataformas" 
-              onClick={() => sendGAEvent('event', 'nav_click', { destination: 'plataformas' })}
+              onClick={() => trackEvent('nav_click', { destination: 'plataformas' })}
               className="text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-[#a3e635] transition-colors flex items-center gap-1.5"
             >
               <Tv size={14} /> Plataformas
             </Link>
             <Link 
               href="/quienes-somos" 
-              onClick={() => sendGAEvent('event', 'nav_click', { destination: 'quienes-somos' })}
+              onClick={() => trackEvent('nav_click', { destination: 'quienes-somos' })}
               className="text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-[#a3e635] transition-colors flex items-center gap-1.5"
             >
               <Users size={14} /> Nosotros
             </Link>
             <Link 
               href="/contacto" 
-              onClick={() => sendGAEvent('event', 'nav_click', { destination: 'contacto' })}
+              onClick={() => trackEvent('nav_click', { destination: 'contacto' })}
               className="text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-[#a3e635] transition-colors flex items-center gap-1.5"
             >
               <Mail size={14} /> Contacto

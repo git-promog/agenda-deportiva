@@ -16,7 +16,7 @@ export default function PlataformasPage() {
   return (
     <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-24">
       <div className="max-w-4xl mx-auto px-6 pt-10">
-        <Breadcrumbs items={[]} current="Plataformas" />
+        <Breadcrumbs items={[]} current="Plataformas" currentHref="/plataformas" />
 
         <header className="mb-12">
           <div className="flex items-center gap-4 mb-4">

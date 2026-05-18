@@ -6,18 +6,18 @@ import {
   Info, 
   Target, 
   Activity, 
-  MapPin, 
   ListChecks,
   ChevronRight,
   Sparkles
 } from 'lucide-react';
 import Link from 'next/link';
 import NextImage from 'next/image';
-import { Metadata, ResolvingMetadata } from 'next';
+import { Metadata } from 'next';
 import ShareButton from '@/components/ShareButton';
 import AdPlacement from '@/components/AdPlacement';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import AuthorBio from '@/components/AuthorBio';
+import ArticleViewTracker from '@/components/ArticleViewTracker';
 import { EDITORIAL_TEAM } from '@/data/teamData';
 import type { JSX } from 'react';
 
@@ -27,6 +27,27 @@ export const revalidate = 43200;
 interface Props {
   params: Promise<{ slug: string }>;
 }
+
+interface NoticiaRelacionada {
+  titulo: string;
+  slug: string;
+  fecha: string;
+  created_at?: string;
+}
+
+const getArticleKeywords = (title: string) =>
+  title
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .split(/[^a-z0-9]+/)
+    .filter((word) => word.length > 3 && !["donde", "para", "vivo", "hora", "canal", "como", "guia", "sports"].includes(word))
+    .slice(0, 8);
+
+const buildSeoDescription = (title: string, content: string) => {
+  const cleanContent = content.replace(/\s+/g, " ").trim();
+  const fallback = `Consulta horario, canal de TV y streaming para ver ${title} en vivo en México.`;
+  return (cleanContent.length > 80 ? cleanContent : fallback).slice(0, 155);
+};
 
 function renderArticleContent(content: string) {
   const lines = content.split('\n');
@@ -114,7 +135,7 @@ function renderArticleContent(content: string) {
   };
 
   // First pass: collect headings for TOC
-  lines.forEach((line, index) => {
+  lines.forEach((line) => {
     const info = getHeadingInfo(line);
     if (info) {
       const text = line.trim().replace(/:$/, '');
@@ -243,8 +264,7 @@ function renderArticleContent(content: string) {
 
 
 export async function generateMetadata(
-  { params }: Props,
-  parent: ResolvingMetadata
+  { params }: Props
 ): Promise<Metadata> {
   const { slug } = await params;
   // Clean slug: decode, lowercase, and remove trailing slash
@@ -255,17 +275,11 @@ export async function generateMetadata(
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
-  const { data: noticia, error } = await supabase
+  const { data: noticia } = await supabase
     .from('noticias')
     .select('*')
     .eq('slug', decodedSlug)
     .maybeSingle();
-
-  console.log("=== METADATA DEBUG ===");
-  console.log("Raw Slug:", slug);
-  console.log("Decoded Slug:", decodedSlug);
-  console.log("Noticia found?:", !!noticia);
-  if (error) console.log("Supabase Error:", error);
 
   if (!noticia) {
     return {
@@ -274,22 +288,18 @@ export async function generateMetadata(
     };
   }
 
-  // Get first 150 chars for description with SEO-optimized format
-  const cleanDescription = noticia.contenido.substring(0, 150).replace(/\n/g, ' ') + '...';
-  const seoDescription = `¿A qué hora y en qué canal ver ${noticia.titulo}? Consulta aquí la guía definitiva: canales de TV, plataformas de streaming y alineaciones probables para seguir el partido en vivo. GuíaSports te trae toda la información de última hora.`;
-  
-  // Extract keywords for tags
-  const keywords = noticia.titulo.split(' ').filter((w: string) => w.length > 3).slice(0, 5);
+  const seoDescription = buildSeoDescription(noticia.titulo, noticia.contenido);
+  const keywords = getArticleKeywords(noticia.titulo);
 
   return {
-    title: `En vivo: ${noticia.titulo} | Horario, Canal y Dónde Ver`,
+    title: `${noticia.titulo} | Horario, Canal y Dónde Ver`,
     description: seoDescription,
     keywords: keywords.join(', '),
     alternates: {
       canonical: `https://www.guiasports.com/noticias/${decodedSlug}`,
     },
     openGraph: {
-      title: `Guía TV: ${noticia.titulo}`,
+      title: `${noticia.titulo} | GuíaSports`,
       description: seoDescription,
       images: noticia.imagen_url ? [{ url: noticia.imagen_url }] : [],
       type: 'article',
@@ -348,7 +358,7 @@ export default async function NoticiaDetalle({ params }: Props) {
           <div className="w-full max-w-lg mb-8">
             <h2 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] mb-4">Últimas Noticias</h2>
             <div className="space-y-3 text-left">
-              {noticiasRecientes.map((n: any) => (
+              {noticiasRecientes.map((n: NoticiaRelacionada) => (
                 <Link key={n.slug} href={`/noticias/${n.slug}`} className="block bg-slate-900/50 border border-slate-800 p-4 rounded-xl hover:border-blue-500/30 transition-all group">
                   <h3 className="text-sm font-black italic uppercase text-slate-200 group-hover:text-white leading-tight">{n.titulo}</h3>
                   <p className="text-[9px] text-slate-500 uppercase font-bold mt-1">{n.fecha}</p>
@@ -366,12 +376,22 @@ export default async function NoticiaDetalle({ params }: Props) {
     );
   }
 
-  const { data: noticiasRelacionadas } = await supabase
+  const keywords = getArticleKeywords(noticia.titulo);
+  const { data: noticiasCandidatas } = await supabase
     .from('noticias')
     .select('titulo, slug, fecha, created_at')
     .neq('slug', decodedSlug)
     .order('created_at', { ascending: false })
-    .limit(3);
+    .limit(12);
+
+  const noticiasRelacionadas = (noticiasCandidatas || [])
+    .map((candidata: NoticiaRelacionada) => {
+      const title = candidata.titulo.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const score = keywords.reduce((total, keyword) => total + (title.includes(keyword) ? 1 : 0), 0);
+      return { ...candidata, score };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -406,6 +426,7 @@ export default async function NoticiaDetalle({ params }: Props) {
 
   return (
     <>
+      <ArticleViewTracker slug={noticia.slug} title={noticia.titulo} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -413,7 +434,7 @@ export default async function NoticiaDetalle({ params }: Props) {
       <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-20">
       <div className="max-w-3xl mx-auto px-4 pt-10">
         
-        <Breadcrumbs items={[{ label: "Noticias", href: "/noticias" }]} current={noticia.titulo} />
+        <Breadcrumbs items={[{ label: "Noticias", href: "/noticias" }]} current={noticia.titulo} currentHref={`/noticias/${noticia.slug}`} />
 
         <header className="mb-8">
           <Link href="/noticias" className="text-[10px] font-black text-[#a3e635] bg-[#a3e635]/10 px-3 py-1 rounded-full w-fit border border-[#a3e635]/20 uppercase mb-6 italic tracking-widest inline-block hover:bg-[#a3e635]/20 transition-colors">
@@ -479,7 +500,7 @@ export default async function NoticiaDetalle({ params }: Props) {
               <Calendar className="w-4 h-4" /> También te puede interesar
             </h2>
             <div className="space-y-3">
-              {noticiasRelacionadas.map((n: any) => (
+              {noticiasRelacionadas.map((n: NoticiaRelacionada & { score: number }) => (
                 <Link key={n.slug} href={`/noticias/${n.slug}`} className="block bg-slate-900/30 border border-slate-800/50 p-5 rounded-2xl hover:border-blue-500/30 hover:bg-slate-900/60 transition-all group">
                   <h3 className="text-sm font-black italic uppercase text-slate-200 group-hover:text-white leading-tight mb-1">{n.titulo}</h3>
                   <p className="text-[9px] text-slate-500 uppercase font-bold tracking-widest">{n.fecha} • Leer más →</p>

@@ -2,18 +2,16 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Tv, Calendar, Trophy, Clock, Zap, Filter, Star, Search, X, CalendarDays, ChevronLeft, ChevronRight, Newspaper, ArrowUp, Shield, Radio } from 'lucide-react';
+import { Tv, Zap, Filter, Search, CalendarDays, ChevronLeft, ChevronRight, Newspaper, Radio } from 'lucide-react';
 import Link from 'next/link';
 import NextImage from 'next/image';
-import { sendGAEvent } from '@next/third-parties/google';
 import AdPlacement from '@/components/AdPlacement';
-import NavMobile from '@/components/NavMobile';
 import Header from '@/components/Header';
-import ShareButton from '@/components/ShareButton';
 import SportEventCard from '@/components/SportEventCard';
 import HomeHero from '@/components/HomeHero';
 import HomeDestacados from '@/components/HomeDestacados';
 import SportEventModal from '@/components/SportEventModal';
+import { trackContentClick, trackEvent, trackFilter, trackSearch } from '@/lib/analytics';
 
 const emojis: { [key: string]: string } = {
   "Fútbol": "⚽️", "Básquetbol": "🏀", "Béisbol": "⚾️", "Fórmula 1": "🏎️", 
@@ -25,39 +23,49 @@ const emojis: { [key: string]: string } = {
 const TOP_TEAMS = ["América", "Chivas", "Real Madrid", "Barcelona", "México", "F1", "NBA", "Champions", "Cruz Azul", "Pumas", "Selección"];
 
 interface HomeClientProps {
-  initialEventos: any[];
-  initialNoticias: any[];
+  initialEventos: Evento[];
+  initialNoticias: Noticia[];
   initialUltimaAct: string;
+}
+
+interface Evento {
+  id: string;
+  fecha: string;
+  hora: string;
+  evento: string;
+  competicion: string;
+  deporte: string;
+  canales: string;
+  destacado?: boolean | null;
+}
+
+interface Noticia {
+  id: string;
+  titulo: string;
+  slug: string;
+  fecha: string;
+  imagen_url?: string;
+  autor?: string;
 }
 
 export default function HomeClient({ initialEventos, initialNoticias, initialUltimaAct }: HomeClientProps) {
   const searchParams = useSearchParams();
-  const [eventos] = useState<any[]>(initialEventos);
-  const [noticias] = useState<any[]>(initialNoticias);
+  const [eventos] = useState<Evento[]>(initialEventos);
+  const [noticias] = useState<Noticia[]>(initialNoticias);
   const [filtroDeporte, setFiltroDeporte] = useState("Todos");
   const [filtroFecha, setFiltroFecha] = useState("Todos");
-  const [filtroCompeticion, setFiltroCompeticion] = useState("Todos");
+  const [filtroCompeticion, setFiltroCompeticion] = useState(searchParams.get('competicion') || "Todos");
   const [soloTvAbierta, setSoloTvAbierta] = useState(false);
-  const [busqueda, setBusqueda] = useState("");
-  const [soloEnVivo, setSoloEnVivo] = useState(false);
+  const [busqueda, setBusqueda] = useState(searchParams.get('q') || "");
+  const [soloEnVivo, setSoloEnVivo] = useState(searchParams.get('envivo') === '1');
   const scrollRef = useRef<HTMLDivElement>(null);
   const filtrosRef = useRef<HTMLDivElement>(null);
   const [filtrosFixed, setFiltrosFixed] = useState(false);
-  const filtrosOffsetTop = useRef(0);
+  const [filtrosHeight, setFiltrosHeight] = useState(0);
   const [showFechaDropdown, setShowFechaDropdown] = useState(false);
   const [showCompDropdown, setShowCompDropdown] = useState(false);
   const [busquedaLigas, setBusquedaLigas] = useState("");
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
-
-  useEffect(() => {
-    if (searchParams.get('envivo') === '1') {
-      setSoloEnVivo(true);
-    }
-    const comp = searchParams.get('competicion');
-    if (comp) {
-      setFiltroCompeticion(comp);
-    }
-  }, [searchParams]);
+  const [selectedEvent, setSelectedEvent] = useState<Evento | null>(null);
 
   useEffect(() => {
     const handleScrollToLive = () => {
@@ -85,21 +93,36 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   }, [showFechaDropdown, showCompDropdown]);
 
   useEffect(() => {
-    const originalOffsetTop = filtrosRef.current?.offsetTop || 0;
+    const updateMetrics = () => {
+      const filtros = filtrosRef.current;
+      setFiltrosHeight(filtros?.offsetHeight || 0);
+      return filtros?.offsetTop || 0;
+    };
+
+    let originalOffsetTop = updateMetrics();
     
     const handleScroll = () => {
       setFiltrosFixed(window.scrollY >= originalOffsetTop);
     };
+    const handleResize = () => {
+      originalOffsetTop = updateMetrics();
+      handleScroll();
+    };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('resize', handleResize, { passive: true });
+    handleScroll();
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   // Tracking de búsqueda con debounce manual
   useEffect(() => {
     if (busqueda.length > 2) {
       const timer = setTimeout(() => {
-        sendGAEvent('event', 'search', { search_term: busqueda });
+        trackSearch(busqueda, { location: 'home_header' });
       }, 1500);
       return () => clearTimeout(timer);
     }
@@ -172,7 +195,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
     return coincideDeporte && coincideFecha && coincideCompeticion && coincideBusqueda && (soloTvAbierta ? esTvAbierta : true) && (soloEnVivo ? esEnVivo : true);
   });
 
-  const eventosAgrupados = eventosFiltrados.reduce((groups: any, evento) => {
+  const eventosAgrupados = eventosFiltrados.reduce<Record<string, Evento[]>>((groups, evento) => {
     const f = evento.fecha;
     if (!groups[f]) groups[f] = [];
     groups[f].push(evento);
@@ -214,7 +237,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   };
 
   const toggleEnVivo = () => {
-    sendGAEvent('event', 'click_en_vivo', { location: 'header_filters' });
+    trackEvent('click_en_vivo', { location: 'header_filters' });
     const eventosEnVivo = document.querySelectorAll('[data-envivo="true"]');
     if (eventosEnVivo.length > 0) {
       eventosEnVivo[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -258,11 +281,11 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
             </button>
 
             <div className="hidden md:flex items-center gap-1">
-              {fechasUnicas.slice(0, 4).map((f: any) => (
+              {fechasUnicas.slice(0, 4).map((f) => (
                 <button 
                   key={f} 
                   onClick={() => {
-                    sendGAEvent('event', 'filter_date', { date: f });
+                    trackFilter('date', f);
                     setFiltroFecha(f);
                   }} 
                   className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${filtroFecha === f ? "text-[#a3e635] bg-[#a3e635]/10 border border-[#a3e635]/30" : "bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800"}`}
@@ -291,7 +314,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
             <button
               onClick={() => {
                 const newState = !soloTvAbierta;
-                sendGAEvent('event', 'filter_tv_abierta', { enabled: newState });
+                trackFilter('tv_abierta', newState);
                 setSoloTvAbierta(newState);
               }}
               className={`flex items-center gap-1 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${soloTvAbierta ? "bg-white text-black border border-white" : "text-slate-500 border border-slate-800 hover:text-slate-300 bg-slate-900/50"}`}
@@ -304,11 +327,11 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
           <div className="relative">
             {showFechaDropdown && (
               <div data-fecha-dropdown className="absolute top-0 left-0 mt-1 bg-slate-900 border border-slate-700 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-[100] py-1 min-w-[180px]">
-                {fechasUnicas.map((f: any) => (
+                {fechasUnicas.map((f) => (
                   <button 
                     key={f} 
                     onClick={() => { 
-                      sendGAEvent('event', 'filter_date', { date: f });
+                      trackFilter('date', f);
                       setFiltroFecha(f); 
                       setShowFechaDropdown(false); 
                     }} 
@@ -336,11 +359,11 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
                   </div>
                 </div>
                 <div className="overflow-y-auto max-h-[280px] scrollbar-hide">
-                  {competicionesUnicas.filter((c: any) => c.toLowerCase().includes(busquedaLigas.toLowerCase())).map((c: any) => (
+                  {competicionesUnicas.filter((c) => c.toLowerCase().includes(busquedaLigas.toLowerCase())).map((c) => (
                     <button 
                       key={c} 
                       onClick={() => { 
-                        sendGAEvent('event', 'filter_league', { league: c });
+                        trackFilter('league', c);
                         setFiltroCompeticion(c); 
                         setShowCompDropdown(false); 
                         setBusquedaLigas(""); 
@@ -359,11 +382,11 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
           <div className="relative flex items-center">
             <button onClick={() => scrollDeportes('left')} className="absolute left-0 z-10 bg-slate-900/80 p-2 rounded-full shadow-lg"><ChevronLeft size={16} /></button>
             <div ref={scrollRef} className="flex gap-2 overflow-x-auto py-1 px-4 scrollbar-hide scroll-smooth w-full">
-              {deportesUnicos.map((dep: any) => (
+              {deportesUnicos.map((dep) => (
                 <button 
                   key={dep} 
                   onClick={() => {
-                    sendGAEvent('event', 'filter_sport', { sport: dep });
+                    trackFilter('sport', dep);
                     setFiltroDeporte(dep);
                   }} 
                   className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap border uppercase tracking-wider ${filtroDeporte === dep ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-900/40" : "bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800"}`}
@@ -393,7 +416,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
           )}
         </div>
       </div>
-      {filtrosFixed && <div style={{ height: filtrosRef.current?.offsetHeight }}></div>}
+      {filtrosFixed && <div style={{ height: filtrosHeight }}></div>}
 
       <main id="envivo" className="w-full max-w-4xl mx-auto px-4 pt-24 pb-8">
         {!busqueda && (filtroFecha === "Todos" || filtroFecha === hoyStr) && (
@@ -413,7 +436,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
                   </Link>
                 </div>
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
-                  {noticias.slice(0, 5).map((n: any) => {
+                  {noticias.slice(0, 5).map((n) => {
                     const emoji = guessSportEmoji(n.titulo);
                     return (
                       <Link key={n.id} href={`/noticias/${n.slug}`} className="min-w-[280px] w-[85vw] max-w-[340px] bg-slate-900/50 border border-slate-800 p-4 rounded-[32px] flex gap-4 items-center hover:bg-slate-800/80 hover:border-slate-700 transition-all cursor-pointer group flex-shrink-0">
@@ -473,7 +496,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
           <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4">
             <Link 
               href="/mundial-2026" 
-              onClick={() => sendGAEvent('event', 'click_hub', { hub_name: 'mundial_2026' })}
+              onClick={() => trackContentClick('hub', 'mundial_2026')}
               className="flex-shrink-0 relative overflow-hidden group bg-slate-900 border border-yellow-500/30 px-6 py-4 rounded-2xl text-center transition-all duration-500 hover:border-yellow-400 hover:shadow-[0_0_25px_rgba(234,179,8,0.3)] hover:-translate-y-0.5 active:scale-95 shadow-xl shadow-black/20"
             >
               {/* Animated background glow */}
@@ -489,12 +512,63 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
                 <div className="text-[10px] font-black uppercase text-yellow-500 tracking-widest group-hover:text-yellow-400 transition-colors whitespace-nowrap">Mundial 2026</div>
               </div>
             </Link>
-            <Link href="/?competicion=Liga MX" className="flex-shrink-0 bg-slate-900/50 border border-slate-800 px-6 py-4 rounded-2xl text-center hover:border-blue-500/30 transition-all group shadow-lg">
-              <div className="text-2xl mb-1.5">🛡️</div>
-              <div className="text-[10px] font-black uppercase text-slate-400 group-hover:text-white transition-colors whitespace-nowrap">Liga MX</div>
+            <Link 
+              href="/futbol/liga-mx" 
+              onClick={() => trackContentClick('hub', 'liga_mx')} 
+              className="flex-shrink-0 relative overflow-hidden group bg-slate-900 border border-slate-800/80 px-6 py-4 rounded-2xl text-center transition-all duration-500 hover:border-blue-500/50 hover:shadow-[0_0_25px_rgba(59,130,246,0.2)] hover:-translate-y-0.5 active:scale-95 shadow-xl shadow-black/20"
+            >
+              {/* Animated background glow */}
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-indigo-500/5 opacity-50 group-hover:opacity-100 transition-opacity"></div>
+              
+              {/* Shimmer effect */}
+              <div className="absolute -inset-[100%] group-hover:animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-[25deg] pointer-events-none"></div>
+
+              <div className="relative z-10 flex flex-col items-center">
+                <div className="h-10 w-auto mb-1.5 transform group-hover:scale-110 transition-transform duration-500 drop-shadow-[0_0_8px_rgba(255,255,255,0.15)] flex items-center justify-center">
+                  <img src="/images/logo_ligas/liga_mx.webp" alt="Liga MX" className="h-full w-auto object-contain" />
+                </div>
+                <div className="text-[10px] font-black uppercase text-slate-400 group-hover:text-blue-400 transition-colors whitespace-nowrap">Liga MX</div>
+              </div>
+            </Link>
+            <Link 
+              href="/futbol/champions-league" 
+              onClick={() => trackContentClick('hub', 'champions_league')} 
+              className="flex-shrink-0 relative overflow-hidden group bg-slate-900 border border-slate-800/80 px-6 py-4 rounded-2xl text-center transition-all duration-500 hover:border-sky-500/50 hover:shadow-[0_0_25px_rgba(14,165,233,0.2)] hover:-translate-y-0.5 active:scale-95 shadow-xl shadow-black/20"
+            >
+              {/* Animated background glow */}
+              <div className="absolute inset-0 bg-gradient-to-br from-sky-500/10 via-transparent to-blue-600/5 opacity-50 group-hover:opacity-100 transition-opacity"></div>
+              
+              {/* Shimmer effect */}
+              <div className="absolute -inset-[100%] group-hover:animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-[25deg] pointer-events-none"></div>
+
+              <div className="relative z-10 flex flex-col items-center">
+                <div className="h-10 w-auto mb-1.5 transform group-hover:scale-110 transition-transform duration-500 drop-shadow-[0_0_8px_rgba(255,255,255,0.15)] flex items-center justify-center">
+                  <img src="/images/logo_ligas/uefa_champions_league.webp" alt="Champions League" className="h-full w-auto object-contain" />
+                </div>
+                <div className="text-[10px] font-black uppercase text-slate-400 group-hover:text-sky-400 transition-colors whitespace-nowrap">Champions</div>
+              </div>
+            </Link>
+            <Link 
+              href="/futbol/premier-league" 
+              onClick={() => trackContentClick('hub', 'premier_league')} 
+              className="flex-shrink-0 relative overflow-hidden group bg-slate-900 border border-slate-800/80 px-6 py-4 rounded-2xl text-center transition-all duration-500 hover:border-purple-500/50 hover:shadow-[0_0_25px_rgba(168,85,247,0.2)] hover:-translate-y-0.5 active:scale-95 shadow-xl shadow-black/20"
+            >
+              {/* Animated background glow */}
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-pink-500/5 opacity-50 group-hover:opacity-100 transition-opacity"></div>
+              
+              {/* Shimmer effect */}
+              <div className="absolute -inset-[100%] group-hover:animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-[25deg] pointer-events-none"></div>
+
+              <div className="relative z-10 flex flex-col items-center">
+                <div className="h-10 w-auto mb-1.5 transform group-hover:scale-110 transition-transform duration-500 drop-shadow-[0_0_8px_rgba(255,255,255,0.15)] flex items-center justify-center">
+                  <img src="/images/logo_ligas/premier_league.webp" alt="Premier League" className="h-full w-auto object-contain" />
+                </div>
+                <div className="text-[10px] font-black uppercase text-slate-400 group-hover:text-purple-400 transition-colors whitespace-nowrap">Premier League</div>
+              </div>
             </Link>
           </div>
         </section>
+
 
         <div id="listado-eventos-principal" className="w-full">
         {Object.keys(eventosAgrupados).length > 0 ? (
@@ -505,18 +579,18 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
                 <div className="h-px w-full bg-slate-800/30"></div>
               </div>
               <div className="flex flex-col gap-3 w-full">
-                {eventosAgrupados[fecha].map((evento: any, index: number) => (
+                {eventosAgrupados[fecha].map((evento, index) => (
                   <div key={evento.id} id={`evento-${evento.id}`} data-envivo={estaEnVivo(evento.fecha, evento.hora) ? 'true' : 'false'} className="w-full">
                     <SportEventCard 
                       evento={evento} 
                       isLive={estaEnVivo(evento.fecha, evento.hora)} 
                       onFiltrarLiga={(liga) => { 
-                        sendGAEvent('event', 'filter_league', { league: liga });
+                        trackFilter('league', liga);
                         setFiltroCompeticion(liga); 
                         setShowCompDropdown(false); 
                       }} 
                       onClick={() => {
-                        sendGAEvent('event', 'view_event_detail', { 
+                        trackEvent('view_event_detail', { 
                           event_name: evento.evento,
                           sport: evento.deporte,
                           competition: evento.competicion

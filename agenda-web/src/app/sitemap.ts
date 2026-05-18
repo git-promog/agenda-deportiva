@@ -4,125 +4,139 @@ import { SEDES } from '@/data/mundialData';
 import { PLATFORMS } from '@/data/platformsData';
 import { EDITORIAL_TEAM } from '@/data/teamData';
 
+const SITE_URL = 'https://www.guiasports.com';
+const STATIC_LAST_MODIFIED = new Date('2026-04-25');
+const getFreshDate = () => new Date();
+const COMPETITION_HUBS = ['liga-mx', 'champions-league', 'premier-league'];
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-
   let noticiasUrls: MetadataRoute.Sitemap = [];
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   
-  try {
-    const { data: noticias, error } = await supabase
-      .from('noticias')
-      .select('slug, created_at, fecha')
-      .order('created_at', { ascending: false })
-      .limit(5000); // Increased limit to ensure more articles are included
+  if (supabaseUrl && supabaseAnonKey) {
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-    if (error) {
-      console.error("Error fetching noticias for sitemap:", error);
-    } else if (noticias) {
-      noticiasUrls = noticias
-        .filter(n => n.slug) // Ensure slug exists
-        .map((noticia) => ({
-          url: `https://www.guiasports.com/noticias/${noticia.slug}`,
-          lastModified: noticia.created_at ? new Date(noticia.created_at) : (noticia.fecha ? new Date(noticia.fecha) : new Date()),
-          changeFrequency: 'weekly' as const,
-          priority: 0.7, // Articles are slightly lower priority than main hubs
-        }));
+    try {
+      const { data: noticias, error } = await supabase
+        .from('noticias')
+        .select('slug, created_at, fecha')
+        .order('created_at', { ascending: false })
+        .limit(5000);
+
+      if (error) {
+        console.error("Error fetching noticias for sitemap:", error);
+      } else if (noticias) {
+        noticiasUrls = noticias
+          .filter((noticia) => noticia.slug)
+          .map((noticia) => ({
+            url: `${SITE_URL}/noticias/${noticia.slug}`,
+            lastModified: noticia.created_at ? new Date(noticia.created_at) : (noticia.fecha ? new Date(noticia.fecha) : STATIC_LAST_MODIFIED),
+            changeFrequency: 'weekly' as const,
+            priority: 0.7,
+          }));
+      }
+    } catch (err) {
+      console.error("Unexpected error in sitemap generation:", err);
     }
-  } catch (err) {
-    console.error("Unexpected error in sitemap generation:", err);
+  } else {
+    console.warn("Supabase env vars missing: sitemap generated without dynamic article URLs.");
   }
 
   return [
     {
-      url: 'https://www.guiasports.com',
-      lastModified: new Date(),
+      url: SITE_URL,
+      lastModified: getFreshDate(),
       changeFrequency: 'daily',
       priority: 1,
     },
     {
-      url: 'https://www.guiasports.com/noticias',
-      lastModified: new Date(),
+      url: `${SITE_URL}/noticias`,
+      lastModified: getFreshDate(),
       changeFrequency: 'daily',
       priority: 0.9,
     },
     {
-      url: 'https://www.guiasports.com/quienes-somos',
-      lastModified: new Date(),
+      url: `${SITE_URL}/quienes-somos`,
+      lastModified: STATIC_LAST_MODIFIED,
       changeFrequency: 'monthly',
       priority: 0.5,
     },
     {
-      url: 'https://www.guiasports.com/privacidad',
-      lastModified: new Date(),
+      url: `${SITE_URL}/privacidad`,
+      lastModified: STATIC_LAST_MODIFIED,
       changeFrequency: 'monthly',
       priority: 0.3,
     },
     {
-      url: 'https://www.guiasports.com/contacto',
-      lastModified: new Date(),
+      url: `${SITE_URL}/contacto`,
+      lastModified: STATIC_LAST_MODIFIED,
       changeFrequency: 'monthly',
       priority: 0.5,
     },
     {
-      url: 'https://www.guiasports.com/envivo',
-      lastModified: new Date(),
+      url: `${SITE_URL}/envivo`,
+      lastModified: getFreshDate(),
       changeFrequency: 'daily',
       priority: 0.9,
     },
     {
-      url: 'https://www.guiasports.com/futbol',
-      lastModified: new Date(),
+      url: `${SITE_URL}/futbol`,
+      lastModified: getFreshDate(),
       changeFrequency: 'daily',
       priority: 0.9,
     },
+    ...COMPETITION_HUBS.map((slug) => ({
+      url: `${SITE_URL}/futbol/${slug}`,
+      lastModified: getFreshDate(),
+      changeFrequency: 'daily' as const,
+      priority: 0.8,
+    })),
     {
-      url: 'https://www.guiasports.com/nba',
-      lastModified: new Date(),
+      url: `${SITE_URL}/nba`,
+      lastModified: getFreshDate(),
       changeFrequency: 'daily',
       priority: 0.8,
     },
     {
-      url: 'https://www.guiasports.com/mlb',
-      lastModified: new Date(),
+      url: `${SITE_URL}/mlb`,
+      lastModified: getFreshDate(),
       changeFrequency: 'daily',
       priority: 0.8,
     },
     {
-      url: 'https://www.guiasports.com/f1',
-      lastModified: new Date(),
+      url: `${SITE_URL}/f1`,
+      lastModified: getFreshDate(),
       changeFrequency: 'daily',
       priority: 0.8,
     },
     {
-      url: 'https://www.guiasports.com/mundial-2026',
-      lastModified: new Date(),
+      url: `${SITE_URL}/mundial-2026`,
+      lastModified: STATIC_LAST_MODIFIED,
       changeFrequency: 'daily',
       priority: 1.0,
     },
     ...SEDES.map(s => ({
-      url: `https://www.guiasports.com/mundial-2026/${s.id}`,
-      lastModified: new Date(),
+      url: `${SITE_URL}/mundial-2026/${s.id}`,
+      lastModified: STATIC_LAST_MODIFIED,
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     })),
     {
-      url: 'https://www.guiasports.com/plataformas',
-      lastModified: new Date(),
+      url: `${SITE_URL}/plataformas`,
+      lastModified: STATIC_LAST_MODIFIED,
       changeFrequency: 'weekly',
       priority: 0.8,
     },
     ...PLATFORMS.map(p => ({
-      url: `https://www.guiasports.com/plataformas/${p.slug}`,
-      lastModified: new Date(),
+      url: `${SITE_URL}/plataformas/${p.slug}`,
+      lastModified: STATIC_LAST_MODIFIED,
       changeFrequency: 'monthly' as const,
       priority: 0.7,
     })),
-    ...EDITORIAL_TEAM.map((a: any) => ({
-      url: `https://www.guiasports.com/team/${a.id}`,
-      lastModified: new Date(),
+    ...EDITORIAL_TEAM.map((author) => ({
+      url: `${SITE_URL}/team/${author.id}`,
+      lastModified: STATIC_LAST_MODIFIED,
       changeFrequency: 'monthly' as const,
       priority: 0.6,
     })),

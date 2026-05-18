@@ -1,9 +1,10 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronLeft, CheckCircle2, Star, Tv, Info, ExternalLink, Calendar, Zap } from 'lucide-react';
+import { ChevronLeft, CheckCircle2, Star, Info, Calendar, Zap } from 'lucide-react';
 import { Metadata } from 'next';
 import { PLATFORMS } from '@/data/platformsData';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import TrackedOutboundLink from '@/components/TrackedOutboundLink';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -62,6 +63,13 @@ export default async function PlatformDetail({ params }: Props) {
       </div>
 
       <div className="max-w-4xl mx-auto px-6 -mt-16 relative z-20">
+        <div className="sr-only">
+          <Breadcrumbs
+            items={[{ label: 'Plataformas', href: '/plataformas' }]}
+            current={platform.name}
+            currentHref={`/plataformas/${platform.slug}`}
+          />
+        </div>
         <div className="grid md:grid-cols-3 gap-8">
           {/* Main Column */}
           <div className="md:col-span-2 space-y-8">
@@ -122,14 +130,14 @@ export default async function PlatformDetail({ params }: Props) {
                <p className="text-[10px] font-black uppercase tracking-widest mb-2 opacity-60">Suscripción Oficial</p>
                <h3 className="text-2xl font-black italic uppercase leading-none mb-6">Contratar {platform.name}</h3>
                <p className="text-sm font-bold mb-8 leading-relaxed">Suscríbete ahora para empezar a ver deportes en vivo hoy mismo.</p>
-               <a 
-                href={platform.ctaUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
+               <TrackedOutboundLink
+                href={platform.ctaUrl}
+                destination={platform.slug}
+                label={`Contratar ${platform.name}`}
                 className="w-full bg-blue-600 text-white flex items-center justify-center gap-2 py-4 rounded-2xl font-black uppercase text-xs italic shadow-lg shadow-blue-600/30 hover:scale-105 transition-all"
                >
-                 Ir al sitio oficial <ExternalLink size={14} />
-               </a>
+                 Ir al sitio oficial
+               </TrackedOutboundLink>
             </div>
 
             <div className="bg-slate-900 border border-slate-800 rounded-[32px] p-6">

@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Clock, Tv, X, CalendarPlus, Trophy } from 'lucide-react';
-import { sendGAEvent } from '@next/third-parties/google';
 import ShareButton from '@/components/ShareButton';
+import { trackEvent } from '@/lib/analytics';
 
 const EMOJIS: { [key: string]: string } = {
   "Fútbol": "⚽️", "Básquetbol": "🏀", "Béisbol": "⚾️", "Fórmula 1": "🏎️", 
@@ -160,7 +160,7 @@ export default function SportEventModal({ evento, isOpen, onClose }: Props) {
                   href={buildCalendarLink()} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  onClick={() => sendGAEvent('event', 'add_to_calendar', { 
+                  onClick={() => trackEvent('add_to_calendar', { 
                     event_name: evento.evento,
                     competition: evento.competicion
                   })}

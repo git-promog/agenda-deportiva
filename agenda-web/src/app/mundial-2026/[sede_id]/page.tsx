@@ -73,6 +73,7 @@ export default async function SedePage({ params }: { params: Promise<{ sede_id: 
           <Breadcrumbs 
             items={[{ label: 'Mundial 2026', href: '/mundial-2026' }]} 
             current={sede.estadio} 
+            currentHref={`/mundial-2026/${sede.id}`}
           />
 
           <header className={`mt-8 mb-12 p-8 md:p-12 rounded-[40px] border ${borderAccent} bg-slate-900/40 relative overflow-hidden shadow-2xl`}>

@@ -8,26 +8,37 @@ interface BreadcrumbItem {
 interface BreadcrumbsProps {
   items: BreadcrumbItem[];
   current: string;
+  currentHref: string;
 }
 
-export default function Breadcrumbs({ items, current }: BreadcrumbsProps) {
+export default function Breadcrumbs({ items, current, currentHref }: BreadcrumbsProps) {
+  const normalizeHref = (href: string) => href.startsWith('/') ? href : `/${href}`;
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "item": {
+          "@id": "https://www.guiasports.com",
+          "name": "Inicio"
+        }
+      },
       ...items.map((item, index) => ({
         "@type": "ListItem",
-        "position": index + 1,
+        "position": index + 2,
         "item": {
-          "@id": `https://www.guiasports.com${item.href}`,
+          "@id": `https://www.guiasports.com${normalizeHref(item.href)}`,
           "name": item.label
         }
       })),
       {
         "@type": "ListItem",
-        "position": items.length + 1,
+        "position": items.length + 2,
         "item": {
-          "@id": `https://www.guiasports.com${items.length > 0 ? items[items.length - 1].href : '/'}`,
+          "@id": `https://www.guiasports.com${normalizeHref(currentHref)}`,
           "name": current
         }
       }

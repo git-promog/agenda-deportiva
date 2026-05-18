@@ -5,6 +5,7 @@ import { Mail, ArrowLeft, Send, CheckCircle, AlertCircle } from 'lucide-react';
 import NextImage from 'next/image';
 import { useState } from 'react';
 import emailjs from '@emailjs/browser';
+import { trackEvent } from '@/lib/analytics';
 
 const EMAILJS_SERVICE_ID = "service_8jpuz7y";
 const EMAILJS_TEMPLATE_ID = "template_vmldmig";
@@ -39,9 +40,11 @@ export default function ContactoForm() {
       );
 
       setEstado('exito');
+      trackEvent('contact_submit', { status: 'success' });
       setFormData({ from_name: "", from_email: "", phone: "", message: "" });
     } catch (error) {
       console.error("Error enviando email:", error);
+      trackEvent('contact_submit', { status: 'error' });
       setEstado('error');
     } finally {
       setEnviando(false);

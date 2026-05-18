@@ -89,7 +89,7 @@ export default async function FutbolHub() {
       />
       <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-24">
         <div className="max-w-4xl mx-auto px-4 pt-10">
-          <Breadcrumbs items={[]} current="Fútbol" />
+          <Breadcrumbs items={[]} current="Fútbol" currentHref="/futbol" />
 
           <header className="mb-12">
             <div className="flex items-center gap-4 mb-4">

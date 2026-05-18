@@ -74,7 +74,7 @@ export default async function AuthorProfile({ params }: Props) {
       />
 
       <div className="max-w-4xl mx-auto px-6 pt-10">
-        <Breadcrumbs items={[]} current={author.name} />
+        <Breadcrumbs items={[]} current={author.name} currentHref={`/team/${id}`} />
 
         <div className="mt-12 mb-16">
           <div className="flex flex-col md:flex-row gap-8 items-center md:items-start text-center md:text-left">

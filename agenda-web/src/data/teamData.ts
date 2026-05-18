@@ -70,13 +70,5 @@ export const EDITORIAL_TEAM = [
     bio: "Periodista deportiva con enfoque en los torneos de Grand Slam, ATP y WTA. Su labor es publicar las guías de horarios de los partidos de Carlos Alcaraz, Djokovic o cualquier figura, detallando si va por ESPN, Star+ (ahora Disney+) o abierta.",
     specialty: "Tenis (ATP/WTA) / Pádel / Pickleball",
     avatar: "/images/team/fernanda.webp"
-  },
-  {
-    id: "oscar-figueroa",
-    name: "Oscar Figueroa",
-    role: "Especialista en Deportes Motor y Ciclismo",
-    bio: "Ingeniero mecánico de formación, cronista de corazón. Se encarga de la guía más precisa de la Fórmula 1, MotoGP, Nascar México y las grandes vueltas del ciclismo (Tour de France, Giro, Vuelta). Sabe el canal exacto (Fox Sports, ESPN, Claro Sports).",
-    specialty: "F1 / MotoGP / Ciclismo / Nascar",
-    avatar: "/images/team/oscar.webp"
   }
 ];

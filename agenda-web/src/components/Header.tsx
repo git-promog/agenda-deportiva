@@ -34,9 +34,9 @@ export default function Header({ ultimaAct, showSearch = false, busqueda = '', o
       <div className="fixed top-0 left-0 w-full h-1 bg-slate-900 z-[60]">
         <div className="h-full bg-gradient-to-r from-[#a3e635] to-blue-500 transition-all duration-75" style={{ width: `${scrollProgress}%` }}></div>
       </div>
-      <div className="sticky top-0 z-50 border-b border-white/5 bg-[#020617]/85 backdrop-blur-xl w-full overflow-x-hidden pt-1 shadow-lg shadow-black/10">
-        <div className="max-w-4xl mx-auto px-4 pt-4 w-full">
-          <div className="flex justify-between items-center mb-4">
+      <div className="relative z-50 border-b border-white/5 bg-[#020617]/50 backdrop-blur-xl w-full overflow-x-hidden pt-1">
+        <div className="max-w-4xl mx-auto px-4 py-3 md:pt-4 md:pb-0 w-full">
+          <div className="flex justify-between items-center md:mb-4">
             <Link href="/" className="transition-transform active:scale-95 shrink-0">
               <NextImage src="/GuiaSports-logo.svg" alt="GuíaSports" width={200} height={50} className="h-10 w-auto" priority />
             </Link>
@@ -184,20 +184,6 @@ export default function Header({ ultimaAct, showSearch = false, busqueda = '', o
           )}
         </div>
       </div>
-
-      {/* Floating Mobile Hamburger Button */}
-      {scrollProgress > 10 && !menuOpen && (
-        <button 
-          onClick={() => {
-            setMenuOpen(true);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
-          className="fixed bottom-6 right-6 z-[99] md:hidden bg-blue-600 border border-blue-500 text-white p-3.5 rounded-full shadow-[0_12px_30px_rgba(37,99,235,0.45)] hover:scale-110 active:scale-95 transition-all animate-in fade-in zoom-in-75 duration-300"
-          aria-label="Menu"
-        >
-          <Menu size={20} />
-        </button>
-      )}
     </>
   );
 }

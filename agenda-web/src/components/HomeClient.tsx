@@ -253,11 +253,11 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
 
   return (
     <>
-    <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-24 w-full overflow-x-hidden">
+    <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-24 w-full relative">
       
       <Header ultimaAct={initialUltimaAct} showSearch={true} busqueda={busqueda} onBusquedaChange={setBusqueda} />
 
-      <div ref={filtrosRef} className={`bg-[#020617]/95 backdrop-blur-xl border-b border-slate-800 shadow-2xl z-[60] transition-all duration-300 ${filtrosFixed ? 'fixed top-0 left-0 right-0 py-2' : 'relative py-4'}`}>
+      <div ref={filtrosRef} className={`bg-[#020617]/95 backdrop-blur-xl border-b border-slate-800 shadow-2xl z-40 transition-all duration-300 ${filtrosFixed ? 'fixed top-0 left-0 right-0 py-2' : 'relative py-4'}`}>
         <div className="max-w-4xl mx-auto px-4">
           
           {/* Logo que aparece solo en Scroll para Navegación Universal */}

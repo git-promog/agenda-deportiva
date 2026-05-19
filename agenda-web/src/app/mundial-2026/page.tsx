@@ -428,11 +428,11 @@ export default function Mundial2026() {
 
           <div 
             ref={tabsRef}
-            className={`${tabsFixed ? 'fixed top-0 left-0 right-0 z-[100] bg-[#020617]/95 backdrop-blur-3xl border-b border-white/5 shadow-2xl px-4 py-3' : 'relative mb-12'}`}
+            className={`${tabsFixed ? 'fixed top-0 left-0 right-0 z-40 bg-[#020617]/95 backdrop-blur-3xl border-b border-white/5 shadow-2xl px-4 py-3' : 'relative mb-12'}`}
           >
             <div className="max-w-4xl mx-auto flex flex-col items-center">
               {tabsFixed && (
-                <Link href="/" className="mb-2 animate-in fade-in slide-in-from-top-2 duration-500">
+                <Link href="/" className="mb-2 animate-in fade-in slide-in-from-top-2 duration-500 hidden md:block">
                   <NextImage src="/GuiaSports-logo.svg" alt="GuíaSports" width={90} height={25} className="h-5 w-auto opacity-80 hover:opacity-100 transition-opacity" />
                 </Link>
               )}
@@ -614,7 +614,7 @@ export default function Mundial2026() {
               <div className="pb-12">
                 <div 
                   ref={filtersRef}
-                  className={`${filtersFixed ? 'fixed top-[82px] md:top-[90px] left-0 right-0 z-[90] bg-[#020617]/95 backdrop-blur-xl border-b border-white/5 px-4 py-3 shadow-xl' : 'relative mb-6'}`}
+                  className={`${filtersFixed ? 'fixed top-[56px] left-0 right-0 z-30 bg-[#020617]/95 backdrop-blur-xl border-b border-white/5 px-4 py-3 shadow-xl' : 'relative mb-6'}`}
                 >
                   <div className="max-w-4xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className={filtersFixed ? 'hidden md:block' : 'block'}>

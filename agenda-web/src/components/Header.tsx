@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import NextImage from 'next/image';
-import { Newspaper, Radio, Mail, Users, Tv } from 'lucide-react';
+import { Newspaper, Radio, Mail, Users, Tv, Menu, X } from 'lucide-react';
 import { trackEvent } from '@/lib/analytics';
 
 interface HeaderProps {
@@ -15,6 +15,7 @@ interface HeaderProps {
 
 export default function Header({ ultimaAct, showSearch = false, busqueda = '', onBusquedaChange }: HeaderProps) {
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -33,22 +34,34 @@ export default function Header({ ultimaAct, showSearch = false, busqueda = '', o
       <div className="fixed top-0 left-0 w-full h-1 bg-slate-900 z-[60]">
         <div className="h-full bg-gradient-to-r from-[#a3e635] to-blue-500 transition-all duration-75" style={{ width: `${scrollProgress}%` }}></div>
       </div>
-      <div className="border-b border-white/5 bg-[#020617]/50 backdrop-blur-xl w-full overflow-x-hidden relative z-50 pt-1">
+      <div className="sticky top-0 z-50 border-b border-white/5 bg-[#020617]/85 backdrop-blur-xl w-full overflow-x-hidden pt-1 shadow-lg shadow-black/10">
         <div className="max-w-4xl mx-auto px-4 pt-4 w-full">
           <div className="flex justify-between items-center mb-4">
-            <Link href="/" className="transition-transform active:scale-95">
+            <Link href="/" className="transition-transform active:scale-95 shrink-0">
               <NextImage src="/GuiaSports-logo.svg" alt="GuíaSports" width={200} height={50} className="h-10 w-auto" priority />
             </Link>
-            <div className="flex flex-col items-end">
-              <div className="text-[10px] font-black text-[#a3e635] bg-[#a3e635]/10 px-2 py-1 rounded border border-[#a3e635]/20 uppercase italic mb-1 tracking-widest">México</div>
-              {ultimaAct && (
-                <div className="text-[9px] font-bold text-slate-500 uppercase flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 bg-[#a3e635] rounded-full animate-pulse"></div> {ultimaAct}
-                </div>
-              )}
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:flex flex-col items-end">
+                <div className="text-[10px] font-black text-[#a3e635] bg-[#a3e635]/10 px-2 py-1 rounded border border-[#a3e635]/20 uppercase italic mb-1 tracking-widest">México</div>
+                {ultimaAct && (
+                  <div className="text-[9px] font-bold text-slate-500 uppercase flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 bg-[#a3e635] rounded-full animate-pulse"></div> {ultimaAct}
+                  </div>
+                )}
+              </div>
+              
+              {/* Mobile Hamburger Button */}
+              <button 
+                onClick={() => setMenuOpen(!menuOpen)}
+                className="flex md:hidden bg-slate-900/80 border border-white/10 p-2.5 rounded-2xl text-slate-300 hover:text-white hover:bg-slate-800 transition-all active:scale-95 shadow-lg"
+                aria-label="Toggle Menu"
+              >
+                {menuOpen ? <X size={18} /> : <Menu size={18} />}
+              </button>
             </div>
           </div>
 
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6 mb-4">
             <Link href="/" className="text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-[#a3e635] transition-colors flex items-center gap-1.5">
               <Radio size={14} /> Agenda
@@ -86,6 +99,69 @@ export default function Header({ ultimaAct, showSearch = false, busqueda = '', o
             </Link>
           </nav>
 
+          {/* Dynamic Mobile Navigation Overlay */}
+          {menuOpen && (
+            <div className="md:hidden border-t border-white/5 py-4 space-y-3 mb-2 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="grid grid-cols-2 gap-2">
+                <Link 
+                  href="/" 
+                  onClick={() => { setMenuOpen(false); trackEvent('nav_click', { destination: 'home' }); }}
+                  className="flex items-center gap-2.5 bg-slate-900/60 border border-white/5 p-3 rounded-2xl text-[10px] font-black uppercase tracking-wider text-slate-300 hover:text-white transition-colors"
+                >
+                  <Radio size={15} className="text-blue-500" /> Agenda
+                </Link>
+                <button 
+                  onClick={() => { 
+                    setMenuOpen(false); 
+                    window.dispatchEvent(new CustomEvent('scroll-to-live')); 
+                    trackEvent('nav_click', { destination: 'envivo' });
+                  }} 
+                  className="flex items-center gap-2.5 bg-red-950/20 border border-red-500/20 p-3 rounded-2xl text-[10px] font-black uppercase tracking-wider text-red-400 hover:text-red-300 transition-colors"
+                >
+                  <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div> En Vivo
+                </button>
+                <Link 
+                  href="/noticias" 
+                  onClick={() => { setMenuOpen(false); trackEvent('nav_click', { destination: 'noticias' }); }}
+                  className="flex items-center gap-2.5 bg-slate-900/60 border border-white/5 p-3 rounded-2xl text-[10px] font-black uppercase tracking-wider text-slate-300 hover:text-white transition-colors"
+                >
+                  <Newspaper size={15} className="text-emerald-500" /> Noticias
+                </Link>
+                <Link 
+                  href="/plataformas" 
+                  onClick={() => { setMenuOpen(false); trackEvent('nav_click', { destination: 'plataformas' }); }}
+                  className="flex items-center gap-2.5 bg-slate-900/60 border border-white/5 p-3 rounded-2xl text-[10px] font-black uppercase tracking-wider text-slate-300 hover:text-white transition-colors"
+                >
+                  <Tv size={15} className="text-orange-500" /> Plataformas
+                </Link>
+                <Link 
+                  href="/quienes-somos" 
+                  onClick={() => { setMenuOpen(false); trackEvent('nav_click', { destination: 'quienes-somos' }); }}
+                  className="flex items-center gap-2.5 bg-slate-900/60 border border-white/5 p-3 rounded-2xl text-[10px] font-black uppercase tracking-wider text-slate-300 hover:text-white transition-colors"
+                >
+                  <Users size={15} className="text-purple-500" /> Nosotros
+                </Link>
+                <Link 
+                  href="/contacto" 
+                  onClick={() => { setMenuOpen(false); trackEvent('nav_click', { destination: 'contacto' }); }}
+                  className="flex items-center gap-2.5 bg-slate-900/60 border border-white/5 p-3 rounded-2xl text-[10px] font-black uppercase tracking-wider text-slate-300 hover:text-white transition-colors"
+                >
+                  <Mail size={15} className="text-pink-500" /> Contacto
+                </Link>
+              </div>
+              
+              {/* Dynamic last-act inside mobile menu to keep main header clean */}
+              <div className="flex items-center justify-between pt-2 border-t border-white/5 px-2">
+                <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Región: México</span>
+                {ultimaAct && (
+                  <div className="text-[9px] font-bold text-slate-500 uppercase flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 bg-[#a3e635] rounded-full animate-pulse"></div> {ultimaAct}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {showSearch && (
             <div className="relative mb-4 w-full px-1">
               <input 
@@ -108,6 +184,20 @@ export default function Header({ ultimaAct, showSearch = false, busqueda = '', o
           )}
         </div>
       </div>
+
+      {/* Floating Mobile Hamburger Button */}
+      {scrollProgress > 10 && !menuOpen && (
+        <button 
+          onClick={() => {
+            setMenuOpen(true);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          className="fixed bottom-6 right-6 z-[99] md:hidden bg-blue-600 border border-blue-500 text-white p-3.5 rounded-full shadow-[0_12px_30px_rgba(37,99,235,0.45)] hover:scale-110 active:scale-95 transition-all animate-in fade-in zoom-in-75 duration-300"
+          aria-label="Menu"
+        >
+          <Menu size={20} />
+        </button>
+      )}
     </>
   );
 }

@@ -3,6 +3,7 @@ import { Tv, ChevronRight, Info, CheckCircle2 } from 'lucide-react';
 import { Metadata } from 'next';
 import { PLATFORMS } from '@/data/platformsData';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import NextImage from 'next/image';
 
 export const metadata: Metadata = {
   title: "Plataformas de Streaming Deportivo en México | GuíaSports",
@@ -48,8 +49,18 @@ export default function PlataformasPage() {
               <div className={`absolute top-0 right-0 w-64 h-64 bg-gradient-to-br ${platform.color} opacity-5 blur-[80px] rounded-full transform translate-x-1/2 -translate-y-1/2 group-hover:opacity-10 transition-opacity`}></div>
               
               {/* Platform Logo/Icon */}
-              <div className={`w-24 h-24 md:w-32 md:h-32 rounded-3xl bg-gradient-to-br ${platform.color} flex items-center justify-center text-4xl shadow-2xl relative z-10 shrink-0`}>
-                 <span className="font-black italic text-white drop-shadow-lg">{platform.name.charAt(0)}</span>
+              <div className="w-24 h-24 md:w-32 md:h-32 rounded-3xl bg-slate-950/40 border border-white/5 flex items-center justify-center shadow-2xl relative z-10 shrink-0 overflow-hidden group-hover:scale-105 transition-transform duration-500">
+                 {platform.logo ? (
+                   <div className="w-full h-full p-4 relative flex items-center justify-center">
+                     <img 
+                       src={platform.logo} 
+                       alt={platform.name} 
+                       className="max-w-full max-h-full object-contain filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]" 
+                     />
+                   </div>
+                 ) : (
+                   <span className="font-black italic text-white drop-shadow-lg text-4xl">{platform.name.charAt(0)}</span>
+                 )}
               </div>
 
               <div className="flex-1 text-center md:text-left relative z-10">

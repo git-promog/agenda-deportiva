@@ -4,6 +4,7 @@ import { ChevronLeft, CheckCircle2, Star, Info, Calendar, Zap } from 'lucide-rea
 import { Metadata } from 'next';
 import { PLATFORMS } from '@/data/platformsData';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import NextImage from 'next/image';
 import TrackedOutboundLink from '@/components/TrackedOutboundLink';
 
 interface Props {
@@ -49,8 +50,18 @@ export default async function PlatformDetail({ params }: Props) {
             <ChevronLeft size={14} /> Todas las plataformas
           </Link>
           
-          <div className="w-32 h-32 md:w-40 md:h-40 bg-white rounded-[40px] flex items-center justify-center text-6xl md:text-8xl mx-auto mb-8 shadow-[0_20px_60px_rgba(0,0,0,0.5)] transform rotate-3">
-             <span className="font-black italic text-transparent bg-clip-text bg-gradient-to-br from-slate-900 to-slate-700">{platform.name.charAt(0)}</span>
+          <div className="w-32 h-32 md:w-40 md:h-40 bg-slate-950/40 backdrop-blur-md border border-white/10 rounded-[40px] flex items-center justify-center mx-auto mb-8 shadow-[0_20px_60px_rgba(0,0,0,0.55)] transform rotate-3 overflow-hidden">
+             {platform.logo ? (
+               <div className="w-full h-full p-6 relative flex items-center justify-center">
+                 <img 
+                   src={platform.logo} 
+                   alt={platform.name} 
+                   className="max-w-full max-h-full object-contain filter drop-shadow-[0_10px_25px_rgba(0,0,0,0.55)]" 
+                 />
+               </div>
+             ) : (
+               <span className="font-black italic text-transparent bg-clip-text bg-gradient-to-br from-slate-900 to-slate-700 text-6xl md:text-8xl">{platform.name.charAt(0)}</span>
+             )}
           </div>
 
           <h1 className="text-4xl md:text-7xl font-black italic uppercase tracking-tighter leading-none mb-4 text-white drop-shadow-2xl">
@@ -83,8 +94,8 @@ export default async function PlatformDetail({ params }: Props) {
               
               <div className="grid grid-cols-2 gap-4">
                  <div className="bg-slate-800/50 p-6 rounded-3xl border border-white/5">
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Precio Mensual</p>
-                    <p className="text-xl font-black text-[#a3e635] italic">{platform.price}</p>
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Precio de Entrada</p>
+                    <p className="text-xl font-black text-[#a3e635] italic">{platform.price.split(':')[1] || platform.price}</p>
                  </div>
                  <div className="bg-slate-800/50 p-6 rounded-3xl border border-white/5">
                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Plataforma</p>
@@ -92,6 +103,31 @@ export default async function PlatformDetail({ params }: Props) {
                  </div>
               </div>
             </div>
+
+            {/* Planes de Suscripción Detallados */}
+            {platform.plans && platform.plans.length > 0 && (
+              <div className="bg-slate-900 border border-slate-800 rounded-[40px] p-8 md:p-10 shadow-2xl">
+                <h2 className="text-xl font-black italic uppercase text-white mb-6 flex items-center gap-3">
+                  <span className="text-blue-500 text-xl font-black">💰</span> Planes de Suscripción 2026
+                </h2>
+                <div className="space-y-4">
+                  {platform.plans.map((plan, i) => (
+                    <div key={i} className="bg-slate-800/30 border border-white/5 p-5 rounded-3xl flex items-start gap-4 hover:bg-slate-800/50 transition-colors">
+                      <div className="w-2.5 h-2.5 bg-[#a3e635] rounded-full mt-1.5 shrink-0 shadow-[0_0_10px_rgba(163,230,53,0.5)]"></div>
+                      <p className="text-sm text-slate-300 font-bold leading-relaxed">{plan}</p>
+                    </div>
+                  ))}
+                </div>
+                {platform.promotions && (
+                  <div className="mt-6 bg-blue-600/5 border border-blue-500/20 p-6 rounded-3xl">
+                    <p className="text-[10px] font-black uppercase text-blue-400 tracking-widest mb-2 flex items-center gap-1.5">
+                      <span className="text-sm">🎁</span> Promoción / Periodo de Prueba
+                    </p>
+                    <p className="text-sm text-slate-300 font-bold leading-relaxed">{platform.promotions}</p>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="bg-slate-900/50 border border-slate-800 rounded-[40px] p-8 md:p-10">
               <h2 className="text-xl font-black italic uppercase text-white mb-8 flex items-center gap-3">

@@ -20,8 +20,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     try {
       const { data: noticias, error } = await supabase
         .from('noticias')
-        .select('slug, created_at, fecha')
-        .order('created_at', { ascending: false })
+        .select('slug, fecha')
+        .order('fecha', { ascending: false })
         .limit(5000);
 
       if (error) {
@@ -31,7 +31,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           .filter((noticia) => noticia.slug)
           .map((noticia) => ({
             url: `${SITE_URL}/noticias/${noticia.slug}`,
-            lastModified: noticia.created_at ? new Date(noticia.created_at) : (noticia.fecha ? new Date(noticia.fecha) : STATIC_LAST_MODIFIED),
+            lastModified: noticia.fecha ? new Date(noticia.fecha) : STATIC_LAST_MODIFIED,
             changeFrequency: 'weekly' as const,
             priority: 0.7,
           }));

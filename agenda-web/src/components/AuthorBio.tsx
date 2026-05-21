@@ -15,7 +15,7 @@ interface AuthorBioProps {
 }
 
 export default function AuthorBio({ author }: AuthorBioProps) {
-  const authorId = EDITORIAL_TEAM.find(a => a.name === author.name)?.id;
+  const authorId = EDITORIAL_TEAM.find(a => a.name === author.name)?.id || 'redaccion';
 
   return (
     <div className="bg-slate-900/50 border border-slate-800 rounded-[32px] p-6 md:p-8 my-12 relative overflow-hidden group">
@@ -25,7 +25,7 @@ export default function AuthorBio({ author }: AuthorBioProps) {
       
       <div className="flex flex-col md:flex-row gap-6 items-center md:items-start relative z-10">
         <Link 
-          href={authorId ? `/team/${authorId}` : '#'} 
+          href={`/autores/${authorId}`} 
           className="relative w-24 h-24 md:w-32 md:h-32 shrink-0 group/avatar block"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl rotate-6 opacity-20 group-hover:rotate-12 transition-transform"></div>
@@ -48,7 +48,7 @@ export default function AuthorBio({ author }: AuthorBioProps) {
 
         <div className="flex-1 text-center md:text-left">
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mb-2">
-            <Link href={authorId ? `/team/${authorId}` : '#'}>
+            <Link href={`/autores/${authorId}`}>
               <h3 className="text-xl font-black italic uppercase text-white hover:text-blue-500 transition-colors">{author.name}</h3>
             </Link>
             <span className="bg-blue-600/10 text-blue-400 text-[10px] font-black uppercase px-2 py-0.5 rounded border border-blue-500/20 flex items-center gap-1">

@@ -120,8 +120,16 @@ export default async function NoticiasIndex({
                       </div>
                     )}
                     <div className="p-6">
-                      <div className="flex items-center gap-2 text-[9px] text-[#a3e635] font-black uppercase tracking-widest mb-3">
-                        <Calendar size={10} /> {n.fecha}
+                      <div className="flex flex-wrap items-center gap-3 text-[9px] font-black uppercase tracking-widest mb-3">
+                        <span className="flex items-center gap-1.5 text-[#a3e635]">
+                          <Calendar size={10} /> {n.fecha}
+                        </span>
+                        {n.autor && (
+                          <>
+                            <span className="text-slate-700">•</span>
+                            <span className="text-slate-400">Por: {n.autor}</span>
+                          </>
+                        )}
                       </div>
                       <h2 className="font-black italic uppercase text-base leading-tight mb-3 text-white group-hover:text-blue-400 transition-colors line-clamp-3">
                         {n.titulo}

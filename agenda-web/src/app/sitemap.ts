@@ -135,7 +135,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     })),
     ...EDITORIAL_TEAM.map((author) => ({
-      url: `${SITE_URL}/team/${author.id}`,
+      url: `${SITE_URL}/autores/${author.id}`,
       lastModified: STATIC_LAST_MODIFIED,
       changeFrequency: 'monthly' as const,
       priority: 0.6,

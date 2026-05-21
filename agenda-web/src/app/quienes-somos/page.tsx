@@ -90,17 +90,19 @@ export default function QuienesSomos() {
           <div className="grid gap-6">
             {EDITORIAL_TEAM.map((member) => (
               <div key={member.id} className="bg-slate-900/30 border border-slate-800/50 rounded-[32px] p-6 md:p-8 flex flex-col md:flex-row gap-6 items-center md:items-start group hover:bg-slate-900/50 transition-colors">
-                <div className="w-24 h-24 md:w-32 md:h-32 bg-slate-800 rounded-[24px] overflow-hidden shrink-0 border border-white/5 relative">
+                <Link href={`/autores/${member.id}`} className="w-24 h-24 md:w-32 md:h-32 bg-slate-800 rounded-[24px] overflow-hidden shrink-0 border border-white/5 relative block hover:opacity-80 transition-opacity">
                   <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/20 to-transparent"></div>
                   {member.avatar ? (
                     <NextImage src={member.avatar} alt={member.name} fill className="object-cover" sizes="128px" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-3xl font-black text-slate-700">{member.name.charAt(0)}</div>
                   )}
-                </div>
+                </Link>
                 <div className="flex-1 text-center md:text-left">
                   <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mb-2">
-                    <h4 className="text-xl font-black uppercase italic text-white">{member.name}</h4>
+                    <Link href={`/autores/${member.id}`}>
+                      <h4 className="text-xl font-black uppercase italic text-white hover:text-blue-500 transition-colors">{member.name}</h4>
+                    </Link>
                     <span className="bg-blue-600/10 text-blue-400 text-[8px] font-black uppercase px-2 py-0.5 rounded border border-blue-500/20">Verificado</span>
                   </div>
                   <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-4">{member.role} • Especialista en {member.specialty}</p>

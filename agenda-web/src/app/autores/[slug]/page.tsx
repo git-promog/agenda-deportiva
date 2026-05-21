@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronLeft, ShieldCheck, Mail, Share2, Newspaper, Calendar } from 'lucide-react';
+import { ShieldCheck, Mail, Share2, Newspaper, Calendar } from 'lucide-react';
 import { Metadata } from 'next';
 import { EDITORIAL_TEAM } from '@/data/teamData';
 import { createClient } from '@supabase/supabase-js';
@@ -8,18 +8,32 @@ import NextImage from 'next/image';
 import Breadcrumbs from '@/components/Breadcrumbs';
 
 interface Props {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }
 
+const REDACCION_AUTHOR = {
+  id: "redaccion",
+  name: "Redacción GuíaSports",
+  role: "Equipo Editorial",
+  bio: "Especialistas en la cobertura de eventos deportivos nacionales e internacionales en México.",
+  specialty: "Deportes en General",
+  avatar: ""
+};
+
 export async function generateStaticParams() {
-  return EDITORIAL_TEAM.map((author) => ({
-    id: author.id,
+  const params = EDITORIAL_TEAM.map((author) => ({
+    slug: author.id,
   }));
+  params.push({ slug: 'redaccion' });
+  return params;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
-  const author = EDITORIAL_TEAM.find(a => a.id === id);
+  const { slug } = await params;
+  let author = EDITORIAL_TEAM.find(a => a.id === slug);
+  if (!author && slug === 'redaccion') {
+    author = REDACCION_AUTHOR;
+  }
   
   if (!author) return { title: 'Autor no encontrado' };
 
@@ -27,14 +41,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${author.name} | Perfil Editorial GuíaSports`,
     description: `${author.bio.substring(0, 150)}... Conoce a nuestro experto en ${author.specialty}.`,
     alternates: {
-      canonical: `https://www.guiasports.com/team/${id}`,
+      canonical: `https://www.guiasports.com/autores/${slug}`,
     },
   };
 }
 
 export default async function AuthorProfile({ params }: Props) {
-  const { id } = await params;
-  const author = EDITORIAL_TEAM.find(a => a.id === id);
+  const { slug } = await params;
+  let author = EDITORIAL_TEAM.find(a => a.id === slug);
+  if (!author && slug === 'redaccion') {
+    author = REDACCION_AUTHOR;
+  }
 
   if (!author) notFound();
 
@@ -58,8 +75,8 @@ export default async function AuthorProfile({ params }: Props) {
     "name": author.name,
     "jobTitle": author.role,
     "description": author.bio,
-    "image": `https://www.guiasports.com${author.avatar}`,
-    "url": `https://www.guiasports.com/team/${author.id}`,
+    "image": author.avatar ? `https://www.guiasports.com${author.avatar}` : undefined,
+    "url": `https://www.guiasports.com/autores/${author.id}`,
     "worksFor": {
       "@type": "Organization",
       "name": "GuíaSports"
@@ -74,7 +91,7 @@ export default async function AuthorProfile({ params }: Props) {
       />
 
       <div className="max-w-4xl mx-auto px-6 pt-10">
-        <Breadcrumbs items={[]} current={author.name} currentHref={`/team/${id}`} />
+        <Breadcrumbs items={[{ label: "Quiénes Somos", href: "/quienes-somos" }]} current={author.name} currentHref={`/autores/${slug}`} />
 
         <div className="mt-12 mb-16">
           <div className="flex flex-col md:flex-row gap-8 items-center md:items-start text-center md:text-left">

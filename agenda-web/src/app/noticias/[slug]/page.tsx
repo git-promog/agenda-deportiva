@@ -291,6 +291,7 @@ function extractScheduleFromContent(content: string): string {
   const sectionHeadingPatterns = [
     { pattern: /^ANÁLISIS DE GUIASPORTS/i },
     { pattern: /^ALINEACIONES PROBABLES/i },
+    { pattern: /DÓNDE Y A QUÉ HORA VER/i }, // Antes que DÓNDE VER
     { pattern: /^DÓNDE VER/i },
     { pattern: /^CANALES Y STREAMING/i },
     { pattern: /^HORARIO/i },
@@ -329,7 +330,8 @@ function extractScheduleFromContent(content: string): string {
     const headingInfo = getHeadingInfo(trimmed);
     if (headingInfo) {
       const cleanTitle = trimmed.replace(/:$/, '').trim();
-      if (/HORARIO/i.test(cleanTitle)) {
+      // Activar sección de horario si el encabezado es HORARIO o DÓNDE Y A QUÉ HORA VER
+      if (/HORARIO/i.test(cleanTitle) || /DÓNDE Y A QUÉ HORA VER/i.test(cleanTitle)) {
         isTargetSection = true;
       } else {
         isTargetSection = false;
@@ -339,14 +341,25 @@ function extractScheduleFromContent(content: string): string {
 
     if (isTargetSection) {
       const cleanLine = trimmed.replace(/^[-*•\d+.)\s]+/, '').trim();
-      if (cleanLine) {
+      
+      // Buscar específicamente líneas que contengan "Horario:" o similar
+      if (cleanLine.toLowerCase().includes('horario')) {
+        const hourMatch = cleanLine.match(/horario[:\s]+([0-9]{1,2}):([0-9]{2})\s*(?:horas?|hrs?)?/i);
+        if (hourMatch) {
+          extractedLines.push(`${hourMatch[1]}:${hourMatch[2]}`);
+        }
+      }
+      
+      // También buscar cualquier línea con formato de hora
+      const hourPattern = /\b(?:[01]?\d|2[0-3]):[0-5]\d\s*(?:[APap][Mm])?\b|\b(?:[01]?\d|2[0-3])\s*h(?:rs?)?\.?|\bhora\s*[:\s]\s*(?:[01]?\d|2[0-3]):[0-5]\d/i;
+      if (cleanLine && hourPattern.test(cleanLine)) {
         extractedLines.push(cleanLine);
       }
     }
   }
 
   if (extractedLines.length === 0) return "";
-
+  
   // Join all extracted schedule lines into a readable string
   return extractedLines.join(". ").replace(/\.\./g, '.');
 }
@@ -363,8 +376,8 @@ function getFaqs(titulo: string, fecha: string, contenido: string): { question: 
   const scheduleText = extractScheduleFromContent(contenido);
 
   const scheduleAnswer = scheduleText
-    ? `Según la información oficial, el horario programado para ${eventName} es: ${scheduleText}. Te sugerimos sintonizar la transmisión con unos minutos de anticipación para no perderte el silbatazo inicial y toda la cobertura del juego.`
-    : `El enfrentamiento de ${eventName} está programado para disputarse el día ${fecha} en el horario estelar de la jornada deportiva en México. Te sugerimos sintonizar la transmisión con unos minutos de anticipación para no perderte el silbatazo inicial y toda la cobertura del juego.`;
+    ? `El partido de ${eventName} está programado para: ${scheduleText}. Te sugerimos sintonizar con anticipación para no perderte el inicio.`
+    : `No se pudo determinar la hora exacta del partido de ${eventName}, pero está confirmado para el día ${fecha}. Te recomendamos consultar la programación oficial y sintonizar con anticipación. GuíaSports tu guía definitiva de transmisiones.`;
 
   return [
     {
@@ -378,10 +391,6 @@ function getFaqs(titulo: string, fecha: string, contenido: string): { question: 
     {
       question: `¿Cómo ver en vivo online y por streaming el juego de ${eventName}?`,
       answer: `Para seguir este compromiso de forma online a través de internet y streaming en México, podrás sintonizar las plataformas de ${streamText}. Asegúrate de descargar la aplicación oficial en tu teléfono o Smart TV y contar con una cuenta activa antes del silbatazo.`
-    },
-    {
-      question: `¿Dónde puedo consultar el resultado y resumen de ${eventName}?`,
-      answer: `Una vez concluido el compromiso, podrás consultar el marcador final, el resumen de las mejores jugadas y la crónica completa del encuentro de forma inmediata en GuíaSports, tu guía de referencia indispensable para todo el acontecer deportivo nacional e internacional.`
     }
   ];
 }

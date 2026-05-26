@@ -4,6 +4,38 @@ from datetime import datetime
 import re
 import pytz
 
+# Lista de patrones de texto basura (fácilmente extensible)
+CTAS_PATROCINADOS = [
+    r"míralo\s+en\s+vivo",
+    r"ver\s+gratis",
+    r"en\s+vivo",
+    r"gratis"
+]
+
+# Compilación de la expresión regular para optimizar rendimiento
+REGEX_CTA = re.compile(
+    r"\s*\(\s*(?:" + "|".join(CTAS_PATROCINADOS) + r")\s*\)", 
+    re.IGNORECASE
+)
+
+def sanitizar_canal(canal: str) -> str:
+    """
+    Sanitiza el nombre de un canal eliminando CTAs patrocinados dentro de paréntesis.
+    Previene errores ante valores nulos, vacíos o tipos inesperados.
+    """
+    if canal is None:
+        return ""
+    if not isinstance(canal, str):
+        canal = str(canal)
+        
+    # 1. Eliminar patrones basura
+    canal_limpio = REGEX_CTA.sub("", canal)
+    
+    # 2. Normalizar espacios en blanco (múltiples espacios internos y trim)
+    canal_limpio = re.sub(r'\s+', ' ', canal_limpio).strip()
+    
+    return canal_limpio
+
 def extraer_deporte_limpio(celda_detalles):
     if not celda_detalles: return "Otros"
     
@@ -106,15 +138,18 @@ def obtener_agenda_real():
             label = celda_detalles.find('label') if celda_detalles else None
             competicion = label.get_text(strip=True) if label else "Varios"
 
-            # Canales
+            # Canales (con sanitización individual y deduplicación)
             canales_list = []
             if celda_canales:
                 for li in celda_canales.find_all('li'):
-                    canales_list.append(li.get('title') or li.get_text(strip=True))
+                    canal_raw = li.get('title') or li.get_text(strip=True)
+                    canales_list.append(sanitizar_canal(canal_raw))
                 if not canales_list:
                     for img in celda_canales.find_all('img'):
-                        canales_list.append(img.get('title') or img.get('alt'))
+                        canal_raw = img.get('title') or img.get('alt')
+                        canales_list.append(sanitizar_canal(canal_raw))
             
+            # Al sanitizar antes, dict.fromkeys unificará duplicados como "DAZN" y "DAZN (Míralo en vivo)"
             canales_final = ", ".join(list(dict.fromkeys(filter(None, canales_list))))
 
             lista_eventos.append({

@@ -3,7 +3,7 @@ import requests
 import json
 import google.generativeai as genai
 from supabase import create_client, Client
-from scraper import obtener_agenda_real
+from scraper import obtener_agenda_real, sanitizar_canal
 from datetime import datetime
 import pytz 
 from dotenv import load_dotenv
@@ -165,6 +165,14 @@ def actualizar_base_de_datos():
                 datos_subir.append(evento_manual)
                 print(f"   ✅ Preservando evento manual: {evento_manual['evento']} ({evento_manual['fecha']})")
         
+        # --- LIMPIEZA DE ÚLTIMA MILLA (Sanitización de Canales) ---
+        # Esto asegura que incluso eventos manuales o preservados se limpien de CTAs
+        for ev in datos_subir:
+            if ev.get('canales'):
+                # Limpiamos cada canal individualmente y eliminamos duplicados resultantes
+                canales_limpios = [sanitizar_canal(c.strip()) for c in ev['canales'].split(",")]
+                ev['canales'] = ", ".join(list(dict.fromkeys(filter(None, canales_limpios))))
+
         # Primero eliminar todos los eventos existentes (solo los del scraper, no los manuales)
         supabase.table("eventos").delete().neq("id", 0).execute()
         

@@ -8,7 +8,10 @@ import ScrollToTop from "@/components/ScrollToTop";
 import StickyAd from "@/components/StickyAd";
 import CookieConsent from "@/components/CookieConsent";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.guiasports.com"),
@@ -56,7 +59,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body className={`${inter.className} bg-[#020617] pb-16 md:pb-0`} suppressHydrationWarning>
+      <body className={`${inter.variable} font-sans bg-[#020617] pb-16 md:pb-0`} suppressHydrationWarning>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}

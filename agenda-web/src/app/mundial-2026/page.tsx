@@ -140,13 +140,24 @@ export default function Mundial2026() {
       // 2. Filtro por fecha
       if (filtroFecha !== 'Todas' && m.fecha !== filtroFecha) return false;
       // 3. Filtro por fase
-      if (filtroFase !== 'Todas' && !m.fase.toLowerCase().includes(filtroFase.toLowerCase())) return false;
+      if (filtroFase !== 'Todas') {
+        if (filtroFase === 'Fase de Grupos') {
+          // Los partidos de grupos tienen la propiedad `grupo` (A, B, C...L)
+          if (!m.grupo) return false;
+        } else if (filtroFase === 'Final') {
+          // Coincidencia EXACTA para no incluir "Dieciseisavos de final" / "Cuartos de final"
+          if (m.fase !== 'Final') return false;
+        } else {
+          // Búsqueda parcial para el resto (Octavos, Cuartos, Semifinal, Tercer, etc.)
+          if (!m.fase.toLowerCase().includes(filtroFase.toLowerCase())) return false;
+        }
+      }
       // 4. Filtro de búsqueda (equipo, fase, sede, grupo)
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
-        const matchesQuery = 
-          m.equipo1.toLowerCase().includes(q) || 
-          m.equipo2.toLowerCase().includes(q) || 
+        const matchesQuery =
+          m.equipo1.toLowerCase().includes(q) ||
+          m.equipo2.toLowerCase().includes(q) ||
           m.fase.toLowerCase().includes(q) ||
           m.estadio.toLowerCase().includes(q) ||
           (m.grupo && m.grupo.toLowerCase() === q);
@@ -346,7 +357,7 @@ export default function Mundial2026() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       
-      <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-24 relative">
+      <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-24 relative overflow-x-hidden">
         <Header />
         {/* Background Accents */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2"></div>
@@ -426,9 +437,9 @@ export default function Mundial2026() {
             </div>
           </header>
 
-          <div 
+          <div
             ref={tabsRef}
-            className={`${tabsFixed ? 'fixed top-0 left-0 right-0 z-40 bg-[#020617]/95 backdrop-blur-3xl border-b border-white/5 shadow-2xl px-4 py-3' : 'relative mb-12'}`}
+            className={`${tabsFixed ? 'fixed top-0 left-0 right-0 z-[60] bg-[#020617]/95 backdrop-blur-3xl border-b border-white/5 shadow-2xl px-4 py-3' : 'relative mb-12'}`}
           >
             <div className="max-w-4xl mx-auto flex flex-col items-center">
               {tabsFixed && (
@@ -453,10 +464,10 @@ export default function Mundial2026() {
               </nav>
             </div>
           </div>
-          {tabsFixed && <div className="h-[80px]"></div>}
+          {tabsFixed && <div className="h-[68px]"></div>}
 
           {/* MAIN CONTENT AREA */}
-          <main className="min-h-[500px]">
+          <main className="min-h-[500px] overflow-x-hidden">
             {activeTab === 'overview' && (
               <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 {/* Countdown Timer */}
@@ -612,9 +623,9 @@ export default function Mundial2026() {
 
             {activeTab === 'schedule' && (
               <div className="pb-12">
-                <div 
+                <div
                   ref={filtersRef}
-                  className={`${filtersFixed ? 'fixed top-[56px] left-0 right-0 z-30 bg-[#020617]/95 backdrop-blur-xl border-b border-white/5 px-4 py-3 shadow-xl' : 'relative mb-6'}`}
+                  className={`${filtersFixed ? 'fixed top-[68px] left-0 right-0 z-[55] bg-[#020617]/95 backdrop-blur-xl border-b border-white/5 px-4 py-3 shadow-xl' : 'relative mb-6'}`}
                 >
                   <div className="max-w-4xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className={filtersFixed ? 'hidden md:block' : 'block'}>
@@ -710,7 +721,7 @@ export default function Mundial2026() {
                     </div>
                   </div>
                 </div>
-                {filtersFixed && <div className="h-[80px]"></div>}
+                {filtersFixed && <div className="h-[148px]"></div>}
 
                 {/* Agrupación por fecha con separadores visuales */}
                 <div className="flex flex-col gap-0 mb-12 [overflow-anchor:auto]">

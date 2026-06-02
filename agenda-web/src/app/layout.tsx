@@ -11,6 +11,8 @@ import CookieConsent from "@/components/CookieConsent";
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -59,7 +61,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body className={`${inter.variable} font-sans bg-[#020617] pb-16 md:pb-0`} suppressHydrationWarning>
+      <body className={`${inter.variable} ${inter.className} font-sans antialiased bg-[#020617] pb-16 md:pb-0`} suppressHydrationWarning>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}

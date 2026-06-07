@@ -7,8 +7,8 @@ export default function Footer() {
         <Link href="/" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-blue-500 transition-colors">Inicio</Link>
         <Link href="/noticias" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-blue-500 transition-colors">Noticias</Link>
         <Link href="/quienes-somos" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-blue-500 transition-colors">Quiénes Somos</Link>
-        <Link href="/privacidad" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-blue-500 transition-colors">Privacidad</Link>
-        <Link href="/contacto" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-blue-500 transition-colors">Contacto</Link>
+        <Link href="/privacidad" prefetch={false} className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-blue-500 transition-colors">Privacidad</Link>
+        <Link href="/contacto" prefetch={false} className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-blue-500 transition-colors">Contacto</Link>
       </div>
       <p className="text-[10px] text-slate-600 uppercase tracking-[0.3em] leading-loose">
         © {new Date().getFullYear()} GuíaSports <br/>

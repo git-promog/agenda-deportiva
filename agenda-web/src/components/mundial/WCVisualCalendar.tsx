@@ -1,46 +1,80 @@
 "use client";
 
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect, forwardRef } from 'react';
 import { TransformWrapper, TransformComponent, useControls } from "react-zoom-pan-pinch";
 import { MATCHES, getFlagUrl, WCMatch } from '@/data/mundialData';
-import { ZoomIn, ZoomOut, Maximize, MousePointer2, Trophy, Calendar, Clock, MapPin } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, Maximize, Minimize, MousePointer2, MousePointerClick, Trophy, Calendar, Clock, MapPin } from 'lucide-react';
 
 interface Props {
   onMatchClick: (match: WCMatch, hora: string, nota: string) => void;
   convertirHora: (match: any) => { hora: string; nota: string };
 }
 
-const Controls = () => {
+const Controls = ({ isFullscreen, onToggleFullscreen }: { isFullscreen: boolean; onToggleFullscreen: () => void }) => {
   const { zoomIn, zoomOut, resetTransform } = useControls();
   return (
-    <div className="absolute bottom-8 right-8 z-50 flex flex-col gap-2">
-      <button 
+    <div className="absolute bottom-8 right-8 z-[300] flex flex-col gap-2">
+      <button
         onClick={() => zoomIn()}
         className="p-3 bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-2xl text-white hover:bg-blue-600 transition-colors shadow-2xl"
         title="Acercar"
       >
         <ZoomIn size={20} />
       </button>
-      <button 
+      <button
         onClick={() => zoomOut()}
         className="p-3 bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-2xl text-white hover:bg-blue-600 transition-colors shadow-2xl"
         title="Alejar"
       >
         <ZoomOut size={20} />
       </button>
-      <button 
+      <button
         onClick={() => resetTransform()}
         className="p-3 bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-2xl text-white hover:bg-blue-600 transition-colors shadow-2xl"
         title="Reiniciar vista"
       >
-        <Maximize size={20} />
+        <RotateCcw size={20} />
+      </button>
+      <button
+        onClick={onToggleFullscreen}
+        className={`p-3 backdrop-blur-xl border rounded-2xl text-white transition-colors shadow-2xl ${isFullscreen ? 'bg-blue-600 border-blue-400/40 hover:bg-blue-500' : 'bg-slate-900/80 border-white/10 hover:bg-blue-600'}`}
+        title={isFullscreen ? "Salir de pantalla completa" : "Abrir en pantalla completa"}
+      >
+        {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
       </button>
     </div>
   );
 };
 
-export default function WCVisualCalendar({ onMatchClick, convertirHora }: Props) {
+const WCVisualCalendar = forwardRef<HTMLDivElement, Props>(({ onMatchClick, convertirHora }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isActive, setIsActive] = useState(false);
+
+  useEffect(() => {
+    const onChange = () => {
+      const fs = !!document.fullscreenElement;
+      setIsFullscreen(fs);
+      if (!fs) {
+        setIsActive(false);
+      }
+    };
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      containerRef.current?.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  };
+
+  const handleNavigate = () => {
+    setIsActive(true);
+    containerRef.current?.requestFullscreen().catch(() => {});
+  };
 
   // Agrupar partidos por fase y grupo
   const groupAtoF = ['A', 'B', 'C', 'D', 'E', 'F'];
@@ -140,21 +174,13 @@ export default function WCVisualCalendar({ onMatchClick, convertirHora }: Props)
   );
 
   return (
-    <div className="relative w-full h-[600px] md:h-[800px] bg-slate-950 rounded-[40px] border border-white/5 overflow-hidden shadow-2xl">
-      {/* Overlay de instrucciones - Reposicionado para evitar traslape */}
-      <div className="absolute bottom-8 left-8 z-40 flex flex-col gap-1 bg-slate-900/80 backdrop-blur-xl border border-blue-500/20 px-5 py-3 rounded-2xl shadow-2xl pointer-events-none animate-in fade-in slide-in-from-left-4 duration-1000">
-        <div className="flex items-center gap-2">
-          <MousePointer2 size={14} className="text-blue-400 animate-pulse" />
-          <span className="text-[10px] font-black text-white uppercase tracking-widest">Guía de Navegación</span>
-        </div>
-        <p className="text-[9px] font-bold text-slate-400 uppercase leading-tight mt-1">
-          Escritorio: Clic y arrastra • Scroll para zoom<br/>
-          Móvil: Arrastra un dedo • Pellizca para zoom
-        </p>
-      </div>
-
+    <div ref={(node) => {
+      containerRef.current = node;
+      if (typeof ref === 'function') ref(node);
+      else if (ref) ref.current = node;
+    }} className="relative w-full h-[600px] md:h-[800px] bg-slate-950 rounded-[40px] border border-white/5 overflow-hidden shadow-2xl">
       {/* Header del Calendario en el Canvas */}
-      <div className="absolute top-8 left-0 right-0 z-40 flex flex-col items-center pointer-events-none">
+      <div className="absolute top-8 left-0 right-0 z-30 flex flex-col items-center pointer-events-none">
         <img src="/GuiaSports-logo.svg" alt="GuíaSports" className="h-5 md:h-7 w-auto mb-2 opacity-90 drop-shadow-md" />
         <h2 className="text-lg md:text-3xl font-black italic uppercase text-white tracking-tighter text-center">
           Calendario <span className="text-yellow-500">Interactivo</span>
@@ -167,7 +193,9 @@ export default function WCVisualCalendar({ onMatchClick, convertirHora }: Props)
         minScale={0.3}
         maxScale={2}
         centerOnInit={true}
-        wheel={{ step: 0.1 }}
+        panning={{ disabled: !isActive }}
+        wheel={{ disabled: !isActive, step: 0.1 }}
+        doubleClick={{ disabled: !isActive }}
       >
         <TransformComponent wrapperClass="!w-full !h-full" contentClass="!p-32">
           <div className="flex items-center gap-24 min-w-max">
@@ -270,8 +298,51 @@ export default function WCVisualCalendar({ onMatchClick, convertirHora }: Props)
 
           </div>
         </TransformComponent>
-        <Controls />
+        {isActive && <Controls isFullscreen={isFullscreen} onToggleFullscreen={toggleFullscreen} />}
       </TransformWrapper>
+
+      {/* Guía de Navegación - Solo visible en modo interactivo */}
+      {isActive && (
+        <div className="absolute bottom-8 left-8 z-40 flex flex-col gap-1 bg-slate-900/80 backdrop-blur-xl border border-blue-500/20 px-5 py-3 rounded-2xl shadow-2xl pointer-events-none animate-in fade-in slide-in-from-left-4 duration-1000">
+          <div className="flex items-center gap-2">
+            <MousePointer2 size={14} className="text-blue-400 animate-pulse" />
+            <span className="text-[10px] font-black text-white uppercase tracking-widest">Guía de Navegación</span>
+          </div>
+          <p className="text-[9px] font-bold text-slate-400 uppercase leading-tight mt-1">
+            Escritorio: Clic y arrastra • Scroll para zoom<br/>
+            Móvil: Arrastra un dedo • Pellizca para zoom
+          </p>
+        </div>
+      )}
+
+      {/* Overlay "Navegar" - Modo preview congelado */}
+      {!isActive && (
+        <div
+          onClick={handleNavigate}
+          className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-slate-950/50 backdrop-blur-[2px] cursor-pointer group animate-in fade-in duration-500"
+        >
+          <div className="text-center group-hover:scale-105 transition-transform duration-300">
+            <div className="w-20 h-20 mx-auto mb-5 rounded-3xl bg-blue-600 flex items-center justify-center shadow-2xl shadow-blue-500/40 group-hover:bg-blue-500 group-hover:shadow-blue-500/60 transition-all">
+              <MousePointerClick size={36} className="text-white" strokeWidth={2.5} />
+            </div>
+            <p className="text-3xl md:text-5xl font-black italic uppercase text-white tracking-tighter leading-none">
+              Navegar <span className="text-blue-500">Calendario</span>
+            </p>
+            <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest mt-4">
+              Toca para abrir en pantalla completa
+            </p>
+            <div className="flex items-center justify-center gap-4 mt-6 text-[9px] font-black text-slate-500 uppercase tracking-widest">
+              <span className="flex items-center gap-1.5"><MousePointer2 size={10} /> Arrastra</span>
+              <span className="w-1 h-1 rounded-full bg-slate-700" />
+              <span className="flex items-center gap-1.5">Scroll · Zoom</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-}
+});
+
+WCVisualCalendar.displayName = 'WCVisualCalendar';
+
+export default WCVisualCalendar;

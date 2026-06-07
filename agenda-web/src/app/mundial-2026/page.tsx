@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import NextImage from 'next/image';
 import Header from '@/components/Header';
@@ -65,6 +66,11 @@ export default function Mundial2026() {
   const tabsRef = useRef<HTMLDivElement>(null);
   const filtersRef = useRef<HTMLDivElement>(null);
   const [filtersFixed, setFiltersFixed] = useState(false);
+  const [calendarContainer, setCalendarContainer] = useState<HTMLDivElement | null>(null);
+
+  const setCalendarRef = useCallback((node: HTMLDivElement | null) => {
+    if (node) setCalendarContainer(node);
+  }, []);
 
   const TIMEZONES = [
     { value: 'America/Mexico_City', label: 'CDMX (UTC-6)',    short: 'CDMX' },
@@ -812,6 +818,7 @@ export default function Mundial2026() {
             {activeTab === 'wallchart' && (
               <div className="animate-in fade-in duration-500 pb-12">
                 <WCVisualCalendar 
+                  ref={setCalendarRef}
                   onMatchClick={(match, hora, nota) => { setSelectedMatchData({ match, hora, nota }); setIsModalOpen(true); }} 
                   convertirHora={convertirHora}
                 />
@@ -950,16 +957,19 @@ export default function Mundial2026() {
         </div>
 
       </div>
-      <WCMatchModal 
-        match={selectedMatchData?.match ?? null} 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        isFavorite={selectedMatchData ? favorites.includes(selectedMatchData.match.id) : false}
-        onToggleFavorite={() => selectedMatchData && toggleFavorite(selectedMatchData.match.id)}
-        horaConvertida={selectedMatchData?.hora}
-        notaHora={selectedMatchData?.nota}
-        tzShort={TIMEZONES.find(t => t.value === timezone)?.short ?? 'CDMX'}
-      />
+      {calendarContainer && createPortal(
+        <WCMatchModal
+          match={selectedMatchData?.match ?? null}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          isFavorite={selectedMatchData ? favorites.includes(selectedMatchData.match.id) : false}
+          onToggleFavorite={() => selectedMatchData && toggleFavorite(selectedMatchData.match.id)}
+          horaConvertida={selectedMatchData?.hora}
+          notaHora={selectedMatchData?.nota}
+          tzShort={TIMEZONES.find(t => t.value === timezone)?.short ?? 'CDMX'}
+        />,
+        calendarContainer
+      )}
     </>
   );
 }

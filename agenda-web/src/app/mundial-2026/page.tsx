@@ -63,9 +63,11 @@ export default function Mundial2026() {
   const [filtroFase, setFiltroFase] = useState('Todas');
   const [showGoTop, setShowGoTop] = useState(false);
   const [tabsFixed, setTabsFixed] = useState(false);
+  const [tabsHeight, setTabsHeight] = useState(0);
   const tabsRef = useRef<HTMLDivElement>(null);
   const filtersRef = useRef<HTMLDivElement>(null);
   const [filtersFixed, setFiltersFixed] = useState(false);
+  const [filtersHeight, setFiltersHeight] = useState(0);
   const [calendarContainer, setCalendarContainer] = useState<HTMLDivElement | null>(null);
 
   const setCalendarRef = useCallback((node: HTMLDivElement | null) => {
@@ -180,22 +182,42 @@ export default function Mundial2026() {
   });
 
   useEffect(() => {
+    const updateMetrics = () => {
+      const tabs = tabsRef.current;
+      const filters = filtersRef.current;
+      setTabsHeight(tabs?.offsetHeight || 0);
+      setFiltersHeight(filters?.offsetHeight || 0);
+      return {
+        tabsOffsetTop: tabs?.offsetTop || 0,
+        filtersOffsetTop: filters?.offsetTop || 0,
+      };
+    };
+
+    let metrics = updateMetrics();
+
     const handleScroll = () => {
       setShowGoTop(window.scrollY > 400);
-      
-      if (tabsRef.current) {
-        // Marcamos las pestañas como fijas más pronto
-        setTabsFixed(window.scrollY > 300);
-      }
-      
-      if (filtersRef.current) {
-        // Los filtros se fijan justo después de las pestañas
-        setFiltersFixed(window.scrollY > 420);
+      setTabsFixed(window.scrollY >= metrics.tabsOffsetTop);
+      if (activeTab === 'schedule') {
+        setFiltersFixed(window.scrollY >= metrics.filtersOffsetTop);
+      } else {
+        setFiltersFixed(false);
       }
     };
+
+    const handleResize = () => {
+      metrics = updateMetrics();
+      handleScroll();
+    };
+
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+    window.addEventListener('resize', handleResize, { passive: true });
+    handleScroll();
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [activeTab]);
 
   // Efecto para aterrizaje suave al filtrar
   useEffect(() => {
@@ -470,7 +492,7 @@ export default function Mundial2026() {
               </nav>
             </div>
           </div>
-          {tabsFixed && <div className="h-[68px]"></div>}
+          {tabsFixed && <div style={{ height: tabsHeight }}></div>}
 
           {/* MAIN CONTENT AREA */}
           <main className="min-h-[500px] overflow-x-hidden">
@@ -727,7 +749,7 @@ export default function Mundial2026() {
                     </div>
                   </div>
                 </div>
-                {filtersFixed && <div className="h-[148px]"></div>}
+                {filtersFixed && <div style={{ height: filtersHeight }}></div>}
 
                 {/* Agrupación por fecha con separadores visuales */}
                 <div className="flex flex-col gap-0 mb-12 [overflow-anchor:auto]">
@@ -957,18 +979,31 @@ export default function Mundial2026() {
         </div>
 
       </div>
-      {calendarContainer && createPortal(
-        <WCMatchModal
-          match={selectedMatchData?.match ?? null}
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          isFavorite={selectedMatchData ? favorites.includes(selectedMatchData.match.id) : false}
-          onToggleFavorite={() => selectedMatchData && toggleFavorite(selectedMatchData.match.id)}
-          horaConvertida={selectedMatchData?.hora}
-          notaHora={selectedMatchData?.nota}
-          tzShort={TIMEZONES.find(t => t.value === timezone)?.short ?? 'CDMX'}
-        />,
-        calendarContainer
+      {isModalOpen && (
+        activeTab === 'wallchart' && calendarContainer
+          ? createPortal(
+              <WCMatchModal
+                match={selectedMatchData?.match ?? null}
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                isFavorite={selectedMatchData ? favorites.includes(selectedMatchData.match.id) : false}
+                onToggleFavorite={() => selectedMatchData && toggleFavorite(selectedMatchData.match.id)}
+                horaConvertida={selectedMatchData?.hora}
+                notaHora={selectedMatchData?.nota}
+                tzShort={TIMEZONES.find(t => t.value === timezone)?.short ?? 'CDMX'}
+              />,
+              calendarContainer
+            )
+          : <WCMatchModal
+              match={selectedMatchData?.match ?? null}
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+              isFavorite={selectedMatchData ? favorites.includes(selectedMatchData.match.id) : false}
+              onToggleFavorite={() => selectedMatchData && toggleFavorite(selectedMatchData.match.id)}
+              horaConvertida={selectedMatchData?.hora}
+              notaHora={selectedMatchData?.nota}
+              tzShort={TIMEZONES.find(t => t.value === timezone)?.short ?? 'CDMX'}
+            />
       )}
     </>
   );

@@ -1,9 +1,9 @@
 import { SEDES, MATCHES } from '@/data/mundialData';
 import { notFound } from 'next/navigation';
-import WCMatchCard from '@/components/mundial/WCMatchCard';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { MapPin, Users, Calendar } from 'lucide-react';
 import Link from 'next/link';
+import SedeMatchesList from '@/components/mundial/SedeMatchesList';
 
 export async function generateStaticParams() {
   return SEDES.map(s => ({
@@ -32,18 +32,18 @@ export default async function SedePage({ params }: { params: Promise<{ sede_id: 
   const resolvedParams = await params;
   const sede = SEDES.find(s => s.id === resolvedParams.sede_id);
   if (!sede) notFound();
-
+  
   // Partidos en esta sede específica
   const partidos = MATCHES.filter(m => m.estadio === sede.estadio).sort((a, b) => {
     return new Date(`${a.fecha}T${a.hora}:00Z`).getTime() - new Date(`${b.fecha}T${b.hora}:00Z`).getTime();
   });
-
+  
   const isMx = sede.pais === 'México';
   const isCa = sede.pais === 'Canadá';
   const accentColor = isMx ? 'text-green-400' : (isCa ? 'text-red-400' : 'text-blue-400');
   const bgAccent = isMx ? 'bg-green-500/10' : (isCa ? 'bg-red-500/10' : 'bg-blue-500/10');
   const borderAccent = isMx ? 'border-green-500/30' : (isCa ? 'border-red-500/30' : 'border-blue-500/30');
-
+  
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "StadiumOrArena",
@@ -109,13 +109,7 @@ export default async function SedePage({ params }: { params: Promise<{ sede_id: 
               Calendario de Partidos Oficiales
             </h2>
 
-            <div className="flex flex-col gap-4">
-              {partidos.map((m, i) => (
-                <div key={m.id} className="animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: `${i * 100}ms` }}>
-                  <WCMatchCard match={m} tzShort="H. Local" />
-                </div>
-              ))}
-            </div>
+            <SedeMatchesList partidos={partidos} />
 
             <div className="mt-16 text-center">
               <Link href="/mundial-2026" className="inline-block bg-slate-800 hover:bg-slate-700 text-white px-8 py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-colors">

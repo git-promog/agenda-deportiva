@@ -1,6 +1,8 @@
 import React from 'react';
-import { Tv, Clock } from 'lucide-react';
+import Link from 'next/link';
+import { ExternalLink, Tv, Clock } from 'lucide-react';
 import ShareButton from '@/components/ShareButton';
+import { buildEventPath, buildEventUrl } from '@/lib/eventUrls';
 
 const EMOJIS: { [key: string]: string } = {
   "Fútbol": "⚽️", "Básquetbol": "🏀", "Béisbol": "⚾️", "Fórmula 1": "🏎️", 
@@ -9,7 +11,14 @@ const EMOJIS: { [key: string]: string } = {
   "Golf": "⛳️", "Natación": "🏊", "Fútbol Sala": "👟", "Otros": "🏆"
 };
 
-const THEMES: { [key: string]: { borderHover: string, neonGlow: string, textColor: string, bgTV: string } } = {
+interface Theme {
+  borderHover: string;
+  neonGlow: string;
+  textColor: string;
+  bgTV: string;
+}
+
+const THEMES: { [key: string]: Theme } = {
   "Fútbol": { borderHover: "hover:border-green-500/40", neonGlow: "group-hover:shadow-[0_0_30px_rgba(34,197,94,0.25)]", textColor: "text-green-400", bgTV: "bg-green-950/20" },
   "Básquetbol": { borderHover: "hover:border-orange-500/40", neonGlow: "group-hover:shadow-[0_0_30px_rgba(249,115,22,0.25)]", textColor: "text-orange-400", bgTV: "bg-orange-950/20" },
   "Béisbol": { borderHover: "hover:border-blue-500/40", neonGlow: "group-hover:shadow-[0_0_30px_rgba(59,130,246,0.25)]", textColor: "text-blue-400", bgTV: "bg-blue-950/20" },
@@ -35,7 +44,7 @@ interface Props {
   onClick?: () => void;
 }
 
-const formatChannels = (canalesStr: string, theme: any) => {
+const formatChannels = (canalesStr: string, theme: Theme) => {
   const canales = canalesStr.split(/, | - | \/ /);
   return canales.map((c, i) => {
     let color = `${theme.bgTV} ${theme.textColor} border-white/5`;
@@ -58,6 +67,8 @@ const formatChannels = (canalesStr: string, theme: any) => {
 
 export default function SportEventCard({ evento, isLive, onFiltrarLiga, onClick }: Props) {
   const theme = THEMES[evento.deporte] || DEFAULT_THEME;
+  const eventPath = buildEventPath(evento);
+  const eventUrl = buildEventUrl(evento);
 
   const liveBorder = isLive ? "border-red-500/50 shadow-[0_0_20px_rgba(220,38,38,0.25)]" : "border-slate-800/80";
   const liveHover = isLive ? "hover:border-red-400/80 hover:shadow-[0_0_35px_rgba(220,38,38,0.4)]" : `${theme.borderHover} ${theme.neonGlow}`;
@@ -126,10 +137,18 @@ export default function SportEventCard({ evento, isLive, onFiltrarLiga, onClick 
       </div>
 
       {/* Share / Actions */}
-      <div className="absolute bottom-4 right-4 md:static">
+      <div className="absolute bottom-4 right-4 md:static flex items-center gap-2">
+        <Link
+          href={eventPath}
+          onClick={(e) => e.stopPropagation()}
+          className="hidden sm:flex items-center gap-1.5 p-2.5 bg-slate-800/50 rounded-xl hover:bg-white/10 transition-colors text-slate-400 hover:text-white"
+          aria-label={`Ver página de ${evento.evento}`}
+        >
+          <ExternalLink size={14} />
+        </Link>
         <ShareButton 
           titulo={evento.evento} 
-          url={`https://www.guiasports.com/?evento=${evento.id}`} 
+          url={eventUrl} 
           variant="icon"
           className="bg-slate-800/50 hover:bg-white/10"
         />

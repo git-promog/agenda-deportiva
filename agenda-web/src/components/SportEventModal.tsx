@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Clock, Tv, X, CalendarPlus, Trophy } from 'lucide-react';
+import { Calendar, Clock, ExternalLink, Tv, X, CalendarPlus, Trophy } from 'lucide-react';
 import ShareButton from '@/components/ShareButton';
 import { trackEvent } from '@/lib/analytics';
+import { buildEventPath, buildEventUrl } from '@/lib/eventUrls';
 
 const EMOJIS: { [key: string]: string } = {
   "Fútbol": "⚽️", "Básquetbol": "🏀", "Béisbol": "⚾️", "Fórmula 1": "🏎️", 
@@ -45,6 +47,8 @@ export default function SportEventModal({ evento, isOpen, onClose }: Props) {
 
   const isMatch = evento.evento.toLowerCase().includes(' vs ');
   const teams = isMatch ? evento.evento.split(/ vs /i) : [evento.evento];
+  const eventPath = buildEventPath(evento);
+  const eventUrl = buildEventUrl(evento);
 
   const buildCalendarLink = () => {
     const startDate = new Date(`${evento.fecha}T${evento.hora}:00-06:00`);
@@ -155,7 +159,7 @@ export default function SportEventModal({ evento, isOpen, onClose }: Props) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <a 
                   href={buildCalendarLink()} 
                   target="_blank" 
@@ -168,9 +172,20 @@ export default function SportEventModal({ evento, isOpen, onClose }: Props) {
                 >
                   <CalendarPlus size={16} /> Agendar
                 </a>
+                <Link
+                  href={eventPath}
+                  onClick={() => trackEvent('view_event_page', {
+                    event_name: evento.evento,
+                    competition: evento.competicion,
+                    location: 'modal'
+                  })}
+                  className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-colors border border-slate-700"
+                >
+                  <ExternalLink size={16} /> Página
+                </Link>
                 <ShareButton 
                   titulo={evento.evento} 
-                  url={`https://www.guiasports.com/?evento=${evento.id}`}
+                  url={eventUrl}
                   className="w-full flex items-center justify-center gap-2 !bg-blue-600 hover:!bg-blue-500 !text-white !p-4 !rounded-2xl text-[10px] font-black uppercase tracking-widest transition-colors border border-blue-500/50"
                   variant="full"
                 />

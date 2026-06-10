@@ -3,14 +3,23 @@ import { createClient } from '@supabase/supabase-js';
 import { SEDES } from '@/data/mundialData';
 import { PLATFORMS } from '@/data/platformsData';
 import { EDITORIAL_TEAM } from '@/data/teamData';
+import { buildEventUrl } from '@/lib/eventUrls';
 
 const SITE_URL = 'https://www.guiasports.com';
 const STATIC_LAST_MODIFIED = new Date('2026-04-25');
 const getFreshDate = () => new Date();
 const COMPETITION_HUBS = ['liga-mx', 'champions-league', 'premier-league'];
+const EVENT_SITEMAP_DAYS = 14;
+
+function getMexicoDateString(offsetDays = 0) {
+  const date = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+  date.setDate(date.getDate() + offsetDays);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let noticiasUrls: MetadataRoute.Sitemap = [];
+  let eventosUrls: MetadataRoute.Sitemap = [];
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   
@@ -34,6 +43,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             lastModified: noticia.fecha ? new Date(noticia.fecha) : STATIC_LAST_MODIFIED,
             changeFrequency: 'weekly' as const,
             priority: 0.7,
+          }));
+      }
+
+      const today = getMexicoDateString();
+      const until = getMexicoDateString(EVENT_SITEMAP_DAYS);
+      const { data: eventos, error: eventosError } = await supabase
+        .from('eventos')
+        .select('id, evento, competicion, fecha')
+        .gte('fecha', today)
+        .lte('fecha', until)
+        .order('fecha', { ascending: true })
+        .order('hora', { ascending: true })
+        .limit(500);
+
+      if (eventosError) {
+        console.error("Error fetching eventos for sitemap:", eventosError);
+      } else if (eventos) {
+        eventosUrls = eventos
+          .filter((evento) => evento.id && evento.evento)
+          .map((evento) => ({
+            url: buildEventUrl(evento),
+            lastModified: evento.fecha ? new Date(evento.fecha) : getFreshDate(),
+            changeFrequency: 'daily' as const,
+            priority: 0.75,
           }));
       }
     } catch (err) {
@@ -140,6 +173,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'monthly' as const,
       priority: 0.6,
     })),
+    ...eventosUrls,
     ...noticiasUrls,
   ];
 }

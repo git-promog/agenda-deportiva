@@ -1,9 +1,11 @@
 "use client";
 
 import React from 'react';
+import Link from 'next/link';
 import { WCMatch, getFlagUrl } from '@/data/mundialData';
-import { Calendar, MapPin, Clock, Tv, Trophy, Star } from 'lucide-react';
+import { Calendar, MapPin, Clock, Tv, Trophy, Star, ExternalLink } from 'lucide-react';
 import ShareButton from '@/components/ShareButton';
+import { buildWorldCupMatchPath, buildWorldCupMatchUrl } from '@/lib/worldCupUrls';
 
 interface Props {
   match: WCMatch;
@@ -39,6 +41,8 @@ export default function WCMatchCard({
 
   const flag1 = getFlagUrl(match.equipo1);
   const flag2 = getFlagUrl(match.equipo2);
+  const matchPath = buildWorldCupMatchPath(match);
+  const matchUrl = buildWorldCupMatchUrl(match);
 
   // Badge de fase
   const faseBadgeColor = () => {
@@ -143,11 +147,18 @@ export default function WCMatchCard({
         </div>
       </div>
 
-      {/* Share Action */}
-      <div className="absolute bottom-4 right-4 md:static" onClick={e => e.stopPropagation()}>
+      {/* SEO / Share Actions */}
+      <div className="absolute bottom-4 right-4 md:static flex items-center gap-2" onClick={e => e.stopPropagation()}>
+        <Link
+          href={matchPath}
+          className="hidden sm:flex items-center justify-center w-9 h-9 rounded-full bg-slate-800/50 hover:bg-white/10 border border-slate-700/50 text-slate-400 hover:text-white transition-colors"
+          aria-label={`Ver página de ${match.equipo1} vs ${match.equipo2}`}
+        >
+          <ExternalLink size={14} />
+        </Link>
         <ShareButton 
           titulo={`${match.equipo1} vs ${match.equipo2} — Mundial 2026`} 
-          url={`https://www.guiasports.com/mundial-2026?match=${match.id}`} 
+          url={matchUrl} 
           variant="icon"
           className="!bg-slate-800/50 hover:!bg-white/10 !border-slate-700/50"
         />

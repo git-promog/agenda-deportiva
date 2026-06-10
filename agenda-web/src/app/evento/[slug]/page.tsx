@@ -3,6 +3,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Calendar, Clock, ExternalLink, Radio, Trophy, Tv } from 'lucide-react';
+import BackButton from '@/components/BackButton';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import ShareButton from '@/components/ShareButton';
 import { buildEventPath, buildEventUrl, getEventIdFromSlug } from '@/lib/eventUrls';
@@ -147,6 +148,8 @@ export default async function EventoDetalle({ params }: Props) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-24">
         <main className="max-w-3xl mx-auto px-4 pt-10">
+          <BackButton fallbackHref="/" className="mb-6" />
+
           <Breadcrumbs
             items={[{ label: 'Agenda', href: '/' }]}
             current={evento.evento}

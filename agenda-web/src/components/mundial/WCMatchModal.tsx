@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WCMatch, getFlagUrl } from '@/data/mundialData';
-import { Calendar, MapPin, Clock, Tv, X, Star, CalendarPlus } from 'lucide-react';
+import { Calendar, MapPin, Clock, Tv, X, Star, CalendarPlus, ExternalLink } from 'lucide-react';
 import ShareButton from '@/components/ShareButton';
+import { buildWorldCupMatchPath, buildWorldCupMatchUrl } from '@/lib/worldCupUrls';
 
 interface Props {
   match: WCMatch | null;
@@ -41,6 +43,8 @@ export default function WCMatchModal({
   const flag1 = getFlagUrl(match.equipo1);
   const flag2 = getFlagUrl(match.equipo2);
   const horaFinal = horaConvertida ?? match.hora;
+  const matchPath = buildWorldCupMatchPath(match);
+  const matchUrl = buildWorldCupMatchUrl(match);
 
   const getBroadcasters = () => {
     if (match.broadcasters) return match.broadcasters;
@@ -184,7 +188,7 @@ export default function WCMatchModal({
               </div>
 
               {/* Actions */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <a 
                   href={buildCalendarLink()} 
                   target="_blank" 
@@ -193,9 +197,15 @@ export default function WCMatchModal({
                 >
                   <CalendarPlus size={16} /> Agendar
                 </a>
+                <Link
+                  href={matchPath}
+                  className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-colors border border-slate-700"
+                >
+                  <ExternalLink size={16} /> Página
+                </Link>
                 <ShareButton 
                   titulo={`${match.equipo1} vs ${match.equipo2} — Mundial 2026`} 
-                  url={`https://www.guiasports.com/mundial-2026?match=${match.id}`}
+                  url={matchUrl}
                   className="w-full flex items-center justify-center gap-2 !bg-blue-600 hover:!bg-blue-500 !text-white !p-4 !rounded-2xl text-[10px] font-black uppercase tracking-widest transition-colors border border-blue-500/50"
                   variant="full"
                 />

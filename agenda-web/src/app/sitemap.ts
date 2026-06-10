@@ -1,9 +1,10 @@
 import { MetadataRoute } from 'next';
 import { createClient } from '@supabase/supabase-js';
-import { SEDES } from '@/data/mundialData';
+import { MATCHES, SEDES } from '@/data/mundialData';
 import { PLATFORMS } from '@/data/platformsData';
 import { EDITORIAL_TEAM } from '@/data/teamData';
 import { buildEventUrl } from '@/lib/eventUrls';
+import { buildWorldCupMatchUrl } from '@/lib/worldCupUrls';
 
 const SITE_URL = 'https://www.guiasports.com';
 const STATIC_LAST_MODIFIED = new Date('2026-04-25');
@@ -154,6 +155,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: STATIC_LAST_MODIFIED,
       changeFrequency: 'weekly' as const,
       priority: 0.8,
+    })),
+    ...MATCHES.map((match) => ({
+      url: buildWorldCupMatchUrl(match),
+      lastModified: STATIC_LAST_MODIFIED,
+      changeFrequency: 'weekly' as const,
+      priority: 0.85,
     })),
     {
       url: `${SITE_URL}/plataformas`,

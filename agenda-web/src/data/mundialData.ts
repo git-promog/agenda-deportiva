@@ -79,7 +79,7 @@ export const SEDES: WCVenue[] = [
 
 export const GRUPOS: WCGroup[] = [
   { nombre:'A', equipos:[{nombre:'México',pj:1,pg:1,pe:0,pp:0,gf:2,gc:0,pts:3},{nombre:'República de Corea',pj:1,pg:1,pe:0,pp:0,gf:2,gc:1,pts:3},{nombre:'Chequia',pj:2,pg:0,pe:1,pp:1,gf:2,gc:3,pts:1},{nombre:'Sudáfrica',pj:2,pg:0,pe:1,pp:1,gf:1,gc:3,pts:1}] },
-  { nombre:'B', equipos:[{nombre:'Canadá',pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,pts:1},{nombre:'Bosnia y Herzegovina',pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,pts:1},{nombre:'Catar',pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,pts:1},{nombre:'Suiza',pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,pts:1}] },
+  { nombre:'B', equipos:[{nombre:'Suiza',pj:2,pg:1,pe:1,pp:0,gf:5,gc:2,pts:4},{nombre:'Canadá',pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,pts:1},{nombre:'Catar',pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,pts:1},{nombre:'Bosnia y Herzegovina',pj:2,pg:0,pe:1,pp:1,gf:2,gc:5,pts:1}] },
   { nombre:'C', equipos:[{nombre:'Escocia',pj:1,pg:1,pe:0,pp:0,gf:1,gc:0,pts:3},{nombre:'Brasil',pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,pts:1},{nombre:'Marruecos',pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,pts:1},{nombre:'Haití',pj:1,pg:0,pe:0,pp:1,gf:0,gc:1,pts:0}] },
   { nombre:'D', equipos:[{nombre:'EE. UU.',pj:1,pg:1,pe:0,pp:0,gf:4,gc:1,pts:3},{nombre:'Australia',pj:1,pg:1,pe:0,pp:0,gf:2,gc:0,pts:3},{nombre:'Turquía',pj:1,pg:0,pe:0,pp:1,gf:0,gc:2,pts:0},{nombre:'Paraguay',pj:1,pg:0,pe:0,pp:1,gf:1,gc:4,pts:0}] },
   { nombre:'E', equipos:[{nombre:'Alemania',pj:1,pg:1,pe:0,pp:0,gf:7,gc:1,pts:3},{nombre:'Costa de Marfil',pj:1,pg:1,pe:0,pp:0,gf:1,gc:0,pts:3},{nombre:'Ecuador',pj:1,pg:0,pe:0,pp:1,gf:0,gc:1,pts:0},{nombre:'Curazao',pj:1,pg:0,pe:0,pp:1,gf:1,gc:7,pts:0}] },
@@ -92,7 +92,7 @@ export const GRUPOS: WCGroup[] = [
   { nombre:'L', equipos:[{nombre:'Inglaterra',pj:1,pg:1,pe:0,pp:0,gf:4,gc:2,pts:3},{nombre:'Ghana',pj:1,pg:1,pe:0,pp:0,gf:1,gc:0,pts:3},{nombre:'Panamá',pj:1,pg:0,pe:0,pp:1,gf:0,gc:1,pts:0},{nombre:'Croacia',pj:1,pg:0,pe:0,pp:1,gf:2,gc:4,pts:0}] },
 ];
 
-// Generado automáticamente — 2026-06-18T18:21:17.050Z
+// Generado automáticamente — 2026-06-18T21:56:30.743Z
 export const MATCHES: WCMatch[] = [
   { id:'m1', fecha:'2026-06-11', hora:'13:00', utc:'2026-06-11T19:00:00Z', estadio:'Estadio Ciudad de México', ciudad:'Ciudad de México', equipo1:'México', equipo2:'Sudáfrica', fase:'Primera fase', grupo:'A', broadcasters:'TUDN · Canal 5 · Azteca 7 · ViX', streaming:'https://vix.com', broadcastNotes:'Partido inaugural - Confirmado Televisa Deportes', broadcastConfirmed:true },
   { id:'m2', fecha:'2026-06-11', hora:'20:00', utc:'2026-06-12T02:00:00Z', estadio:'Estadio Guadalajara', ciudad:'Guadalajara', equipo1:'República de Corea', equipo2:'Chequia', fase:'Primera fase', grupo:'A', broadcasters:'TUDN · Canal 5 · Azteca 7 · ViX', streaming:'https://vix.com', broadcastConfirmed:true },

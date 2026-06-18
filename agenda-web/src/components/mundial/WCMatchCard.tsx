@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { WCMatch, getFlagUrl } from '@/data/mundialData';
-import { Calendar, MapPin, Clock, Tv, Trophy, Star, ExternalLink } from 'lucide-react';
+import { Calendar, MapPin, Clock, Tv, Trophy, Star, ExternalLink, StickyNote } from 'lucide-react';
 import ShareButton from '@/components/ShareButton';
 import { buildWorldCupMatchPath, buildWorldCupMatchUrl } from '@/lib/worldCupUrls';
 
@@ -32,11 +32,16 @@ export default function WCMatchCard({
 
   const getBroadcasters = () => {
     if (match.broadcasters) return match.broadcasters;
-    if (match.equipo1 === 'México' || match.equipo2 === 'México') return 'TUDN · Canal 5 · Azteca 7 · ViX';
-    if (['Argentina', 'Brasil', 'EE. UU.', 'Alemania', 'Francia', 'España'].includes(match.equipo1) ||
-        ['Argentina', 'Brasil', 'EE. UU.', 'Alemania', 'Francia', 'España'].includes(match.equipo2))
-      return 'TUDN · Canal 5 · ViX';
-    return 'ViX (Premium)';
+
+    // Solo transmisiones para México (Guía de programación deportiva México)
+    const mexicoBroadcasters = 'TUDN · Canal 5 · Azteca 7 · ViX';
+    
+    if (match.equipo1 === 'México' || match.equipo2 === 'México') return mexicoBroadcasters;
+    if (['Final', 'Semifinal', 'Cuartos de final', 'Octavos de final', 'Dieciseisavos de final', 'Partido por el tercer puesto'].includes(match.fase)) {
+      return mexicoBroadcasters;
+    }
+    
+    return 'ViX (Premium) · Consulte TUDN/Canal 5/Azteca 7';
   };
 
   const flag1 = getFlagUrl(match.equipo1);
@@ -141,10 +146,24 @@ export default function WCMatchCard({
           <span className="line-clamp-2">{match.estadio}</span>
         </div>
 
-        <div className="flex items-center gap-2 bg-blue-600/10 border border-blue-500/20 px-3 py-1.5 rounded-lg">
-          <Tv size={11} className="text-blue-400 shrink-0" />
-          <span className="text-[9px] font-black text-blue-400 uppercase whitespace-nowrap">{getBroadcasters()}</span>
-        </div>
+         <div className="flex items-center gap-2 bg-blue-600/10 border border-blue-500/20 px-3 py-1.5 rounded-lg">
+           <Tv size={11} className="text-blue-400 shrink-0" />
+           <span className="text-[9px] font-black text-blue-400 uppercase whitespace-nowrap">{getBroadcasters()}</span>
+         </div>
+         
+         {match.streaming && (
+           <div className="flex items-center gap-1 bg-green-600/10 border border-green-500/20 px-2 py-1 rounded-lg">
+             <ExternalLink size={10} className="text-green-400" />
+             <span className="text-[8px] font-black text-green-400 uppercase whitespace-nowrap">EN VIVO</span>
+           </div>
+         )}
+         
+         {match.broadcastNotes && (
+           <div className="flex items-center gap-1 bg-blue-600/10 border border-blue-500/20 px-2 py-1 rounded-lg">
+             <StickyNote size={10} className="text-blue-400" />
+             <span className="text-[8px] font-black text-blue-400 uppercase whitespace-nowrap">NOTAS</span>
+           </div>
+         )}
       </div>
 
       {/* SEO / Share Actions */}

@@ -28,6 +28,9 @@ export interface WCMatch {
   fase: string;
   grupo?: string;
   broadcasters?: string;
+  streaming?: string;
+  broadcastNotes?: string;
+  broadcastConfirmed?: boolean;
 }
 
 export const COUNTRY_CODES: Record<string, string> = {
@@ -75,27 +78,27 @@ export const SEDES: WCVenue[] = [
 ];
 
 export const GRUPOS: WCGroup[] = [
-  { nombre:'A', equipos:[{nombre:'México',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Sudáfrica',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'República de Corea',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Chequia',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}]},
-  { nombre:'B', equipos:[{nombre:'Canadá',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Bosnia y Herzegovina',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Catar',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Suiza',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}]},
-  { nombre:'C', equipos:[{nombre:'Brasil',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Marruecos',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Haití',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Escocia',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}]},
-  { nombre:'D', equipos:[{nombre:'EE. UU.',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Paraguay',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Australia',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Turquía',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}]},
-  { nombre:'E', equipos:[{nombre:'Alemania',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Curazao',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Costa de Marfil',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Ecuador',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}]},
-  { nombre:'F', equipos:[{nombre:'Países Bajos',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Japón',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Suecia',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Túnez',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}]},
-  { nombre:'G', equipos:[{nombre:'Bélgica',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Egipto',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'RI de Irán',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Nueva Zelanda',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}]},
-  { nombre:'H', equipos:[{nombre:'España',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Islas de Cabo Verde',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Arabia Saudí',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Uruguay',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}]},
-  { nombre:'I', equipos:[{nombre:'Francia',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Senegal',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Irak',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Noruega',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}]},
-  { nombre:'J', equipos:[{nombre:'Argentina',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Argelia',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Austria',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Jordania',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}]},
-  { nombre:'K', equipos:[{nombre:'Portugal',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'RD Congo',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Uzbekistán',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Colombia',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}]},
-  { nombre:'L', equipos:[{nombre:'Inglaterra',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Croacia',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Ghana',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Panamá',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}]},
+  { nombre:'A', equipos:[{nombre:'México',pj:1,pg:1,pe:0,pp:0,gf:2,gc:0,pts:3},{nombre:'República de Corea',pj:1,pg:1,pe:0,pp:0,gf:2,gc:1,pts:3},{nombre:'Chequia',pj:1,pg:0,pe:0,pp:1,gf:1,gc:2,pts:0},{nombre:'Sudáfrica',pj:1,pg:0,pe:0,pp:1,gf:0,gc:2,pts:0}] },
+  { nombre:'B', equipos:[{nombre:'Canadá',pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,pts:1},{nombre:'Bosnia y Herzegovina',pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,pts:1},{nombre:'Catar',pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,pts:1},{nombre:'Suiza',pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,pts:1}] },
+  { nombre:'C', equipos:[{nombre:'Escocia',pj:1,pg:1,pe:0,pp:0,gf:1,gc:0,pts:3},{nombre:'Brasil',pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,pts:1},{nombre:'Marruecos',pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,pts:1},{nombre:'Haití',pj:1,pg:0,pe:0,pp:1,gf:0,gc:1,pts:0}] },
+  { nombre:'D', equipos:[{nombre:'EE. UU.',pj:1,pg:1,pe:0,pp:0,gf:4,gc:1,pts:3},{nombre:'Australia',pj:1,pg:1,pe:0,pp:0,gf:2,gc:0,pts:3},{nombre:'Turquía',pj:1,pg:0,pe:0,pp:1,gf:0,gc:2,pts:0},{nombre:'Paraguay',pj:1,pg:0,pe:0,pp:1,gf:1,gc:4,pts:0}] },
+  { nombre:'E', equipos:[{nombre:'Alemania',pj:1,pg:1,pe:0,pp:0,gf:7,gc:1,pts:3},{nombre:'Costa de Marfil',pj:1,pg:1,pe:0,pp:0,gf:1,gc:0,pts:3},{nombre:'Ecuador',pj:1,pg:0,pe:0,pp:1,gf:0,gc:1,pts:0},{nombre:'Curazao',pj:1,pg:0,pe:0,pp:1,gf:1,gc:7,pts:0}] },
+  { nombre:'F', equipos:[{nombre:'Suecia',pj:1,pg:1,pe:0,pp:0,gf:5,gc:1,pts:3},{nombre:'Países Bajos',pj:1,pg:0,pe:1,pp:0,gf:2,gc:2,pts:1},{nombre:'Japón',pj:1,pg:0,pe:1,pp:0,gf:2,gc:2,pts:1},{nombre:'Túnez',pj:1,pg:0,pe:0,pp:1,gf:1,gc:5,pts:0}] },
+  { nombre:'G', equipos:[{nombre:'RI de Irán',pj:1,pg:0,pe:1,pp:0,gf:2,gc:2,pts:1},{nombre:'Nueva Zelanda',pj:1,pg:0,pe:1,pp:0,gf:2,gc:2,pts:1},{nombre:'Bélgica',pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,pts:1},{nombre:'Egipto',pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,pts:1}] },
+  { nombre:'H', equipos:[{nombre:'Arabia Saudí',pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,pts:1},{nombre:'Uruguay',pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,pts:1},{nombre:'España',pj:1,pg:0,pe:1,pp:0,gf:0,gc:0,pts:1},{nombre:'Islas de Cabo Verde',pj:1,pg:0,pe:1,pp:0,gf:0,gc:0,pts:1}] },
+  { nombre:'I', equipos:[{nombre:'Noruega',pj:1,pg:1,pe:0,pp:0,gf:4,gc:1,pts:3},{nombre:'Francia',pj:1,pg:1,pe:0,pp:0,gf:3,gc:1,pts:3},{nombre:'Senegal',pj:1,pg:0,pe:0,pp:1,gf:1,gc:3,pts:0},{nombre:'Irak',pj:1,pg:0,pe:0,pp:1,gf:1,gc:4,pts:0}] },
+  { nombre:'J', equipos:[{nombre:'Argentina',pj:1,pg:1,pe:0,pp:0,gf:3,gc:0,pts:3},{nombre:'Austria',pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,pts:1},{nombre:'Jordania',pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,pts:1},{nombre:'Argelia',pj:1,pg:0,pe:0,pp:1,gf:0,gc:3,pts:0}] },
+  { nombre:'K', equipos:[{nombre:'Portugal',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'RD Congo',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Uzbekistán',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Colombia',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}] },
+  { nombre:'L', equipos:[{nombre:'Inglaterra',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Croacia',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Ghana',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Panamá',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}] },
 ];
 
-// Generado automáticamente — 2026-06-11T02:36:08.530Z
+// Generado automáticamente — 2026-06-17T05:18:30.086Z
 export const MATCHES: WCMatch[] = [
-  { id:'m1', fecha:'2026-06-11', hora:'13:00', utc:'2026-06-11T19:00:00Z', estadio:'Estadio Ciudad de México', ciudad:'Ciudad de México', equipo1:'México', equipo2:'Sudáfrica', fase:'Primera fase', grupo:'A', broadcasters:'Televisa, TV Azteca, ViX' },
-  { id:'m2', fecha:'2026-06-11', hora:'20:00', utc:'2026-06-12T02:00:00Z', estadio:'Estadio Guadalajara', ciudad:'Guadalajara', equipo1:'República de Corea', equipo2:'Chequia', fase:'Primera fase', grupo:'A', broadcasters:'Televisa, TV Azteca, ViX' },
-  { id:'m3', fecha:'2026-06-12', hora:'15:00', utc:'2026-06-12T19:00:00Z', estadio:'Estadio de Toronto', ciudad:'Toronto', equipo1:'Canadá', equipo2:'Bosnia y Herzegovina', fase:'Primera fase', grupo:'B', broadcasters:'TSN, TVA Sports' },
-  { id:'m4', fecha:'2026-06-12', hora:'18:00', utc:'2026-06-13T01:00:00Z', estadio:'Estadio Los Angeles', ciudad:'Los Ángeles', equipo1:'EE. UU.', equipo2:'Paraguay', fase:'Primera fase', grupo:'D', broadcasters:'Telemundo, Fox Sports, ViX' },
-  { id:'m5', fecha:'2026-06-13', hora:'21:00', utc:'2026-06-14T01:00:00Z', estadio:'Estadio Boston', ciudad:'Boston', equipo1:'Haití', equipo2:'Escocia', fase:'Primera fase', grupo:'C' },
+  { id:'m1', fecha:'2026-06-11', hora:'13:00', utc:'2026-06-11T19:00:00Z', estadio:'Estadio Ciudad de México', ciudad:'Ciudad de México', equipo1:'México', equipo2:'Sudáfrica', fase:'Primera fase', grupo:'A', broadcasters:'TUDN · Canal 5 · Azteca 7 · ViX', streaming:'https://vix.com', broadcastNotes:'Partido inaugural - Confirmado Televisa Deportes', broadcastConfirmed:true },
+  { id:'m2', fecha:'2026-06-11', hora:'20:00', utc:'2026-06-12T02:00:00Z', estadio:'Estadio Guadalajara', ciudad:'Guadalajara', equipo1:'República de Corea', equipo2:'Chequia', fase:'Primera fase', grupo:'A', broadcasters:'TUDN · Canal 5 · Azteca 7 · ViX', streaming:'https://vix.com', broadcastConfirmed:true },
+  { id:'m3', fecha:'2026-06-12', hora:'15:00', utc:'2026-06-12T19:00:00Z', estadio:'Estadio de Toronto', ciudad:'Toronto', equipo1:'Canadá', equipo2:'Bosnia y Herzegovina', fase:'Primera fase', grupo:'B', broadcasters:'TSN · TVA Sports', broadcastConfirmed:true },
+  { id:'m4', fecha:'2026-06-12', hora:'18:00', utc:'2026-06-13T01:00:00Z', estadio:'Estadio Los Angeles', ciudad:'Los Ángeles', equipo1:'EE. UU.', equipo2:'Paraguay', fase:'Primera fase', grupo:'D', broadcasters:'Telemundo · Fox Sports · ViX', broadcastConfirmed:true },
+  { id:'m5', fecha:'2026-06-13', hora:'21:00', utc:'2026-06-14T01:00:00Z', estadio:'Estadio Boston', ciudad:'Boston', equipo1:'Haití', equipo2:'Escocia', fase:'Primera fase', grupo:'C', broadcasters:'TUDN · Canal 5', streaming:'https://vix.com/mexico', broadcastNotes:'Partido de grupos - Confirmado', broadcastConfirmed:true },
   { id:'m6', fecha:'2026-06-13', hora:'21:00', utc:'2026-06-14T04:00:00Z', estadio:'Estadio BC Place Vancouver', ciudad:'Vancouver', equipo1:'Australia', equipo2:'Turquía', fase:'Primera fase', grupo:'D' },
   { id:'m7', fecha:'2026-06-13', hora:'18:00', utc:'2026-06-13T22:00:00Z', estadio:'Estadio Nueva York/Nueva Jersey', ciudad:'Nueva Jersey', equipo1:'Brasil', equipo2:'Marruecos', fase:'Primera fase', grupo:'C' },
   { id:'m8', fecha:'2026-06-13', hora:'12:00', utc:'2026-06-13T19:00:00Z', estadio:'Estadio de la Bahía de San Francisco', ciudad:'Área de la Bahía de San Francisco', equipo1:'Catar', equipo2:'Suiza', fase:'Primera fase', grupo:'B' },
@@ -143,8 +146,8 @@ export const MATCHES: WCMatch[] = [
   { id:'m50', fecha:'2026-06-24', hora:'18:00', utc:'2026-06-24T22:00:00Z', estadio:'Estadio Atlanta', ciudad:'Atlanta', equipo1:'Marruecos', equipo2:'Haití', fase:'Primera fase', grupo:'C' },
   { id:'m51', fecha:'2026-06-24', hora:'12:00', utc:'2026-06-24T19:00:00Z', estadio:'Estadio BC Place Vancouver', ciudad:'Vancouver', equipo1:'Suiza', equipo2:'Canadá', fase:'Primera fase', grupo:'B' },
   { id:'m52', fecha:'2026-06-24', hora:'12:00', utc:'2026-06-24T19:00:00Z', estadio:'Estadio de Seattle', ciudad:'Seattle', equipo1:'Bosnia y Herzegovina', equipo2:'Catar', fase:'Primera fase', grupo:'B' },
-  { id:'m53', fecha:'2026-06-24', hora:'19:00', utc:'2026-06-25T01:00:00Z', estadio:'Estadio Ciudad de México', ciudad:'Ciudad de México', equipo1:'Chequia', equipo2:'México', fase:'Primera fase', grupo:'A', broadcasters:'Televisa, TV Azteca, ViX' },
-  { id:'m54', fecha:'2026-06-24', hora:'19:00', utc:'2026-06-25T01:00:00Z', estadio:'Estadio Monterrey', ciudad:'Monterrey', equipo1:'Sudáfrica', equipo2:'República de Corea', fase:'Primera fase', grupo:'A', broadcasters:'Televisa, TV Azteca, ViX' },
+  { id:'m53', fecha:'2026-06-24', hora:'19:00', utc:'2026-06-25T01:00:00Z', estadio:'Estadio Ciudad de México', ciudad:'Ciudad de México', equipo1:'Chequia', equipo2:'México', fase:'Primera fase', grupo:'A', broadcasters:'TUDN · Canal 5 · Azteca 7 · ViX', streaming:'https://vix.com', broadcastConfirmed:true },
+  { id:'m54', fecha:'2026-06-24', hora:'19:00', utc:'2026-06-25T01:00:00Z', estadio:'Estadio Monterrey', ciudad:'Monterrey', equipo1:'Sudáfrica', equipo2:'República de Corea', fase:'Primera fase', grupo:'A', broadcasters:'TUDN · Canal 5 · Azteca 7 · ViX', streaming:'https://vix.com', broadcastConfirmed:true },
   { id:'m55', fecha:'2026-06-25', hora:'16:00', utc:'2026-06-25T20:00:00Z', estadio:'Estadio Filadelfia', ciudad:'Filadelfia', equipo1:'Curazao', equipo2:'Costa de Marfil', fase:'Primera fase', grupo:'E' },
   { id:'m56', fecha:'2026-06-25', hora:'16:00', utc:'2026-06-25T20:00:00Z', estadio:'Estadio Nueva York/Nueva Jersey', ciudad:'Nueva Jersey', equipo1:'Ecuador', equipo2:'Alemania', fase:'Primera fase', grupo:'E' },
   { id:'m57', fecha:'2026-06-25', hora:'18:00', utc:'2026-06-25T23:00:00Z', estadio:'Estadio Dallas', ciudad:'Dallas', equipo1:'Japón', equipo2:'Suecia', fase:'Primera fase', grupo:'F' },
@@ -194,5 +197,5 @@ export const MATCHES: WCMatch[] = [
   { id:'m101', fecha:'2026-07-14', hora:'14:00', utc:'2026-07-14T19:00:00Z', estadio:'Estadio Dallas', ciudad:'Dallas', equipo1:'W97', equipo2:'W98', fase:'Semifinal' },
   { id:'m102', fecha:'2026-07-15', hora:'15:00', utc:'2026-07-15T19:00:00Z', estadio:'Estadio Atlanta', ciudad:'Atlanta', equipo1:'W99', equipo2:'W100', fase:'Semifinal' },
   { id:'m103', fecha:'2026-07-18', hora:'17:00', utc:'2026-07-18T21:00:00Z', estadio:'Estadio Miami', ciudad:'Miami', equipo1:'RU101', equipo2:'RU102', fase:'Partido por el tercer puesto' },
-  { id:'m104', fecha:'2026-07-19', hora:'15:00', utc:'2026-07-19T19:00:00Z', estadio:'Estadio Nueva York/Nueva Jersey', ciudad:'Nueva Jersey', equipo1:'W101', equipo2:'W102', fase:'Final', broadcasters:'Televisa, TV Azteca, ViX, Telemundo, Fox Sports' },
+  { id:'m104', fecha:'2026-07-19', hora:'15:00', utc:'2026-07-19T19:00:00Z', estadio:'Estadio Nueva York/Nueva Jersey', ciudad:'Nueva Jersey', equipo1:'W101', equipo2:'W102', fase:'Final', broadcasters:'TUDN · Canal 5 · Azteca 7 · ViX · Telemundo · Fox Sports', streaming:'https://vix.com', broadcastNotes:'Gran Final', broadcastConfirmed:true },
 ];

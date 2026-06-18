@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Calendar, Clock, ExternalLink, MapPin, Trophy, Tv } from "lucide-react";
+import { Calendar, Clock, ExternalLink, MapPin, Trophy, Tv, StickyNote } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import ShareButton from "@/components/ShareButton";
@@ -24,14 +24,16 @@ function getMatch(slug: string) {
 
 function getBroadcasters(match: WCMatch) {
   if (match.broadcasters) return match.broadcasters;
-  if (match.equipo1 === "México" || match.equipo2 === "México") return "TUDN · Canal 5 · Azteca 7 · ViX";
-  if (
-    ["Argentina", "Brasil", "EE. UU.", "Alemania", "Francia", "España"].includes(match.equipo1) ||
-    ["Argentina", "Brasil", "EE. UU.", "Alemania", "Francia", "España"].includes(match.equipo2)
-  ) {
-    return "TUDN · Canal 5 · ViX";
+
+  // Solo transmisiones para México (Guía de programación deportiva México)
+  const mexicoBroadcasters = 'TUDN · Canal 5 · Azteca 7 · ViX';
+  
+  if (match.equipo1 === 'México' || match.equipo2 === 'México') return mexicoBroadcasters;
+  if (['Final', 'Semifinal', 'Cuartos de final', 'Octavos de final', 'Dieciseisavos de final', 'Partido por el tercer puesto'].includes(match.fase)) {
+    return mexicoBroadcasters;
   }
-  return "ViX (Premium)";
+  
+  return 'ViX (Premium) · Consulte TUDN/Canal 5/Azteca 7';
 }
 
 function formatDate(fecha: string) {
@@ -205,13 +207,37 @@ export default async function MundialPartidoDetalle({ params }: Props) {
               </div>
             </div>
 
-            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 flex items-start gap-4">
-              <Tv className="text-purple-400 shrink-0 mt-1" size={20} />
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Dónde ver</p>
-                <p className="font-black text-white">{broadcasters}</p>
-              </div>
-            </div>
+             <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 flex items-start gap-4">
+               <Tv className="text-purple-400 shrink-0 mt-1" size={20} />
+               <div>
+                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Dónde ver</p>
+                 <p className="font-black text-white">{broadcasters}</p>
+               </div>
+             </div>
+             
+             {match.streaming && (
+               <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 flex items-start gap-4">
+                 <ExternalLink className="text-[#a3e635] shrink-0 mt-1" size={20} />
+                 <div>
+                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Streaming oficial</p>
+                   <p className="font-black text-white">
+                     <a href={match.streaming} target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">
+                       Ver partido en vivo
+                     </a>
+                   </p>
+                 </div>
+               </div>
+             )}
+             
+             {match.broadcastNotes && (
+               <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 flex items-start gap-4">
+                 <StickyNote className="text-[#a3e635] shrink-0 mt-1" size={20} />
+                 <div>
+                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Notas de transmisión</p>
+                   <p className="font-black text-white">{match.broadcastNotes}</p>
+                 </div>
+               </div>
+             )}
           </section>
 
           <section className="bg-blue-600/5 border border-blue-500/10 rounded-2xl p-6 mb-10">

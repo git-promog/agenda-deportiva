@@ -56,6 +56,14 @@ function getField(arr, fallback = '') {
   return arr && arr.length > 0 ? arr[0].Description : fallback;
 }
 
+function getScore(val) {
+  if (val === null || val === undefined) return null;
+  if (typeof val === 'number') return val;
+  if (typeof val === 'string') return parseInt(val, 10) || null;
+  if (Array.isArray(val) && val.length > 0) return parseInt(val[0].Description, 10) || null;
+  return null;
+}
+
 function buildMatchId(num) {
   return `m${num}`;
 }
@@ -134,13 +142,118 @@ async function main() {
 
     const ov = overrides[id] || {};
     const broadcasters = ov.broadcasters ? `'${ov.broadcasters.replace(/'/g, "\\'")}'` : 'undefined';
+    const streaming = ov.streaming ? `'${ov.streaming.replace(/'/g, "\\'")}'` : 'undefined';
+    const broadcastNotes = ov.notes ? `'${ov.notes.replace(/'/g, "\\'")}'` : 'undefined';
+    const broadcastConfirmed = ov.confirmed === true;
 
     const grupoField = groupName ? `, grupo:'${groupName.replace('Grupo ', '')}'` : '';
     const bcField    = ov.broadcasters ? `, broadcasters:${broadcasters}` : '';
+    const stField    = ov.streaming ? `, streaming:${streaming}` : '';
+    const ntField    = ov.notes ? `, broadcastNotes:${broadcastNotes}` : '';
+    const cfField    = broadcastConfirmed ? `, broadcastConfirmed:true` : '';
     const utcField   = utcIso ? `, utc:'${utcIso}'` : '';
 
-    return `  { id:'${id}', fecha:'${dateOnly}', hora:'${timeOnly}'${utcField}, estadio:'${stadium}', ciudad:'${city}', equipo1:'${equipo1.replace(/'/g, "\\'")}', equipo2:'${equipo2.replace(/'/g, "\\'")}', fase:'${fase}'${grupoField}${bcField} },`;
+    return `  { id:'${id}', fecha:'${dateOnly}', hora:'${timeOnly}'${utcField}, estadio:'${stadium}', ciudad:'${city}', equipo1:'${equipo1.replace(/'/g, "\\'")}', equipo2:'${equipo2.replace(/'/g, "\\'")}', fase:'${fase}'${grupoField}${bcField}${stField}${ntField}${cfField} },`;
   });
+
+  // ── Calcular standings de grupos ────────────────────────────────────────
+  function calculateGroupStandings(matches) {
+    const groupOrder = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+    const baseTeams = {
+      'A': ['México', 'Sudáfrica', 'República de Corea', 'Chequia'],
+      'B': ['Canadá', 'Bosnia y Herzegovina', 'Catar', 'Suiza'],
+      'C': ['Brasil', 'Marruecos', 'Haití', 'Escocia'],
+      'D': ['EE. UU.', 'Paraguay', 'Australia', 'Turquía'],
+      'E': ['Alemania', 'Curazao', 'Costa de Marfil', 'Ecuador'],
+      'F': ['Países Bajos', 'Japón', 'Suecia', 'Túnez'],
+      'G': ['Bélgica', 'Egipto', 'RI de Irán', 'Nueva Zelanda'],
+      'H': ['España', 'Islas de Cabo Verde', 'Arabia Saudí', 'Uruguay'],
+      'I': ['Francia', 'Senegal', 'Irak', 'Noruega'],
+      'J': ['Argentina', 'Argelia', 'Austria', 'Jordania'],
+      'K': ['Portugal', 'RD Congo', 'Uzbekistán', 'Colombia'],
+      'L': ['Inglaterra', 'Croacia', 'Ghana', 'Panamá'],
+    };
+
+    return groupOrder.map(g => {
+      const teams = baseTeams[g] || [];
+      const teamStats = teams.map(nombre => {
+        const teamMatches = matches.filter(m => 
+          m.grupo === g && 
+          (m.equipo1 === nombre || m.equipo2 === nombre) && 
+          m.goles1 !== null && m.goles2 !== null
+        );
+
+        let pj = 0, pg = 0, pe = 0, pp = 0, gf = 0, gc = 0, pts = 0;
+
+        for (const m of teamMatches) {
+          const isHome = m.equipo1 === nombre;
+          const gfMatch = isHome ? m.goles1 : m.goles2;
+          const gcMatch = isHome ? m.goles2 : m.goles1;
+
+          pj++;
+          gf += gfMatch;
+          gc += gcMatch;
+
+          if (gfMatch > gcMatch) { pg++; pts += 3; }
+          else if (gfMatch === gcMatch) { pe++; pts += 1; }
+          else { pp++; }
+        }
+
+        return { nombre, pj, pg, pe, pp, gf, gc, pts };
+      });
+
+      teamStats.sort((a, b) => {
+        if (b.pts !== a.pts) return b.pts - a.pts;
+        const dgA = a.gf - a.gc;
+        const dgB = b.gf - b.gc;
+        if (dgB !== dgA) return dgB - dgA;
+        if (b.gf !== a.gf) return b.gf - a.gf;
+        return 0;
+      });
+
+      return { nombre: g, equipos: teamStats };
+    });
+  }
+
+  // Construir objeto de matches con goles para el cálculo
+  const matchesWithScores = results.map(m => {
+    const num = m.MatchNumber;
+    const groupName = getField(m.GroupName, '');
+    const homeTeam = getField(m.Home?.TeamName, '');
+    const awayTeam = getField(m.Away?.TeamName, '');
+    const phA = m.PlaceHolderA || 'TBD';
+    const phB = m.PlaceHolderB || 'TBD';
+    const equipo1 = homeTeam || phA;
+    const equipo2 = awayTeam || phB;
+    const goles1 = getScore(m.Home?.Score);
+    const goles2 = getScore(m.Away?.Score);
+    const stageName = getField(m.StageName, '');
+    const fase = faseLabel(stageName);
+
+    return {
+      id: buildMatchId(num),
+      grupo: groupName ? groupName.replace('Grupo ', '') : undefined,
+      equipo1,
+      equipo2,
+      goles1,
+      goles2,
+      fase,
+    };
+  });
+
+  const gruposCalculados = calculateGroupStandings(matchesWithScores);
+
+  // Generar string del array GRUPOS
+  const gruposLines = gruposCalculados.map(g => {
+    const equiposStr = g.equipos.map(e => 
+      `{nombre:'${e.nombre}',pj:${e.pj},pg:${e.pg},pe:${e.pe},pp:${e.pp},gf:${e.gf},gc:${e.gc},pts:${e.pts}}`
+    ).join(',');
+    return `  { nombre:'${g.nombre}', equipos:[${equiposStr}] },`;
+  });
+
+  const gruposTs = `export const GRUPOS: WCGroup[] = [
+${gruposLines.join('\n')}
+];`;
 
   // ── Construir el archivo ──────────────────────────────────────────────
   const ts = `// ╔═══════════════════════════════════════════════════════════════╗
@@ -173,6 +286,9 @@ export interface WCMatch {
   fase: string;
   grupo?: string;
   broadcasters?: string;
+  streaming?: string;
+  broadcastNotes?: string;
+  broadcastConfirmed?: boolean;
 }
 
 export const COUNTRY_CODES: Record<string, string> = {
@@ -219,20 +335,7 @@ export const SEDES: WCVenue[] = [
   { id:'seattle',      ciudad:'Seattle',             pais:'USA',    estadio:'Estadio de Seattle',                 capacidad:'69,000', utcOffset:-7, imagen:'/images/mundial/lumen.webp',     detalles:'Lumen Field. Sede de grupos y eliminatorias.' },
 ];
 
-export const GRUPOS: WCGroup[] = [
-  { nombre:'A', equipos:[{nombre:'México',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Sudáfrica',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'República de Corea',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Chequia',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}]},
-  { nombre:'B', equipos:[{nombre:'Canadá',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Bosnia y Herzegovina',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Catar',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Suiza',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}]},
-  { nombre:'C', equipos:[{nombre:'Brasil',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Marruecos',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Haití',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Escocia',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}]},
-  { nombre:'D', equipos:[{nombre:'EE. UU.',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Paraguay',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Australia',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Turquía',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}]},
-  { nombre:'E', equipos:[{nombre:'Alemania',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Curazao',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Costa de Marfil',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Ecuador',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}]},
-  { nombre:'F', equipos:[{nombre:'Países Bajos',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Japón',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Suecia',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Túnez',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}]},
-  { nombre:'G', equipos:[{nombre:'Bélgica',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Egipto',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'RI de Irán',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Nueva Zelanda',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}]},
-  { nombre:'H', equipos:[{nombre:'España',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Islas de Cabo Verde',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Arabia Saudí',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Uruguay',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}]},
-  { nombre:'I', equipos:[{nombre:'Francia',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Senegal',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Irak',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Noruega',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}]},
-  { nombre:'J', equipos:[{nombre:'Argentina',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Argelia',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Austria',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Jordania',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}]},
-  { nombre:'K', equipos:[{nombre:'Portugal',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'RD Congo',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Uzbekistán',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Colombia',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}]},
-  { nombre:'L', equipos:[{nombre:'Inglaterra',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Croacia',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Ghana',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},{nombre:'Panamá',pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}]},
-];
+${gruposTs}
 
 // Generado automáticamente — ${new Date().toISOString()}
 export const MATCHES: WCMatch[] = [

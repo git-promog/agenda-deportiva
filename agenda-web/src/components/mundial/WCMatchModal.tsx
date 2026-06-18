@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WCMatch, getFlagUrl } from '@/data/mundialData';
-import { Calendar, MapPin, Clock, Tv, X, Star, CalendarPlus, ExternalLink } from 'lucide-react';
+import { Calendar, MapPin, Clock, Tv, X, Star, CalendarPlus, ExternalLink, StickyNote } from 'lucide-react';
 import ShareButton from '@/components/ShareButton';
 import { buildWorldCupMatchPath, buildWorldCupMatchUrl } from '@/lib/worldCupUrls';
 
@@ -48,11 +48,20 @@ export default function WCMatchModal({
 
   const getBroadcasters = () => {
     if (match.broadcasters) return match.broadcasters;
-    if (match.equipo1 === 'México' || match.equipo2 === 'México') return 'TUDN · Canal 5 · Azteca 7 · ViX';
-    if (['Argentina', 'Brasil', 'EE. UU.', 'Alemania', 'Francia', 'España'].includes(match.equipo1) ||
-        ['Argentina', 'Brasil', 'EE. UU.', 'Alemania', 'Francia', 'España'].includes(match.equipo2))
-      return 'TUDN · Canal 5 · ViX';
-    return 'ViX (Premium)';
+
+    // Solo transmisiones para México (Guía de programación deportiva México)
+    const mexicoBroadcasters = 'TUDN · Canal 5 · Azteca 7 · ViX';
+    
+    // Partidos de México: todas las cadenas mexicanas
+    if (match.equipo1 === 'México' || match.equipo2 === 'México') return mexicoBroadcasters;
+    
+    // Fase final: cobertura extendida en México
+    if (['Final', 'Semifinal', 'Cuartos de final', 'Octavos de final', 'Dieciseisavos de final', 'Partido por el tercer puesto'].includes(match.fase)) {
+      return mexicoBroadcasters;
+    }
+    
+    // Resto de partidos fase de grupos: ViX (streaming) + posible señal abierta
+    return 'ViX (Premium) · Consulte TUDN/Canal 5/Azteca 7';
   };
 
   const handleBackdropClick = (e: React.MouseEvent) => {
@@ -176,15 +185,43 @@ export default function WCMatchModal({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50">
-                  <div className="bg-purple-500/20 p-2 rounded-xl">
-                    <Tv size={20} className="text-purple-400" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Transmisión</p>
-                    <p className="text-sm font-bold text-white">{getBroadcasters()}</p>
-                  </div>
-                </div>
+                 <div className="flex items-center gap-4 bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50">
+                   <div className="bg-purple-500/20 p-2 rounded-xl">
+                     <Tv size={20} className="text-purple-400" />
+                   </div>
+                   <div>
+                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Transmisión</p>
+                     <p className="text-sm font-bold text-white">{getBroadcasters()}</p>
+                   </div>
+                 </div>
+                 
+                 {match.streaming && (
+                   <div className="flex items-center gap-4 bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50">
+                     <div className="bg-blue-500/20 p-2 rounded-xl">
+                       <ExternalLink size={20} className="text-blue-400" />
+                     </div>
+                     <div>
+                       <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Streaming</p>
+                       <p className="text-sm font-bold text-white truncate">
+                         <a href={match.streaming} target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">
+                           Ver en vivo
+                         </a>
+                       </p>
+                     </div>
+                   </div>
+                 )}
+                 
+                 {match.broadcastNotes && (
+                   <div className="flex items-center gap-4 bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50">
+                     <div className="bg-blue-500/20 p-2 rounded-xl">
+                       <StickyNote size={20} className="text-blue-400" />
+                     </div>
+                     <div>
+                       <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Notas</p>
+                       <p className="text-sm font-bold text-white">{match.broadcastNotes}</p>
+                     </div>
+                   </div>
+                 )}
               </div>
 
               {/* Actions */}

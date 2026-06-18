@@ -2,13 +2,18 @@
   "name": "agenda-web",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint",
-    "sync-fifa": "node scripts/sync-fifa.mjs"
-  },
+   "scripts": {
+     "dev": "next dev",
+     "build": "next build",
+     "start": "next start",
+     "lint": "eslint",
+     "sync-fifa": "node scripts/sync-fifa.mjs",
+     "broadcast:set": "node scripts/manage-broadcasters.mjs set",
+     "broadcast:list": "node scripts/manage-broadcasters.mjs list",
+     "broadcast:remove": "node scripts/manage-broadcasters.mjs remove",
+     "broadcast:missing": "node scripts/manage-broadcasters.mjs missing",
+     "broadcast:check": "node scripts/manage-broadcasters.mjs check"
+   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
     "@google/generative-ai": "^0.24.1",

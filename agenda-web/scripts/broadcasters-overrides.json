@@ -1,10 +1,44 @@
 {
-  "_README": "Edita este archivo para agregar transmisiones por partido. Usa el id del partido (m1, m2, ...). El script sync-fifa.mjs lee este archivo y lo PRESERVA sin sobreescribir.",
-  "m1":  { "broadcasters": "Televisa, TV Azteca, ViX" },
-  "m2":  { "broadcasters": "Televisa, TV Azteca, ViX" },
-  "m3":  { "broadcasters": "TSN, TVA Sports" },
-  "m4":  { "broadcasters": "Telemundo, Fox Sports, ViX" },
-  "m53": { "broadcasters": "Televisa, TV Azteca, ViX" },
-  "m54": { "broadcasters": "Televisa, TV Azteca, ViX" },
-  "m104": { "broadcasters": "Televisa, TV Azteca, ViX, Telemundo, Fox Sports" }
+  "_README": "Edita este archivo para agregar transmisiones por partido. Usa el id del partido (m1, m2, ...). El script sync-fifa.mjs lee este archivo y lo PRESERVA sin sobreescribir. Campos soportados: broadcasters (string), streaming (URL), notes (string), confirmed (boolean).",
+  "m1": {
+    "broadcasters": "TUDN · Canal 5 · Azteca 7 · ViX",
+    "streaming": "https://vix.com",
+    "notes": "Partido inaugural - Confirmado Televisa Deportes",
+    "confirmed": true
+  },
+  "m2": {
+    "broadcasters": "TUDN · Canal 5 · Azteca 7 · ViX",
+    "streaming": "https://vix.com",
+    "confirmed": true
+  },
+  "m3": {
+    "broadcasters": "TSN · TVA Sports",
+    "confirmed": true
+  },
+  "m4": {
+    "broadcasters": "Telemundo · Fox Sports · ViX",
+    "confirmed": true
+  },
+  "m53": {
+    "broadcasters": "TUDN · Canal 5 · Azteca 7 · ViX",
+    "streaming": "https://vix.com",
+    "confirmed": true
+  },
+  "m54": {
+    "broadcasters": "TUDN · Canal 5 · Azteca 7 · ViX",
+    "streaming": "https://vix.com",
+    "confirmed": true
+  },
+  "m104": {
+    "broadcasters": "TUDN · Canal 5 · Azteca 7 · ViX · Telemundo · Fox Sports",
+    "streaming": "https://vix.com",
+    "notes": "Gran Final",
+    "confirmed": true
+  },
+  "m5": {
+    "broadcasters": "TUDN · Canal 5",
+    "streaming": "https://vix.com/mexico",
+    "notes": "Partido de grupos - Confirmado",
+    "confirmed": true
+  }
 }

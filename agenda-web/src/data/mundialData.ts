@@ -92,7 +92,7 @@ export const GRUPOS: WCGroup[] = [
   { nombre:'L', equipos:[{nombre:'Inglaterra',pj:1,pg:1,pe:0,pp:0,gf:4,gc:2,pts:3},{nombre:'Ghana',pj:1,pg:1,pe:0,pp:0,gf:1,gc:0,pts:3},{nombre:'Panamá',pj:1,pg:0,pe:0,pp:1,gf:0,gc:1,pts:0},{nombre:'Croacia',pj:1,pg:0,pe:0,pp:1,gf:2,gc:4,pts:0}] },
 ];
 
-// Generado automáticamente — 2026-06-19T02:52:59.327Z
+// Generado automáticamente — 2026-06-19T08:58:05.026Z
 export const MATCHES: WCMatch[] = [
   { id:'m1', fecha:'2026-06-11', hora:'13:00', utc:'2026-06-11T19:00:00Z', estadio:'Estadio Ciudad de México', ciudad:'Ciudad de México', equipo1:'México', equipo2:'Sudáfrica', fase:'Primera fase', grupo:'A', broadcasters:'TUDN · Canal 5 · Azteca 7 · ViX', streaming:'https://vix.com', broadcastNotes:'Partido inaugural - Confirmado Televisa Deportes', broadcastConfirmed:true },
   { id:'m2', fecha:'2026-06-11', hora:'20:00', utc:'2026-06-12T02:00:00Z', estadio:'Estadio Guadalajara', ciudad:'Guadalajara', equipo1:'República de Corea', equipo2:'Chequia', fase:'Primera fase', grupo:'A', broadcasters:'TUDN · Canal 5 · Azteca 7 · ViX', streaming:'https://vix.com', broadcastConfirmed:true },
@@ -172,7 +172,7 @@ export const MATCHES: WCMatch[] = [
   { id:'m76', fecha:'2026-06-29', hora:'12:00', utc:'2026-06-29T17:00:00Z', estadio:'Estadio Houston', ciudad:'Houston', equipo1:'1C', equipo2:'2F', fase:'Dieciseisavos de final' },
   { id:'m77', fecha:'2026-06-30', hora:'17:00', utc:'2026-06-30T21:00:00Z', estadio:'Estadio Nueva York/Nueva Jersey', ciudad:'Nueva Jersey', equipo1:'1I', equipo2:'3CDFGH', fase:'Dieciseisavos de final' },
   { id:'m78', fecha:'2026-06-30', hora:'12:00', utc:'2026-06-30T17:00:00Z', estadio:'Estadio Dallas', ciudad:'Dallas', equipo1:'2E', equipo2:'2I', fase:'Dieciseisavos de final' },
-  { id:'m79', fecha:'2026-06-30', hora:'19:00', utc:'2026-07-01T01:00:00Z', estadio:'Estadio Ciudad de México', ciudad:'Ciudad de México', equipo1:'1A', equipo2:'3CEFHI', fase:'Dieciseisavos de final' },
+  { id:'m79', fecha:'2026-06-30', hora:'19:00', utc:'2026-07-01T01:00:00Z', estadio:'Estadio Ciudad de México', ciudad:'Ciudad de México', equipo1:'México', equipo2:'3CEFHI', fase:'Dieciseisavos de final' },
   { id:'m80', fecha:'2026-07-01', hora:'12:00', utc:'2026-07-01T16:00:00Z', estadio:'Estadio Atlanta', ciudad:'Atlanta', equipo1:'1L', equipo2:'3EHIJK', fase:'Dieciseisavos de final' },
   { id:'m81', fecha:'2026-07-01', hora:'17:00', utc:'2026-07-02T00:00:00Z', estadio:'Estadio de la Bahía de San Francisco', ciudad:'Área de la Bahía de San Francisco', equipo1:'1D', equipo2:'3BEFIJ', fase:'Dieciseisavos de final' },
   { id:'m82', fecha:'2026-07-01', hora:'13:00', utc:'2026-07-01T20:00:00Z', estadio:'Estadio de Seattle', ciudad:'Seattle', equipo1:'1G', equipo2:'3AEHIJ', fase:'Dieciseisavos de final' },

@@ -79,7 +79,7 @@ export const SEDES: WCVenue[] = [
 
 export const GRUPOS: WCGroup[] = [
   { nombre:'A', equipos:[{nombre:'México',pj:2,pg:2,pe:0,pp:0,gf:3,gc:0,pts:6},{nombre:'República de Corea',pj:2,pg:1,pe:0,pp:1,gf:2,gc:2,pts:3},{nombre:'Chequia',pj:2,pg:0,pe:1,pp:1,gf:2,gc:3,pts:1},{nombre:'Sudáfrica',pj:2,pg:0,pe:1,pp:1,gf:1,gc:3,pts:1}] },
-  { nombre:'B', equipos:[{nombre:'Canadá',pj:2,pg:1,pe:1,pp:0,gf:7,gc:1,pts:4},{nombre:'Suiza',pj:2,pg:1,pe:1,pp:0,gf:5,gc:2,pts:4},{nombre:'Bosnia y Herzegovina',pj:2,pg:0,pe:1,pp:1,gf:2,gc:5,pts:1},{nombre:'Catar',pj:2,pg:0,pe:1,pp:1,gf:1,gc:7,pts:1}] },
+  { nombre:'B', equipos:[{nombre:'Suiza',pj:3,pg:2,pe:1,pp:0,gf:7,gc:3,pts:7},{nombre:'Canadá',pj:3,pg:1,pe:1,pp:1,gf:8,gc:3,pts:4},{nombre:'Bosnia y Herzegovina',pj:3,pg:1,pe:1,pp:1,gf:5,gc:6,pts:4},{nombre:'Catar',pj:3,pg:0,pe:1,pp:2,gf:2,gc:10,pts:1}] },
   { nombre:'C', equipos:[{nombre:'Brasil',pj:2,pg:1,pe:1,pp:0,gf:4,gc:1,pts:4},{nombre:'Marruecos',pj:2,pg:1,pe:1,pp:0,gf:2,gc:1,pts:4},{nombre:'Escocia',pj:2,pg:1,pe:0,pp:1,gf:1,gc:1,pts:3},{nombre:'Haití',pj:2,pg:0,pe:0,pp:2,gf:0,gc:4,pts:0}] },
   { nombre:'D', equipos:[{nombre:'EE. UU.',pj:2,pg:2,pe:0,pp:0,gf:6,gc:1,pts:6},{nombre:'Australia',pj:2,pg:1,pe:0,pp:1,gf:2,gc:2,pts:3},{nombre:'Paraguay',pj:2,pg:1,pe:0,pp:1,gf:2,gc:4,pts:3},{nombre:'Turquía',pj:2,pg:0,pe:0,pp:2,gf:0,gc:3,pts:0}] },
   { nombre:'E', equipos:[{nombre:'Alemania',pj:2,pg:2,pe:0,pp:0,gf:9,gc:2,pts:6},{nombre:'Costa de Marfil',pj:2,pg:1,pe:0,pp:1,gf:2,gc:2,pts:3},{nombre:'Ecuador',pj:2,pg:0,pe:1,pp:1,gf:0,gc:1,pts:1},{nombre:'Curazao',pj:2,pg:0,pe:1,pp:1,gf:1,gc:7,pts:1}] },
@@ -92,7 +92,7 @@ export const GRUPOS: WCGroup[] = [
   { nombre:'L', equipos:[{nombre:'Inglaterra',pj:2,pg:1,pe:1,pp:0,gf:4,gc:2,pts:4},{nombre:'Ghana',pj:2,pg:1,pe:1,pp:0,gf:1,gc:0,pts:4},{nombre:'Croacia',pj:2,pg:1,pe:0,pp:1,gf:3,gc:4,pts:3},{nombre:'Panamá',pj:2,pg:0,pe:0,pp:2,gf:0,gc:2,pts:0}] },
 ];
 
-// Generado automáticamente — 2026-06-24T17:46:58.942Z
+// Generado automáticamente — 2026-06-24T21:16:21.932Z
 export const MATCHES: WCMatch[] = [
   { id:'m1', fecha:'2026-06-11', hora:'13:00', utc:'2026-06-11T19:00:00Z', estadio:'Estadio Ciudad de México', ciudad:'Ciudad de México', equipo1:'México', equipo2:'Sudáfrica', fase:'Primera fase', grupo:'A', broadcasters:'TUDN · Canal 5 · Azteca 7 · ViX', streaming:'https://vix.com', broadcastNotes:'Partido inaugural - Confirmado Televisa Deportes', broadcastConfirmed:true },
   { id:'m2', fecha:'2026-06-11', hora:'20:00', utc:'2026-06-12T02:00:00Z', estadio:'Estadio Guadalajara', ciudad:'Guadalajara', equipo1:'República de Corea', equipo2:'Chequia', fase:'Primera fase', grupo:'A', broadcasters:'TUDN · Canal 5 · Azteca 7 · ViX', streaming:'https://vix.com', broadcastConfirmed:true },
@@ -166,7 +166,7 @@ export const MATCHES: WCMatch[] = [
   { id:'m70', fecha:'2026-06-27', hora:'21:00', utc:'2026-06-28T02:00:00Z', estadio:'Estadio Dallas', ciudad:'Dallas', equipo1:'Jordania', equipo2:'Argentina', fase:'Primera fase', grupo:'J' },
   { id:'m71', fecha:'2026-06-27', hora:'19:30', utc:'2026-06-27T23:30:00Z', estadio:'Estadio Miami', ciudad:'Miami', equipo1:'Colombia', equipo2:'Portugal', fase:'Primera fase', grupo:'K' },
   { id:'m72', fecha:'2026-06-27', hora:'19:30', utc:'2026-06-27T23:30:00Z', estadio:'Estadio Atlanta', ciudad:'Atlanta', equipo1:'RD Congo', equipo2:'Uzbekistán', fase:'Primera fase', grupo:'K' },
-  { id:'m73', fecha:'2026-06-28', hora:'12:00', utc:'2026-06-28T19:00:00Z', estadio:'Estadio Los Angeles', ciudad:'Los Ángeles', equipo1:'2A', equipo2:'2B', fase:'Dieciseisavos de final' },
+  { id:'m73', fecha:'2026-06-28', hora:'12:00', utc:'2026-06-28T19:00:00Z', estadio:'Estadio Los Angeles', ciudad:'Los Ángeles', equipo1:'2A', equipo2:'Canadá', fase:'Dieciseisavos de final' },
   { id:'m74', fecha:'2026-06-29', hora:'16:30', utc:'2026-06-29T20:30:00Z', estadio:'Estadio Boston', ciudad:'Boston', equipo1:'Alemania', equipo2:'3ABCDF', fase:'Dieciseisavos de final' },
   { id:'m75', fecha:'2026-06-29', hora:'19:00', utc:'2026-06-30T01:00:00Z', estadio:'Estadio Monterrey', ciudad:'Monterrey', equipo1:'1F', equipo2:'2C', fase:'Dieciseisavos de final' },
   { id:'m76', fecha:'2026-06-29', hora:'12:00', utc:'2026-06-29T17:00:00Z', estadio:'Estadio Houston', ciudad:'Houston', equipo1:'1C', equipo2:'2F', fase:'Dieciseisavos de final' },
@@ -178,7 +178,7 @@ export const MATCHES: WCMatch[] = [
   { id:'m82', fecha:'2026-07-01', hora:'13:00', utc:'2026-07-01T20:00:00Z', estadio:'Estadio de Seattle', ciudad:'Seattle', equipo1:'1G', equipo2:'3AEHIJ', fase:'Dieciseisavos de final' },
   { id:'m83', fecha:'2026-07-02', hora:'19:00', utc:'2026-07-02T23:00:00Z', estadio:'Estadio de Toronto', ciudad:'Toronto', equipo1:'2K', equipo2:'2L', fase:'Dieciseisavos de final' },
   { id:'m84', fecha:'2026-07-02', hora:'12:00', utc:'2026-07-02T19:00:00Z', estadio:'Estadio Los Angeles', ciudad:'Los Ángeles', equipo1:'1H', equipo2:'2J', fase:'Dieciseisavos de final' },
-  { id:'m85', fecha:'2026-07-02', hora:'20:00', utc:'2026-07-03T03:00:00Z', estadio:'Estadio BC Place Vancouver', ciudad:'Vancouver', equipo1:'1B', equipo2:'3EFGIJ', fase:'Dieciseisavos de final' },
+  { id:'m85', fecha:'2026-07-02', hora:'20:00', utc:'2026-07-03T03:00:00Z', estadio:'Estadio BC Place Vancouver', ciudad:'Vancouver', equipo1:'Suiza', equipo2:'3EFGIJ', fase:'Dieciseisavos de final' },
   { id:'m86', fecha:'2026-07-03', hora:'18:00', utc:'2026-07-03T22:00:00Z', estadio:'Estadio Miami', ciudad:'Miami', equipo1:'Argentina', equipo2:'2H', fase:'Dieciseisavos de final' },
   { id:'m87', fecha:'2026-07-03', hora:'20:30', utc:'2026-07-04T01:30:00Z', estadio:'Estadio Kansas City', ciudad:'Kansas City', equipo1:'1K', equipo2:'3DEIJL', fase:'Dieciseisavos de final' },
   { id:'m88', fecha:'2026-07-03', hora:'13:00', utc:'2026-07-03T18:00:00Z', estadio:'Estadio Dallas', ciudad:'Dallas', equipo1:'2D', equipo2:'2G', fase:'Dieciseisavos de final' },

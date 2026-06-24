@@ -88,11 +88,11 @@ export const GRUPOS: WCGroup[] = [
   { nombre:'H', equipos:[{nombre:'España',pj:2,pg:1,pe:1,pp:0,gf:4,gc:0,pts:4},{nombre:'Uruguay',pj:2,pg:0,pe:2,pp:0,gf:3,gc:3,pts:2},{nombre:'Islas de Cabo Verde',pj:2,pg:0,pe:2,pp:0,gf:2,gc:2,pts:2},{nombre:'Arabia Saudí',pj:2,pg:0,pe:1,pp:1,gf:1,gc:5,pts:1}] },
   { nombre:'I', equipos:[{nombre:'Francia',pj:2,pg:2,pe:0,pp:0,gf:6,gc:1,pts:6},{nombre:'Noruega',pj:2,pg:2,pe:0,pp:0,gf:7,gc:3,pts:6},{nombre:'Senegal',pj:2,pg:0,pe:0,pp:2,gf:3,gc:6,pts:0},{nombre:'Irak',pj:2,pg:0,pe:0,pp:2,gf:1,gc:7,pts:0}] },
   { nombre:'J', equipos:[{nombre:'Argentina',pj:2,pg:2,pe:0,pp:0,gf:5,gc:0,pts:6},{nombre:'Austria',pj:2,pg:1,pe:0,pp:1,gf:3,gc:3,pts:3},{nombre:'Argelia',pj:2,pg:1,pe:0,pp:1,gf:2,gc:4,pts:3},{nombre:'Jordania',pj:2,pg:0,pe:0,pp:2,gf:2,gc:5,pts:0}] },
-  { nombre:'K', equipos:[{nombre:'Portugal',pj:2,pg:1,pe:1,pp:0,gf:6,gc:1,pts:4},{nombre:'Colombia',pj:1,pg:1,pe:0,pp:0,gf:3,gc:1,pts:3},{nombre:'RD Congo',pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,pts:1},{nombre:'Uzbekistán',pj:2,pg:0,pe:0,pp:2,gf:1,gc:8,pts:0}] },
-  { nombre:'L', equipos:[{nombre:'Inglaterra',pj:2,pg:1,pe:1,pp:0,gf:4,gc:2,pts:4},{nombre:'Ghana',pj:2,pg:1,pe:1,pp:0,gf:1,gc:0,pts:4},{nombre:'Panamá',pj:1,pg:0,pe:0,pp:1,gf:0,gc:1,pts:0},{nombre:'Croacia',pj:1,pg:0,pe:0,pp:1,gf:2,gc:4,pts:0}] },
+  { nombre:'K', equipos:[{nombre:'Portugal',pj:2,pg:1,pe:1,pp:0,gf:6,gc:1,pts:4},{nombre:'Colombia',pj:2,pg:1,pe:1,pp:0,gf:3,gc:1,pts:4},{nombre:'RD Congo',pj:2,pg:0,pe:2,pp:0,gf:1,gc:1,pts:2},{nombre:'Uzbekistán',pj:2,pg:0,pe:0,pp:2,gf:1,gc:8,pts:0}] },
+  { nombre:'L', equipos:[{nombre:'Inglaterra',pj:2,pg:1,pe:1,pp:0,gf:4,gc:2,pts:4},{nombre:'Ghana',pj:2,pg:1,pe:1,pp:0,gf:1,gc:0,pts:4},{nombre:'Croacia',pj:2,pg:1,pe:0,pp:1,gf:3,gc:4,pts:3},{nombre:'Panamá',pj:2,pg:0,pe:0,pp:2,gf:0,gc:2,pts:0}] },
 ];
 
-// Generado automáticamente — 2026-06-23T21:22:56.696Z
+// Generado automáticamente — 2026-06-24T02:10:21.986Z
 export const MATCHES: WCMatch[] = [
   { id:'m1', fecha:'2026-06-11', hora:'13:00', utc:'2026-06-11T19:00:00Z', estadio:'Estadio Ciudad de México', ciudad:'Ciudad de México', equipo1:'México', equipo2:'Sudáfrica', fase:'Primera fase', grupo:'A', broadcasters:'TUDN · Canal 5 · Azteca 7 · ViX', streaming:'https://vix.com', broadcastNotes:'Partido inaugural - Confirmado Televisa Deportes', broadcastConfirmed:true },
   { id:'m2', fecha:'2026-06-11', hora:'20:00', utc:'2026-06-12T02:00:00Z', estadio:'Estadio Guadalajara', ciudad:'Guadalajara', equipo1:'República de Corea', equipo2:'Chequia', fase:'Primera fase', grupo:'A', broadcasters:'TUDN · Canal 5 · Azteca 7 · ViX', streaming:'https://vix.com', broadcastConfirmed:true },

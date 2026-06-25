@@ -78,7 +78,7 @@ export const SEDES: WCVenue[] = [
 ];
 
 export const GRUPOS: WCGroup[] = [
-  { nombre:'A', equipos:[{nombre:'México',pj:3,pg:2,pe:1,pp:0,gf:3,gc:0,pts:7},{nombre:'República de Corea',pj:3,pg:1,pe:1,pp:1,gf:2,gc:2,pts:4},{nombre:'Chequia',pj:3,pg:0,pe:2,pp:1,gf:2,gc:3,pts:2},{nombre:'Sudáfrica',pj:3,pg:0,pe:2,pp:1,gf:1,gc:3,pts:2}] },
+  { nombre:'A', equipos:[{nombre:'México',pj:3,pg:3,pe:0,pp:0,gf:6,gc:0,pts:9},{nombre:'Sudáfrica',pj:3,pg:1,pe:1,pp:1,gf:2,gc:3,pts:4},{nombre:'República de Corea',pj:3,pg:1,pe:0,pp:2,gf:2,gc:3,pts:3},{nombre:'Chequia',pj:3,pg:0,pe:1,pp:2,gf:2,gc:6,pts:1}] },
   { nombre:'B', equipos:[{nombre:'Suiza',pj:3,pg:2,pe:1,pp:0,gf:7,gc:3,pts:7},{nombre:'Canadá',pj:3,pg:1,pe:1,pp:1,gf:8,gc:3,pts:4},{nombre:'Bosnia y Herzegovina',pj:3,pg:1,pe:1,pp:1,gf:5,gc:6,pts:4},{nombre:'Catar',pj:3,pg:0,pe:1,pp:2,gf:2,gc:10,pts:1}] },
   { nombre:'C', equipos:[{nombre:'Brasil',pj:3,pg:2,pe:1,pp:0,gf:7,gc:1,pts:7},{nombre:'Marruecos',pj:3,pg:2,pe:1,pp:0,gf:6,gc:3,pts:7},{nombre:'Escocia',pj:3,pg:1,pe:0,pp:2,gf:1,gc:4,pts:3},{nombre:'Haití',pj:3,pg:0,pe:0,pp:3,gf:2,gc:8,pts:0}] },
   { nombre:'D', equipos:[{nombre:'EE. UU.',pj:2,pg:2,pe:0,pp:0,gf:6,gc:1,pts:6},{nombre:'Australia',pj:2,pg:1,pe:0,pp:1,gf:2,gc:2,pts:3},{nombre:'Paraguay',pj:2,pg:1,pe:0,pp:1,gf:2,gc:4,pts:3},{nombre:'Turquía',pj:2,pg:0,pe:0,pp:2,gf:0,gc:3,pts:0}] },
@@ -92,7 +92,7 @@ export const GRUPOS: WCGroup[] = [
   { nombre:'L', equipos:[{nombre:'Inglaterra',pj:2,pg:1,pe:1,pp:0,gf:4,gc:2,pts:4},{nombre:'Ghana',pj:2,pg:1,pe:1,pp:0,gf:1,gc:0,pts:4},{nombre:'Croacia',pj:2,pg:1,pe:0,pp:1,gf:3,gc:4,pts:3},{nombre:'Panamá',pj:2,pg:0,pe:0,pp:2,gf:0,gc:2,pts:0}] },
 ];
 
-// Generado automáticamente — 2026-06-25T02:10:02.980Z
+// Generado automáticamente — 2026-06-25T07:32:38.011Z
 export const MATCHES: WCMatch[] = [
   { id:'m1', fecha:'2026-06-11', hora:'13:00', utc:'2026-06-11T19:00:00Z', estadio:'Estadio Ciudad de México', ciudad:'Ciudad de México', equipo1:'México', equipo2:'Sudáfrica', fase:'Primera fase', grupo:'A', broadcasters:'TUDN · Canal 5 · Azteca 7 · ViX', streaming:'https://vix.com', broadcastNotes:'Partido inaugural - Confirmado Televisa Deportes', broadcastConfirmed:true },
   { id:'m2', fecha:'2026-06-11', hora:'20:00', utc:'2026-06-12T02:00:00Z', estadio:'Estadio Guadalajara', ciudad:'Guadalajara', equipo1:'República de Corea', equipo2:'Chequia', fase:'Primera fase', grupo:'A', broadcasters:'TUDN · Canal 5 · Azteca 7 · ViX', streaming:'https://vix.com', broadcastConfirmed:true },
@@ -166,7 +166,7 @@ export const MATCHES: WCMatch[] = [
   { id:'m70', fecha:'2026-06-27', hora:'21:00', utc:'2026-06-28T02:00:00Z', estadio:'Estadio Dallas', ciudad:'Dallas', equipo1:'Jordania', equipo2:'Argentina', fase:'Primera fase', grupo:'J' },
   { id:'m71', fecha:'2026-06-27', hora:'19:30', utc:'2026-06-27T23:30:00Z', estadio:'Estadio Miami', ciudad:'Miami', equipo1:'Colombia', equipo2:'Portugal', fase:'Primera fase', grupo:'K' },
   { id:'m72', fecha:'2026-06-27', hora:'19:30', utc:'2026-06-27T23:30:00Z', estadio:'Estadio Atlanta', ciudad:'Atlanta', equipo1:'RD Congo', equipo2:'Uzbekistán', fase:'Primera fase', grupo:'K' },
-  { id:'m73', fecha:'2026-06-28', hora:'12:00', utc:'2026-06-28T19:00:00Z', estadio:'Estadio Los Angeles', ciudad:'Los Ángeles', equipo1:'2A', equipo2:'Canadá', fase:'Dieciseisavos de final' },
+  { id:'m73', fecha:'2026-06-28', hora:'12:00', utc:'2026-06-28T19:00:00Z', estadio:'Estadio Los Angeles', ciudad:'Los Ángeles', equipo1:'Sudáfrica', equipo2:'Canadá', fase:'Dieciseisavos de final' },
   { id:'m74', fecha:'2026-06-29', hora:'16:30', utc:'2026-06-29T20:30:00Z', estadio:'Estadio Boston', ciudad:'Boston', equipo1:'Alemania', equipo2:'3ABCDF', fase:'Dieciseisavos de final' },
   { id:'m75', fecha:'2026-06-29', hora:'19:00', utc:'2026-06-30T01:00:00Z', estadio:'Estadio Monterrey', ciudad:'Monterrey', equipo1:'1F', equipo2:'Marruecos', fase:'Dieciseisavos de final' },
   { id:'m76', fecha:'2026-06-29', hora:'12:00', utc:'2026-06-29T17:00:00Z', estadio:'Estadio Houston', ciudad:'Houston', equipo1:'Brasil', equipo2:'2F', fase:'Dieciseisavos de final' },

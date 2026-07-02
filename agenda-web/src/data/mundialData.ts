@@ -94,7 +94,7 @@ export const GRUPOS: WCGroup[] = [
   { nombre:'L', equipos:[{nombre:'Inglaterra',pj:3,pg:2,pe:1,pp:0,gf:6,gc:2,pts:7},{nombre:'Croacia',pj:3,pg:2,pe:0,pp:1,gf:5,gc:5,pts:6},{nombre:'Ghana',pj:3,pg:1,pe:1,pp:1,gf:2,gc:2,pts:4},{nombre:'Panamá',pj:3,pg:0,pe:0,pp:3,gf:0,gc:4,pts:0}] },
 ];
 
-// Generado automáticamente — 2026-07-02T10:27:41.774Z
+// Generado automáticamente — 2026-07-02T13:28:15.133Z
 export const MATCHES: WCMatch[] = [
   { id:'m1', fecha:'2026-06-11', hora:'13:00', utc:'2026-06-11T19:00:00Z', estadio:'Estadio Ciudad de México', ciudad:'Ciudad de México', equipo1:'México', equipo2:'Sudáfrica', fase:'Primera fase', grupo:'A', goles1:2, goles2:0, broadcasters:'TUDN · Canal 5 · Azteca 7 · ViX', streaming:'https://vix.com', broadcastNotes:'Partido inaugural - Confirmado Televisa Deportes', broadcastConfirmed:true },
   { id:'m2', fecha:'2026-06-11', hora:'20:00', utc:'2026-06-12T02:00:00Z', estadio:'Estadio Guadalajara', ciudad:'Guadalajara', equipo1:'República de Corea', equipo2:'Chequia', fase:'Primera fase', grupo:'A', goles1:2, goles2:1, broadcasters:'TUDN · Canal 5 · Azteca 7 · ViX', streaming:'https://vix.com', broadcastConfirmed:true },

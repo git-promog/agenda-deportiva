@@ -117,17 +117,17 @@ export default function SportEventModal({ evento, isOpen, onClose }: Props) {
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="bg-slate-900 border-t md:border border-slate-800 rounded-t-[32px] md:rounded-[32px] w-full max-w-lg shadow-2xl overflow-hidden relative max-h-[90vh] md:max-h-none"
+            className="bg-slate-900 border-t md:border border-slate-800 rounded-t-[32px] md:rounded-[32px] w-full max-w-lg shadow-2xl relative max-h-[90vh] md:max-h-auto flex flex-col"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
           >
             {/* Drag Handle (Mobile) */}
-            <div className="md:hidden flex items-center justify-center py-3 border-b border-white/5">
+            <div className="md:hidden flex items-center justify-center py-3 border-b border-white/5 shrink-0">
               <div className="w-10 h-1 bg-white/20 rounded-full" />
             </div>
 
-            <div className="flex items-center justify-between p-6 border-b border-white/5">
+            <div className="flex items-center justify-between p-6 border-b border-white/5 shrink-0">
               <div className="flex items-center gap-2">
                 <span className="text-2xl">{EMOJIS[evento.deporte] || "🏆"}</span>
                 <span className="text-[10px] font-black uppercase tracking-widest bg-slate-800 text-slate-300 px-3 py-1 rounded-full border border-slate-700">
@@ -139,7 +139,8 @@ export default function SportEventModal({ evento, isOpen, onClose }: Props) {
               </button>
             </div>
 
-            <div className="p-6 md:p-8">
+            {/* Modal Body (scrollable) */}
+            <div className="flex-1 overflow-y-auto p-6 md:p-8">
               {isMatch ? (
                 <div className="flex items-center justify-center gap-4 mb-8">
                   <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
@@ -205,8 +206,11 @@ export default function SportEventModal({ evento, isOpen, onClose }: Props) {
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {/* Actions (fixed at bottom) */}
+            <div className="p-6 pt-0 border-t border-white/5 shrink-0">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4">
                 <a 
                   href={buildCalendarLink()} 
                   target="_blank" 

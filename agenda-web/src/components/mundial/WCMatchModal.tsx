@@ -133,18 +133,18 @@ export default function WCMatchModal({
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="bg-slate-900 border-t md:border border-slate-800 rounded-t-[32px] md:rounded-[32px] w-full max-w-lg shadow-2xl overflow-hidden relative max-h-[90vh] md:max-h-none"
+            className="bg-slate-900 border-t md:border border-slate-800 rounded-t-[32px] md:rounded-[32px] w-full max-w-lg shadow-2xl relative max-h-[90vh] md:max-h-auto flex flex-col"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
           >
             {/* Drag Handle (Mobile) */}
-            <div className="md:hidden flex items-center justify-center py-3 border-b border-white/5">
+            <div className="md:hidden flex items-center justify-center py-3 border-b border-white/5 shrink-0">
               <div className="w-10 h-1 bg-white/20 rounded-full" />
             </div>
 
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-white/5">
+            <div className="flex items-center justify-between p-6 border-b border-white/5 shrink-0">
               <div className="flex items-center gap-3">
                 <span className="text-[10px] font-black uppercase tracking-widest bg-blue-600/20 text-blue-400 px-3 py-1 rounded-full border border-blue-500/20">
                   {match.fase}
@@ -169,8 +169,8 @@ export default function WCMatchModal({
               </div>
             </div>
 
-            {/* Modal Body */}
-            <div className="p-6 md:p-8">
+            {/* Modal Body (scrollable) */}
+            <div className="flex-1 overflow-y-auto p-6 md:p-8">
               {/* Teams Matchup */}
               <div className="flex items-center justify-center gap-6 mb-8">
                 <div className="flex flex-col items-center gap-2 flex-1 max-w-[140px]">
@@ -284,9 +284,11 @@ export default function WCMatchModal({
                    </div>
                  )}
               </div>
+            </div>
 
-              {/* Actions */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {/* Actions (fixed at bottom) */}
+            <div className="p-6 pt-0 border-t border-white/5 shrink-0">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4">
                 <a 
                   href={buildCalendarLink()} 
                   target="_blank" 

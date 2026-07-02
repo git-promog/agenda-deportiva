@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Clock, ExternalLink, Tv, X, CalendarPlus, Trophy } from 'lucide-react';
+import { Calendar, Clock, ExternalLink, Tv, X, CalendarPlus, Trophy, GripVertical } from 'lucide-react';
 import ShareButton from '@/components/ShareButton';
 import { trackEvent } from '@/lib/analytics';
 import { buildEventPath, buildEventUrl } from '@/lib/eventUrls';
@@ -30,6 +30,13 @@ interface Props {
 }
 
 export default function SportEventModal({ evento, isOpen, onClose }: Props) {
+
+  const modalRef = useRef<HTMLDivElement>(null);
+  const startY = useRef(0);
+  const currentY = useRef(0);
+  const isDragging = useRef(false);
+
+  // Prevent background scroll when modal is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -38,6 +45,37 @@ export default function SportEventModal({ evento, isOpen, onClose }: Props) {
     }
     return () => { document.body.style.overflow = 'unset'; };
   }, [isOpen]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    startY.current = e.touches[0].clientY;
+    currentY.current = startY.current;
+    isDragging.current = true;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging.current) return;
+    currentY.current = e.touches[0].clientY;
+    const deltaY = currentY.current - startY.current;
+    if (deltaY > 0 && modalRef.current) {
+      modalRef.current.style.transform = `translateY(${deltaY}px)`;
+      modalRef.current.style.transition = 'none';
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (!isDragging.current) return;
+    isDragging.current = false;
+    const deltaY = currentY.current - startY.current;
+    if (modalRef.current) {
+      modalRef.current.style.transition = 'transform 0.3s ease-out';
+      if (deltaY > 100) {
+        modalRef.current.style.transform = 'translateY(100%)';
+        setTimeout(onClose, 300);
+      } else {
+        modalRef.current.style.transform = 'translateY(0)';
+      }
+    }
+  };
 
   if (!evento) return null;
 
@@ -74,12 +112,21 @@ export default function SportEventModal({ evento, isOpen, onClose }: Props) {
           onClick={handleBackdropClick}
         >
           <motion.div
+            ref={modalRef}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="bg-slate-900 border-t md:border border-slate-800 rounded-t-[32px] md:rounded-[32px] w-full max-w-lg shadow-2xl overflow-hidden relative"
+            className="bg-slate-900 border-t md:border border-slate-800 rounded-t-[32px] md:rounded-[32px] w-full max-w-lg shadow-2xl overflow-hidden relative max-h-[90vh] md:max-h-none"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
           >
+            {/* Drag Handle (Mobile) */}
+            <div className="md:hidden flex items-center justify-center py-3 border-b border-white/5">
+              <div className="w-10 h-1 bg-white/20 rounded-full" />
+            </div>
+
             <div className="flex items-center justify-between p-6 border-b border-white/5">
               <div className="flex items-center gap-2">
                 <span className="text-2xl">{EMOJIS[evento.deporte] || "🏆"}</span>
@@ -87,8 +134,8 @@ export default function SportEventModal({ evento, isOpen, onClose }: Props) {
                   {evento.deporte}
                 </span>
               </div>
-              <button onClick={onClose} className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors">
-                <X size={18} className="text-slate-400" />
+              <button onClick={onClose} className="p-3 md:p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors" aria-label="Cerrar">
+                <X size={20} className="text-slate-300" />
               </button>
             </div>
 

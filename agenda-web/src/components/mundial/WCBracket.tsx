@@ -95,7 +95,7 @@ export default function WCBracket({ onMatchClick, convertirHora }: Props) {
   };
 
   return (
-    <div className="w-full overflow-x-auto pb-12 scrollbar-hide">
+    <div className="wc-bracket-wrapper w-full overflow-x-auto pb-12 scrollbar-hide">
       <div className="flex gap-10 min-w-[1300px] p-6 justify-center items-center">
         
         {/* LADO IZQUIERDO */}

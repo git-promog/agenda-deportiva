@@ -83,12 +83,7 @@ const WCVisualCalendar = forwardRef<HTMLDivElement, Props>(({ onMatchClick, conv
   const getMatchesByGroup = (groupLabel: string) => 
     MATCHES.filter(m => m.grupo === groupLabel).sort((a, b) => a.fecha.localeCompare(b.fecha));
 
-  const getKnockoutMatches = (fase: string) => {
-    if (fase === 'Final') {
-      return MATCHES.filter(m => m.fase === 'Final');
-    }
-    return MATCHES.filter(m => m.fase.toLowerCase().includes(fase.toLowerCase()));
-  };
+  const getMatchById = (id: string) => MATCHES.find(m => m.id === id) || null;
 
   const MiniMatchCard = ({ match }: { match: WCMatch }) => {
     const isDragging = useRef(false);
@@ -139,17 +134,27 @@ const WCVisualCalendar = forwardRef<HTMLDivElement, Props>(({ onMatchClick, conv
           </div>
 
           <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full overflow-hidden border border-white/10 shrink-0">
-                {flag1 ? <img src={flag1} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-slate-800" />}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <div className="w-4 h-4 rounded-full overflow-hidden border border-white/10 shrink-0">
+                  {flag1 ? <img src={flag1} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-slate-800" />}
+                </div>
+                <span className="text-[9px] font-black uppercase text-slate-200 truncate">{match.equipo1}</span>
               </div>
-              <span className="text-[9px] font-black uppercase text-slate-200 truncate">{match.equipo1}</span>
+              {match.goles1 !== undefined && (
+                <span className="text-[9px] font-black text-blue-400 bg-blue-500/10 px-1 py-0.5 rounded border border-blue-500/20 leading-none">{match.goles1}</span>
+              )}
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full overflow-hidden border border-white/10 shrink-0">
-                {flag2 ? <img src={flag2} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-slate-800" />}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <div className="w-4 h-4 rounded-full overflow-hidden border border-white/10 shrink-0">
+                  {flag2 ? <img src={flag2} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-slate-800" />}
+                </div>
+                <span className="text-[9px] font-black uppercase text-slate-200 truncate">{match.equipo2}</span>
               </div>
-              <span className="text-[9px] font-black uppercase text-slate-200 truncate">{match.equipo2}</span>
+              {match.goles2 !== undefined && (
+                <span className="text-[9px] font-black text-blue-400 bg-blue-500/10 px-1 py-0.5 rounded border border-blue-500/20 leading-none">{match.goles2}</span>
+              )}
             </div>
           </div>
         </div>
@@ -216,13 +221,19 @@ const WCVisualCalendar = forwardRef<HTMLDivElement, Props>(({ onMatchClick, conv
               {/* Dieciseisavos (Lado Izquierdo) */}
               <div className="flex flex-col justify-between gap-8 py-20">
                 <h4 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] text-center mb-4">16avos</h4>
-                {getKnockoutMatches('Dieciseisavos').slice(0, 8).map(m => <MiniMatchCard key={m.id} match={m} />)}
+                {['m73', 'm74', 'm75', 'm76', 'm83', 'm84', 'm81', 'm82'].map(id => {
+                  const m = getMatchById(id);
+                  return m ? <MiniMatchCard key={m.id} match={m} /> : null;
+                })}
               </div>
 
               {/* Octavos (Lado Izquierdo) */}
               <div className="flex flex-col justify-around gap-16 py-32">
                  <h4 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] text-center mb-4">Octavos</h4>
-                 {getKnockoutMatches('Octavos').slice(0, 4).map(m => <MiniMatchCard key={m.id} match={m} />)}
+                 {['m89', 'm90', 'm93', 'm94'].map(id => {
+                   const m = getMatchById(id);
+                   return m ? <MiniMatchCard key={m.id} match={m} /> : null;
+                 })}
               </div>
 
               {/* Cuartos, Semis, Final, 3er Lugar */}
@@ -232,13 +243,19 @@ const WCVisualCalendar = forwardRef<HTMLDivElement, Props>(({ onMatchClick, conv
                    {/* Cuartos Izq */}
                    <div className="flex flex-col gap-24">
                      <h4 className="text-[8px] font-black text-blue-500 uppercase tracking-widest text-center">Cuartos</h4>
-                     {getKnockoutMatches('Cuartos').slice(0, 2).map(m => <MiniMatchCard key={m.id} match={m} />)}
+                     {['m97', 'm98'].map(id => {
+                       const m = getMatchById(id);
+                       return m ? <MiniMatchCard key={m.id} match={m} /> : null;
+                     })}
                    </div>
 
                    {/* Semis Izq */}
                    <div className="flex flex-col gap-32">
                      <h4 className="text-[8px] font-black text-blue-500 uppercase tracking-widest text-center">Semi</h4>
-                     {getKnockoutMatches('Semifinal').slice(0, 1).map(m => <MiniMatchCard key={m.id} match={m} />)}
+                     {['m101'].map(id => {
+                       const m = getMatchById(id);
+                       return m ? <MiniMatchCard key={m.id} match={m} /> : null;
+                     })}
                    </div>
 
                    {/* FINAL AREA */}
@@ -246,27 +263,39 @@ const WCVisualCalendar = forwardRef<HTMLDivElement, Props>(({ onMatchClick, conv
                       <div className="bg-yellow-500/20 border-2 border-yellow-500/50 p-6 rounded-[40px] shadow-2xl shadow-yellow-500/10 flex flex-col items-center gap-4">
                         <Trophy size={48} className="text-yellow-500 drop-shadow-lg" />
                         <span className="text-[10px] font-black text-yellow-500 uppercase tracking-[0.4em]">Gran Final</span>
-                        {getKnockoutMatches('Final').map(m => <MiniMatchCard key={m.id} match={m} />)}
+                        {['m104'].map(id => {
+                          const m = getMatchById(id);
+                          return m ? <MiniMatchCard key={m.id} match={m} /> : null;
+                        })}
                         <span className="text-[8px] font-black text-slate-400 uppercase">19 JUL • NY/NJ</span>
                       </div>
                       
                       {/* 3er Lugar */}
                       <div className="bg-slate-900/40 border border-slate-700/50 p-4 rounded-3xl flex flex-col items-center gap-2 mt-8">
                         <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">3er Lugar</span>
-                        {getKnockoutMatches('Tercer').map(m => <MiniMatchCard key={m.id} match={m} />)}
+                        {['m103'].map(id => {
+                          const m = getMatchById(id);
+                          return m ? <MiniMatchCard key={m.id} match={m} /> : null;
+                        })}
                       </div>
                    </div>
 
                    {/* Semis Der */}
                    <div className="flex flex-col gap-32">
                      <h4 className="text-[8px] font-black text-blue-500 uppercase tracking-widest text-center">Semi</h4>
-                     {getKnockoutMatches('Semifinal').slice(1, 2).map(m => <MiniMatchCard key={m.id} match={m} />)}
+                     {['m102'].map(id => {
+                       const m = getMatchById(id);
+                       return m ? <MiniMatchCard key={m.id} match={m} /> : null;
+                     })}
                    </div>
 
                    {/* Cuartos Der */}
                    <div className="flex flex-col gap-24">
                      <h4 className="text-[8px] font-black text-blue-500 uppercase tracking-widest text-center">Cuartos</h4>
-                     {getKnockoutMatches('Cuartos').slice(2, 4).map(m => <MiniMatchCard key={m.id} match={m} />)}
+                     {['m99', 'm100'].map(id => {
+                       const m = getMatchById(id);
+                       return m ? <MiniMatchCard key={m.id} match={m} /> : null;
+                     })}
                    </div>
                 </div>
 
@@ -275,13 +304,19 @@ const WCVisualCalendar = forwardRef<HTMLDivElement, Props>(({ onMatchClick, conv
               {/* Octavos (Lado Derecho) */}
               <div className="flex flex-col justify-around gap-16 py-32">
                  <h4 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] text-center mb-4">Octavos</h4>
-                 {getKnockoutMatches('Octavos').slice(4, 8).map(m => <MiniMatchCard key={m.id} match={m} />)}
+                 {['m91', 'm92', 'm95', 'm96'].map(id => {
+                   const m = getMatchById(id);
+                   return m ? <MiniMatchCard key={m.id} match={m} /> : null;
+                 })}
               </div>
 
               {/* Dieciseisavos (Lado Derecho) */}
               <div className="flex flex-col justify-between gap-8 py-20">
                 <h4 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] text-center mb-4">16avos</h4>
-                {getKnockoutMatches('Dieciseisavos').slice(8, 16).map(m => <MiniMatchCard key={m.id} match={m} />)}
+                {['m77', 'm78', 'm79', 'm80', 'm85', 'm86', 'm87', 'm88'].map(id => {
+                  const m = getMatchById(id);
+                  return m ? <MiniMatchCard key={m.id} match={m} /> : null;
+                })}
               </div>
 
             </div>

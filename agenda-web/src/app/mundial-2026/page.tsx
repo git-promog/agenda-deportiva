@@ -849,7 +849,10 @@ export default function Mundial2026() {
 
             {activeTab === 'bracket' && (
               <div className="animate-in fade-in duration-500">
-                <WCBracket />
+                <WCBracket 
+                  onMatchClick={(match, hora, nota) => { setSelectedMatchData({ match, hora, nota }); setIsModalOpen(true); }} 
+                  convertirHora={convertirHora}
+                />
               </div>
             )}
 

@@ -140,6 +140,9 @@ async function main() {
     const equipo1   = homeTeam || phA;
     const equipo2   = awayTeam || phB;
 
+    const goles1 = getScore(m.Home?.Score);
+    const goles2 = getScore(m.Away?.Score);
+
     const ov = overrides[id] || {};
     const broadcasters = ov.broadcasters ? `'${ov.broadcasters.replace(/'/g, "\\'")}'` : 'undefined';
     const streaming = ov.streaming ? `'${ov.streaming.replace(/'/g, "\\'")}'` : 'undefined';
@@ -152,8 +155,10 @@ async function main() {
     const ntField    = ov.notes ? `, broadcastNotes:${broadcastNotes}` : '';
     const cfField    = broadcastConfirmed ? `, broadcastConfirmed:true` : '';
     const utcField   = utcIso ? `, utc:'${utcIso}'` : '';
+    const goles1Field = goles1 !== null ? `, goles1:${goles1}` : '';
+    const goles2Field = goles2 !== null ? `, goles2:${goles2}` : '';
 
-    return `  { id:'${id}', fecha:'${dateOnly}', hora:'${timeOnly}'${utcField}, estadio:'${stadium}', ciudad:'${city}', equipo1:'${equipo1.replace(/'/g, "\\'")}', equipo2:'${equipo2.replace(/'/g, "\\'")}', fase:'${fase}'${grupoField}${bcField}${stField}${ntField}${cfField} },`;
+    return `  { id:'${id}', fecha:'${dateOnly}', hora:'${timeOnly}'${utcField}, estadio:'${stadium}', ciudad:'${city}', equipo1:'${equipo1.replace(/'/g, "\\'")}', equipo2:'${equipo2.replace(/'/g, "\\'")}', fase:'${fase}'${grupoField}${goles1Field}${goles2Field}${bcField}${stField}${ntField}${cfField} },`;
   });
 
   // ── Calcular standings de grupos ────────────────────────────────────────
@@ -285,6 +290,8 @@ export interface WCMatch {
   equipo2: string;
   fase: string;
   grupo?: string;
+  goles1?: number;
+  goles2?: number;
   broadcasters?: string;
   streaming?: string;
   broadcastNotes?: string;

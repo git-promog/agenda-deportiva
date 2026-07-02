@@ -108,29 +108,43 @@ export default function WCMatchCard({
 
       {/* Equipos */}
       <div className="flex-1 flex items-center justify-between md:justify-start gap-4 md:gap-12">
-        <div className="flex flex-col md:flex-row items-center gap-3 flex-1 md:flex-none md:w-[150px]">
+        <div className="flex flex-col md:flex-row items-center gap-3 flex-1 md:flex-none md:w-[160px] md:justify-end">
+          <span className="text-xs md:text-sm font-black uppercase italic text-white line-clamp-1 text-right">{match.equipo1}</span>
           {flag1 ? (
-            <img src={flag1} alt={match.equipo1} className="w-8 h-8 rounded-full object-cover border-2 border-white/10 shadow-lg" />
+            <img src={flag1} alt={match.equipo1} className="w-8 h-8 rounded-full object-cover border-2 border-white/10 shadow-lg shrink-0" />
           ) : (
-            <span className="text-2xl">🏳️</span>
-          )}
-          <span className="text-xs md:text-sm font-black uppercase italic text-white line-clamp-1">{match.equipo1}</span>
-        </div>
-
-        <div className="flex flex-col items-center gap-1">
-          <div className="text-[10px] font-black italic text-slate-700 select-none">VS</div>
-          {match.grupo && (
-            <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Grupo {match.grupo}</span>
+            <span className="text-2xl shrink-0">🏳️</span>
           )}
         </div>
 
-        <div className="flex flex-col md:flex-row-reverse items-center gap-3 flex-1 md:flex-none md:w-[150px]">
+        <div className="flex items-center gap-3 shrink-0">
+          {match.goles1 !== undefined && (
+            <span className="text-lg md:text-xl font-black italic text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2.5 py-1 rounded-xl shadow-inner min-w-[32px] text-center leading-none">
+              {match.goles1}
+            </span>
+          )}
+          
+          <div className="flex flex-col items-center gap-0.5">
+            <div className="text-[10px] font-black italic text-slate-700 select-none">VS</div>
+            {match.grupo && (
+              <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Grupo {match.grupo}</span>
+            )}
+          </div>
+
+          {match.goles2 !== undefined && (
+            <span className="text-lg md:text-xl font-black italic text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2.5 py-1 rounded-xl shadow-inner min-w-[32px] text-center leading-none">
+              {match.goles2}
+            </span>
+          )}
+        </div>
+
+        <div className="flex flex-col md:flex-row items-center gap-3 flex-1 md:flex-none md:w-[160px] md:justify-start">
           {flag2 ? (
-            <img src={flag2} alt={match.equipo2} className="w-8 h-8 rounded-full object-cover border-2 border-white/10 shadow-lg" />
+            <img src={flag2} alt={match.equipo2} className="w-8 h-8 rounded-full object-cover border-2 border-white/10 shadow-lg shrink-0" />
           ) : (
-            <span className="text-2xl">🏳️</span>
+            <span className="text-2xl shrink-0">🏳️</span>
           )}
-          <span className="text-xs md:text-sm font-black uppercase italic text-white line-clamp-1">{match.equipo2}</span>
+          <span className="text-xs md:text-sm font-black uppercase italic text-white line-clamp-1 text-left">{match.equipo2}</span>
         </div>
       </div>
 

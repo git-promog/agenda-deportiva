@@ -128,22 +128,38 @@ export default function WCMatchModal({
             <div className="p-6 md:p-8">
               {/* Teams Matchup */}
               <div className="flex items-center justify-center gap-6 mb-8">
-                <div className="flex flex-col items-center gap-2 flex-1">
+                <div className="flex flex-col items-center gap-2 flex-1 max-w-[140px]">
                   {flag1 ? (
                     <img src={flag1} alt={match.equipo1} className="w-16 h-16 rounded-full object-cover border-4 border-white/10 shadow-lg" />
                   ) : (
                     <span className="text-5xl">🏳️</span>
                   )}
-                  <span className="text-sm font-black uppercase text-center text-white line-clamp-2">{match.equipo1}</span>
+                  <span className="text-xs font-black uppercase text-center text-white line-clamp-2">{match.equipo1}</span>
                 </div>
-                <div className="text-3xl font-black italic text-slate-700">VS</div>
-                <div className="flex flex-col items-center gap-2 flex-1">
+
+                <div className="flex items-center gap-3 shrink-0">
+                  {match.goles1 !== undefined && (
+                    <span className="text-3xl font-black italic text-blue-400 bg-blue-500/10 border-2 border-blue-500/20 px-4 py-2 rounded-2xl shadow-inner min-w-[50px] text-center leading-none">
+                      {match.goles1}
+                    </span>
+                  )}
+                  
+                  <div className="text-2xl font-black italic text-slate-700 select-none">VS</div>
+
+                  {match.goles2 !== undefined && (
+                    <span className="text-3xl font-black italic text-blue-400 bg-blue-500/10 border-2 border-blue-500/20 px-4 py-2 rounded-2xl shadow-inner min-w-[50px] text-center leading-none">
+                      {match.goles2}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex flex-col items-center gap-2 flex-1 max-w-[140px]">
                   {flag2 ? (
                     <img src={flag2} alt={match.equipo2} className="w-16 h-16 rounded-full object-cover border-4 border-white/10 shadow-lg" />
                   ) : (
                     <span className="text-5xl">🏳️</span>
                   )}
-                  <span className="text-sm font-black uppercase text-center text-white line-clamp-2">{match.equipo2}</span>
+                  <span className="text-xs font-black uppercase text-center text-white line-clamp-2">{match.equipo2}</span>
                 </div>
               </div>
 

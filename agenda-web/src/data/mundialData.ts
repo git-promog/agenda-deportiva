@@ -94,7 +94,7 @@ export const GRUPOS: WCGroup[] = [
   { nombre:'L', equipos:[{nombre:'Inglaterra',pj:3,pg:2,pe:1,pp:0,gf:6,gc:2,pts:7},{nombre:'Croacia',pj:3,pg:2,pe:0,pp:1,gf:5,gc:5,pts:6},{nombre:'Ghana',pj:3,pg:1,pe:1,pp:1,gf:2,gc:2,pts:4},{nombre:'Panamá',pj:3,pg:0,pe:0,pp:3,gf:0,gc:4,pts:0}] },
 ];
 
-// Generado automáticamente — 2026-07-02T13:28:15.133Z
+// Generado automáticamente — 2026-07-03T17:12:11.993Z
 export const MATCHES: WCMatch[] = [
   { id:'m1', fecha:'2026-06-11', hora:'13:00', utc:'2026-06-11T19:00:00Z', estadio:'Estadio Ciudad de México', ciudad:'Ciudad de México', equipo1:'México', equipo2:'Sudáfrica', fase:'Primera fase', grupo:'A', goles1:2, goles2:0, broadcasters:'TUDN · Canal 5 · Azteca 7 · ViX', streaming:'https://vix.com', broadcastNotes:'Partido inaugural - Confirmado Televisa Deportes', broadcastConfirmed:true },
   { id:'m2', fecha:'2026-06-11', hora:'20:00', utc:'2026-06-12T02:00:00Z', estadio:'Estadio Guadalajara', ciudad:'Guadalajara', equipo1:'República de Corea', equipo2:'Chequia', fase:'Primera fase', grupo:'A', goles1:2, goles2:1, broadcasters:'TUDN · Canal 5 · Azteca 7 · ViX', streaming:'https://vix.com', broadcastConfirmed:true },
@@ -178,9 +178,9 @@ export const MATCHES: WCMatch[] = [
   { id:'m80', fecha:'2026-07-01', hora:'12:00', utc:'2026-07-01T16:00:00Z', estadio:'Estadio Atlanta', ciudad:'Atlanta', equipo1:'Inglaterra', equipo2:'RD Congo', fase:'Dieciseisavos de final', goles1:2, goles2:1 },
   { id:'m81', fecha:'2026-07-01', hora:'17:00', utc:'2026-07-02T00:00:00Z', estadio:'Estadio de la Bahía de San Francisco', ciudad:'Área de la Bahía de San Francisco', equipo1:'EE. UU.', equipo2:'Bosnia y Herzegovina', fase:'Dieciseisavos de final', goles1:2, goles2:0 },
   { id:'m82', fecha:'2026-07-01', hora:'13:00', utc:'2026-07-01T20:00:00Z', estadio:'Estadio de Seattle', ciudad:'Seattle', equipo1:'Bélgica', equipo2:'Senegal', fase:'Dieciseisavos de final', goles1:3, goles2:2 },
-  { id:'m83', fecha:'2026-07-02', hora:'19:00', utc:'2026-07-02T23:00:00Z', estadio:'Estadio de Toronto', ciudad:'Toronto', equipo1:'Portugal', equipo2:'Croacia', fase:'Dieciseisavos de final' },
-  { id:'m84', fecha:'2026-07-02', hora:'12:00', utc:'2026-07-02T19:00:00Z', estadio:'Estadio Los Angeles', ciudad:'Los Ángeles', equipo1:'España', equipo2:'Austria', fase:'Dieciseisavos de final' },
-  { id:'m85', fecha:'2026-07-02', hora:'20:00', utc:'2026-07-03T03:00:00Z', estadio:'Estadio BC Place Vancouver', ciudad:'Vancouver', equipo1:'Suiza', equipo2:'Argelia', fase:'Dieciseisavos de final' },
+  { id:'m83', fecha:'2026-07-02', hora:'19:00', utc:'2026-07-02T23:00:00Z', estadio:'Estadio de Toronto', ciudad:'Toronto', equipo1:'Portugal', equipo2:'Croacia', fase:'Dieciseisavos de final', goles1:2, goles2:1 },
+  { id:'m84', fecha:'2026-07-02', hora:'12:00', utc:'2026-07-02T19:00:00Z', estadio:'Estadio Los Angeles', ciudad:'Los Ángeles', equipo1:'España', equipo2:'Austria', fase:'Dieciseisavos de final', goles1:3, goles2:0 },
+  { id:'m85', fecha:'2026-07-02', hora:'20:00', utc:'2026-07-03T03:00:00Z', estadio:'Estadio BC Place Vancouver', ciudad:'Vancouver', equipo1:'Suiza', equipo2:'Argelia', fase:'Dieciseisavos de final', goles1:2, goles2:0 },
   { id:'m86', fecha:'2026-07-03', hora:'18:00', utc:'2026-07-03T22:00:00Z', estadio:'Estadio Miami', ciudad:'Miami', equipo1:'Argentina', equipo2:'Islas de Cabo Verde', fase:'Dieciseisavos de final' },
   { id:'m87', fecha:'2026-07-03', hora:'20:30', utc:'2026-07-04T01:30:00Z', estadio:'Estadio Kansas City', ciudad:'Kansas City', equipo1:'Colombia', equipo2:'Ghana', fase:'Dieciseisavos de final' },
   { id:'m88', fecha:'2026-07-03', hora:'13:00', utc:'2026-07-03T18:00:00Z', estadio:'Estadio Dallas', ciudad:'Dallas', equipo1:'Australia', equipo2:'Egipto', fase:'Dieciseisavos de final' },
@@ -188,10 +188,10 @@ export const MATCHES: WCMatch[] = [
   { id:'m90', fecha:'2026-07-04', hora:'12:00', utc:'2026-07-04T17:00:00Z', estadio:'Estadio Houston', ciudad:'Houston', equipo1:'Canadá', equipo2:'Marruecos', fase:'Octavos de final' },
   { id:'m91', fecha:'2026-07-05', hora:'16:00', utc:'2026-07-05T20:00:00Z', estadio:'Estadio Nueva York/Nueva Jersey', ciudad:'Nueva Jersey', equipo1:'Brasil', equipo2:'Noruega', fase:'Octavos de final' },
   { id:'m92', fecha:'2026-07-05', hora:'18:00', utc:'2026-07-06T00:00:00Z', estadio:'Estadio Ciudad de México', ciudad:'Ciudad de México', equipo1:'México', equipo2:'Inglaterra', fase:'Octavos de final' },
-  { id:'m93', fecha:'2026-07-06', hora:'14:00', utc:'2026-07-06T19:00:00Z', estadio:'Estadio Dallas', ciudad:'Dallas', equipo1:'W83', equipo2:'W84', fase:'Octavos de final' },
+  { id:'m93', fecha:'2026-07-06', hora:'14:00', utc:'2026-07-06T19:00:00Z', estadio:'Estadio Dallas', ciudad:'Dallas', equipo1:'Portugal', equipo2:'España', fase:'Octavos de final' },
   { id:'m94', fecha:'2026-07-06', hora:'17:00', utc:'2026-07-07T00:00:00Z', estadio:'Estadio de Seattle', ciudad:'Seattle', equipo1:'EE. UU.', equipo2:'Bélgica', fase:'Octavos de final' },
   { id:'m95', fecha:'2026-07-07', hora:'12:00', utc:'2026-07-07T16:00:00Z', estadio:'Estadio Atlanta', ciudad:'Atlanta', equipo1:'W86', equipo2:'W88', fase:'Octavos de final' },
-  { id:'m96', fecha:'2026-07-07', hora:'13:00', utc:'2026-07-07T20:00:00Z', estadio:'Estadio BC Place Vancouver', ciudad:'Vancouver', equipo1:'W85', equipo2:'W87', fase:'Octavos de final' },
+  { id:'m96', fecha:'2026-07-07', hora:'13:00', utc:'2026-07-07T20:00:00Z', estadio:'Estadio BC Place Vancouver', ciudad:'Vancouver', equipo1:'Suiza', equipo2:'W87', fase:'Octavos de final' },
   { id:'m97', fecha:'2026-07-09', hora:'16:00', utc:'2026-07-09T20:00:00Z', estadio:'Estadio Boston', ciudad:'Boston', equipo1:'W89', equipo2:'W90', fase:'Cuartos de final' },
   { id:'m98', fecha:'2026-07-10', hora:'12:00', utc:'2026-07-10T19:00:00Z', estadio:'Estadio Los Angeles', ciudad:'Los Ángeles', equipo1:'W93', equipo2:'W94', fase:'Cuartos de final' },
   { id:'m99', fecha:'2026-07-11', hora:'17:00', utc:'2026-07-11T21:00:00Z', estadio:'Estadio Miami', ciudad:'Miami', equipo1:'W91', equipo2:'W92', fase:'Cuartos de final' },

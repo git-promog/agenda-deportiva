@@ -79,7 +79,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title,
     description,
     alternates: {
-      canonical: `https://www.guiasports.com${eventPath}`,
+      canonical: `https://www.guiasports.com/evento/${slug}`,
+    },
+    robots: {
+      index: true,
+      follow: true,
     },
     openGraph: {
       title,

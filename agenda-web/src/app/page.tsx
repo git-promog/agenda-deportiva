@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 };
 
 type HomeEvento = {
-  id: string | number;
+  id: string;
   fecha: string;
   hora: string;
   evento: string;
@@ -67,6 +67,7 @@ export default async function Home() {
     if (evData) {
       eventos = evData.map((e) => ({
         ...e,
+        id: String(e.id),
         fecha: e.fecha || "",
         hora: e.hora || "00:00",
         evento: e.evento || "Evento por confirmar",

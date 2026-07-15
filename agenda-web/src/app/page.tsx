@@ -20,13 +20,25 @@ export const metadata: Metadata = {
   }
 };
 
+type HomeEvento = {
+  id: string | number;
+  fecha: string;
+  hora: string;
+  evento: string;
+  competicion: string;
+  deporte: string;
+  canales: string;
+  destacado?: boolean | null;
+  [key: string]: unknown;
+};
+
 export default async function Home() {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
-  let eventos = [];
+  let eventos: HomeEvento[] = [];
   let noticias = [];
   let ultimaAct = "Recargando...";
 
@@ -52,14 +64,24 @@ export default async function Home() {
       .eq('nombre', 'ultima_actualizacion')
       .maybeSingle();
 
-    if (evData) eventos = evData;
+    if (evData) {
+      eventos = evData.map((e) => ({
+        ...e,
+        fecha: e.fecha || "",
+        hora: e.hora || "00:00",
+        evento: e.evento || "Evento por confirmar",
+        competicion: e.competicion || "Deportes",
+        deporte: e.deporte || "Otros",
+        canales: e.canales || "Por confirmar",
+      }));
+    }
     if (notData) noticias = notData;
     if (stData) ultimaAct = stData.valor;
   } catch (err) {
     console.error("Error cargando datos en servidor:", err);
   }
 
-  const calculateEndDate = (e: any) => {
+  const calculateEndDate = (e: HomeEvento) => {
     const startHora = e.hora || '00:00';
     const [h, m] = startHora.split(':').map(Number);
     const fin = new Date();
@@ -70,7 +92,7 @@ export default async function Home() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    "itemListElement": eventos.slice(0, 50).map((e: any, index: number) => {
+    "itemListElement": eventos.slice(0, 50).map((e, index: number) => {
       const startDateTime = `${e.fecha}T${e.hora || '00:00'}:00-06:00`;
       const endDateTime = `${e.fecha}T${calculateEndDate(e)}:00-06:00`;
       

@@ -144,14 +144,15 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
     }
   };
   const hoyStr = getTodayStr();
-  const deportesUnicos = ["Todos", ...new Set(eventos.map(e => e.deporte))];
-  const fechasUnicas = ["Todos", ...new Set(eventos.map(e => e.fecha))].filter(f => f !== "" && f >= hoyStr);
-  const competicionesUnicas = ["Todos", ...new Set(eventos.map(e => e.competicion).filter(Boolean))];
+  const safeText = (value: string | null | undefined, fallback = "") => value || fallback;
+  const deportesUnicos = ["Todos", ...new Set(eventos.map(e => safeText(e.deporte, "Otros")))];
+  const fechasUnicas = ["Todos", ...new Set(eventos.map(e => safeText(e.fecha)))].filter(f => f !== "" && f >= hoyStr);
+  const competicionesUnicas = ["Todos", ...new Set(eventos.map(e => safeText(e.competicion)).filter(Boolean))];
 
   const estaEnVivo = (fecha: string, hora: string) => {
     if (fecha !== hoyStr) return false;
     const ahora = new Date();
-    const [h, m] = hora.split(':').map(Number);
+    const [h, m] = safeText(hora, "00:00").split(':').map(Number);
     const horaEvento = new Date();
     horaEvento.setHours(h, m, 0);
     const dif = ahora.getTime() - horaEvento.getTime();
@@ -163,7 +164,8 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
     if (e.destacado === true) return esDeHoy;
     if (e.destacado === false) return false;
     if (e.destacado === null || e.destacado === undefined) {
-      return esDeHoy && TOP_TEAMS.some(t => e.evento.toLowerCase().includes(t.toLowerCase()));
+      const eventName = safeText(e.evento);
+      return esDeHoy && TOP_TEAMS.some(t => eventName.toLowerCase().includes(t.toLowerCase()));
     }
     return false;
   }).slice(0, 6);
@@ -173,8 +175,8 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   let tipoHero = "EN VIVO AHORA";
   
   if (eventosEnVivo.length > 0) {
-    eventoHero = eventosEnVivo.find(e => e.destacado === true) || 
-                 eventosEnVivo.find(e => TOP_TEAMS.some(t => e.evento.toLowerCase().includes(t.toLowerCase()))) || 
+    eventoHero = eventosEnVivo.find(e => e.destacado === true) ||
+                 eventosEnVivo.find(e => TOP_TEAMS.some(t => safeText(e.evento).toLowerCase().includes(t.toLowerCase()))) ||
                  eventosEnVivo[0];
   } else if (destacados.length > 0) {
     eventoHero = destacados[0];
@@ -182,16 +184,22 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   }
 
   const eventosFiltrados = eventos.filter(e => {
-    const coincideDeporte = filtroDeporte === "Todos" || e.deporte === filtroDeporte;
+    const eventName = safeText(e.evento);
+    const competition = safeText(e.competicion);
+    const channels = safeText(e.canales);
+    const fecha = safeText(e.fecha);
+    const deporte = safeText(e.deporte, "Otros");
+    const hora = safeText(e.hora, "00:00");
+    const coincideDeporte = filtroDeporte === "Todos" || deporte === filtroDeporte;
     // Solo mostrar eventos de hoy y futuros (nunca pasados)
-    const esFechaPasada = e.fecha < hoyStr;
-    const coincideFecha = (filtroFecha === "Todos" ? !esFechaPasada : e.fecha === filtroFecha);
-    const coincideCompeticion = filtroCompeticion === "Todos" || e.competicion === filtroCompeticion;
-    const coincideBusqueda = e.evento.toLowerCase().includes(busqueda.toLowerCase()) || 
-                             e.competicion.toLowerCase().includes(busqueda.toLowerCase());
-    const canalesLower = e.canales.toLowerCase();
+    const esFechaPasada = fecha < hoyStr;
+    const coincideFecha = (filtroFecha === "Todos" ? !esFechaPasada : fecha === filtroFecha);
+    const coincideCompeticion = filtroCompeticion === "Todos" || competition === filtroCompeticion;
+    const coincideBusqueda = eventName.toLowerCase().includes(busqueda.toLowerCase()) ||
+                             competition.toLowerCase().includes(busqueda.toLowerCase());
+    const canalesLower = channels.toLowerCase();
     const esTvAbierta = ["canal 5", "azteca 7", "las estrellas", "nu9ve", "imagen tv", "azteca uno", "canal 9"].some(c => canalesLower.includes(c));
-    const esEnVivo = estaEnVivo(e.fecha, e.hora);
+    const esEnVivo = estaEnVivo(fecha, hora);
     return coincideDeporte && coincideFecha && coincideCompeticion && coincideBusqueda && (soloTvAbierta ? esTvAbierta : true) && (soloEnVivo ? esEnVivo : true);
   });
 

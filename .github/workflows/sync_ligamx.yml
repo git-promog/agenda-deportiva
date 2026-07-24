@@ -23,6 +23,10 @@ jobs:
         working-directory: agenda-web
         run: npm ci
 
+      - name: Instalar Playwright Chromium
+        working-directory: agenda-web
+        run: npx playwright install chromium --with-deps
+
       - name: Ejecutar sincronizacion Liga MX
         working-directory: agenda-web
         env:

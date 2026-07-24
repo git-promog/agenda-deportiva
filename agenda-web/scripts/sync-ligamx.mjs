@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { createClient } from '@supabase/supabase-js';
 import * as cheerio from 'cheerio';
+import { chromium } from 'playwright';
 import { canonicalTeamSlug, parseNumeric } from './lib/ligamx-normalize.mjs';
 
 const isDryRun = process.argv.includes('--dry-run');
@@ -21,14 +22,18 @@ if (!isDryRun) {
 }
 
 async function fetchPage(url) {
-  const res = await fetch(url, { 
-    headers: { 
-      'User-Agent': 'Mozilla/5.0 (compatible; LigaMX-Sync/1.0)',
-      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
-    } 
-  });
-  if (!res.ok) throw new Error(`Failed to fetch ${url}: ${res.status}`);
-  return res.text();
+  console.log(`   Cargando con Playwright (JS rendering)...`);
+  const browser = await chromium.launch({ headless: true });
+  const page = await browser.newPage();
+  try {
+    await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+    // Esperar a que se renderice la tabla (buscar tabla con clase tabla)
+    await page.waitForSelector('table.tabla, table.general, table.posiciones', { timeout: 10000 }).catch(() => {});
+    const html = await page.content();
+    return html;
+  } finally {
+    await browser.close();
+  }
 }
 
 function extractTournamentFromHtml(html) {
@@ -53,6 +58,17 @@ function extractTournamentFromHtml(html) {
   
   // Fallback: torneo actual confirmado por auditoría
   return 'apertura-2026';
+}
+
+function extractTournamentId(html) {
+  const paramsMatch = html.match(/window\.parametros\s*=\s*({[^;]+})/);
+  if (paramsMatch) {
+    try {
+      const params = JSON.parse(paramsMatch[1]);
+      return params.actual?.idTorneo;
+    } catch {}
+  }
+  return null;
 }
 
 function parseStandings(html) {
@@ -162,34 +178,30 @@ async function syncLigaMx() {
   const runId = Date.now();
   const startedAt = new Date().toISOString();
   
-  let html = '';
   let tournamentSlug = 'apertura-2026';
+  let tournamentId = null;
   
   try {
-    console.log(`   Descargando página oficial...`);
-    html = await fetchPage(LIGAMX_PARTIDOS_URL);
-    tournamentSlug = extractTournamentFromHtml(html);
-    console.log(`   Torneo detectado: ${tournamentSlug}`);
+    console.log(`   Descargando página de partidos para detectar torneo...`);
+    const partidosHtml = await fetchPage(LIGAMX_PARTIDOS_URL);
+    tournamentSlug = extractTournamentFromHtml(partidosHtml);
+    tournamentId = extractTournamentId(partidosHtml);
+    console.log(`   Torneo detectado: ${tournamentSlug} (ID: ${tournamentId})`);
   } catch (err) {
     console.warn(`   ⚠️  No se pudo acceder a ligamx.net: ${err.message}`);
-    console.log(`   Usando datos de muestra para desarrollo...`);
-    
-    const sampleData = createSampleData();
-    tournamentSlug = sampleData.tournament_slug;
     
     if (isDryRun) {
+      const sampleData = createSampleData();
+      tournamentSlug = sampleData.tournament_slug;
       console.log('\n📊 Top 3 tabla general (muestra):');
       sampleData.standings.slice(0, 3).forEach((s, i) => {
         console.log(`   ${i + 1}. ${s.team_name}: ${s.points} pts (${s.played} partidos)`);
       });
-      
       console.log('\n🏆 Top 3 goleadores (muestra):');
       sampleData.scorers.slice(0, 3).forEach((s, i) => {
         console.log(`   ${i + 1}. ${s.player_name} (${s.team_name}): ${s.goals} goles`);
       });
-      
       console.log('\n✅ DRY-RUN completado - datos de muestra validados');
-      console.log('   Nota: Usar datos reales cuando ligamx.net esté disponible');
       return;
     }
     
@@ -201,18 +213,45 @@ async function syncLigaMx() {
       status: 'error',
       error_message: `No se pudo acceder a ligamx.net: ${err.message}`,
     });
-    process.exit(1);
+    console.log('✅ Workflow completado (error de conexión registrado en BD)');
+    return;
   }
-
-  const standings = parseStandings(html);
+  
+  // URLs específicas para tabla general y goleadores usando el ID del torneo
+  const tablaUrl = tournamentId 
+    ? `${LIGAMX_BASE_URL}/cancha/tablas/tablaGeneralClasificacion/sp/${tournamentId}`
+    : `${LIGAMX_BASE_URL}/cancha/estadistica`;
+  const goleadoresUrl = tournamentId
+    ? `${LIGAMX_BASE_URL}/cancha/tablas/tablaGoleoCompleta/sp/${tournamentId}`
+    : `${LIGAMX_BASE_URL}/cancha/estadistica`;
+  
+  // Descargar tabla general
+  let standingsHtml = '';
+  try {
+    console.log(`   Descargando tabla general...`);
+    standingsHtml = await fetchPage(tablaUrl);
+  } catch (err) {
+    console.warn(`   ⚠️  Error cargando tabla general: ${err.message}`);
+  }
+  
+  // Descargar goleadores
+  let scorersHtml = '';
+  try {
+    console.log(`   Descargando tabla de goleadores...`);
+    scorersHtml = await fetchPage(goleadoresUrl);
+  } catch (err) {
+    console.warn(`   ⚠️  Error cargando goleadores: ${err.message}`);
+  }
+  
+  const standings = parseStandings(standingsHtml);
   console.log(`   Tabla general: ${standings.length} equipos`);
   
-  const scorers = parseScorers(html);
+  const scorers = parseScorers(scorersHtml);
   console.log(`   Goleadores: ${scorers.length}`);
 
   // Si el parsing no encuentra suficientes equipos, registrar error pero NO fallar el workflow
   if (standings.length < 12) {
-    console.warn(`   ⚠️  Solo ${standings.length} equipos encontrados - la página usa JavaScript dinámico`);
+    console.warn(`   ⚠️  Solo ${standings.length} equipos encontrados`);
     
     if (isDryRun) {
       console.log(`   Usando datos de muestra para validación...`);
@@ -230,24 +269,22 @@ async function syncLigaMx() {
       });
       
       console.log('\n✅ DRY-RUN completado - datos de muestra validados');
-      console.log('   Nota: La página oficial usa JavaScript, se requiere un navegador headless para datos reales');
       return;
     } else {
-      // PROD: registrar error en BD pero NO fallar el workflow (exit 0)
-      console.warn('⚠️  Parsing incompleto - ligamx.net requiere JavaScript. Se mantiene datos previos.');
+      console.warn('⚠️  Parsing incompleto. Se mantiene datos previos.');
       await supabase.from('ligamx_sync_runs').insert({
         source: 'ligamx.net',
         tournament_slug: tournamentSlug,
         started_at: startedAt,
         finished_at: new Date().toISOString(),
         status: 'error',
-        error_message: `Solo ${standings.length} equipos parseados - la página requiere JavaScript`,
+        error_message: `Solo ${standings.length} equipos parseados`,
         rows_standings: 0,
         rows_scorers: 0,
         rows_matches: 0,
       });
       console.log('✅ Workflow completado (con error de parsing registrado en BD)');
-      return; // exit 0 implícito
+      return;
     }
   }
 

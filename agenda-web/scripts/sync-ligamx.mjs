@@ -210,7 +210,7 @@ async function syncLigaMx() {
   const scorers = parseScorers(html);
   console.log(`   Goleadores: ${scorers.length}`);
 
-  // Si el parsing no encuentra suficientes equipos, usar datos de muestra
+  // Si el parsing no encuentra suficientes equipos, registrar error pero NO fallar el workflow
   if (standings.length < 12) {
     console.warn(`   ⚠️  Solo ${standings.length} equipos encontrados - la página usa JavaScript dinámico`);
     
@@ -233,16 +233,21 @@ async function syncLigaMx() {
       console.log('   Nota: La página oficial usa JavaScript, se requiere un navegador headless para datos reales');
       return;
     } else {
-      console.error('❌ Error: menos de 12 equipos parseados - la página requiere renderizado JavaScript');
+      // PROD: registrar error en BD pero NO fallar el workflow (exit 0)
+      console.warn('⚠️  Parsing incompleto - ligamx.net requiere JavaScript. Se mantiene datos previos.');
       await supabase.from('ligamx_sync_runs').insert({
         source: 'ligamx.net',
-        tournament_slug,
+        tournament_slug: tournamentSlug,
         started_at: startedAt,
         finished_at: new Date().toISOString(),
         status: 'error',
         error_message: `Solo ${standings.length} equipos parseados - la página requiere JavaScript`,
+        rows_standings: 0,
+        rows_scorers: 0,
+        rows_matches: 0,
       });
-      process.exit(1);
+      console.log('✅ Workflow completado (con error de parsing registrado en BD)');
+      return; // exit 0 implícito
     }
   }
 

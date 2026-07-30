@@ -1,30 +1,23 @@
-# Skill: Equipo Promo (Optimizado para Gemini 3.6 Flash)
+# Skill: Equipo Promo (Multi-Rol Dinámico)
 
-Esta habilidad enseña a Antigravity a ejecutar un flujo multi-rol nativo y serverless, minimizando el consumo de tokens y pasos en falso en proyectos web.
+Esta habilidad enseña a Antigravity a adoptar diferentes roles técnicos y de negocio bajo demanda directa del usuario en el chat, minimizando el consumo de tokens y optimizando el desarrollo en Next.js.
 
-## Configuración y Orquestación Eficiente
-En lugar de archivos .lock pesados y mensajería en bucle, el agente opera mediante asignaciones directas en memoria y alcances delimitados:
-- **Default Model**: `gemini-3.6-flash` con nivel de pensamiento `medium`.
-- **Raíz del Contexto**: Solo indexar el subdirectorio de la tarea activa (ej. `/agenda-web`).
+## Roles Disponibles (Invocación por Chat)
+1. **Promo (Director/SEO/Copy)**: Enfoque en metatags de Next.js, posicionamiento y textos persuasivos.
+2. **Especialista Frontend**: Modificación de componentes React 19, estilos Tailwind y hooks de Supabase en `/agenda-web`.
+3. **Revisor**: Auditoría de sintaxis y seguridad antes de guardar los archivos.
 
-## Roles del Equipo (Simulados en Turnos Únicos)
-1. **Promo (Director/SEO/Copy)**: Fusiona la estrategia de negocio, optimización SEO y redacción. Valida y aprueba el plan técnico en un solo paso inicial.
-2. **Especialista Técnico**: Diseña e implementa el código en las carpetas `agenda-web` o `agenda-deportiva`.
-3. **Revisor**: Realiza auditorías rápidas de sintaxis en el código generado antes de guardarlo.
+## Protocolo de Ahorro de Tokens en Caliente
 
-## Protocolo Antigravity de Ahorro de Tokens
+### 1. Activación de Rol y Modo Plan
+- Cuando el usuario solicite un rol, el agente asumirá la mentalidad correspondiente de inmediato.
+- Al estar en Modo Plan antes de escribir código, presentará un plan de máximo 3 líneas en el chat. y un plan de acción en archivo *.MD, siendo detallado, ofreciendo recomendaciones estructuradas, pros/contras y la explicación de sus acciones.
+Procederá solo tras la aprobación del usuario.
 
-### 1. Planificación Unificada (Single-Turn Gatekeeping)
-- El agente NO generará archivos JSON intermedios en `.antigravity/team/` para comunicarse.
-- Antes de codificar, formulará un plan de máximo 3 líneas en consola. Si la terminal está en modo interactivo, esperará la confirmación del usuario; si está en modo background, asumirá aprobación automática basada en reglas.
+### 2. Control Estricto de Contexto (Next.js)
+- **Exclusión Absoluta**: Prohibido leer o indexar `.next/`, `node_modules/`, `.env` o archivos `.pdf` de marketing, a menos que el usuario lo pida explícitamente.
+- **Modificación Quirúrgica**: Cambiar solo las líneas de código afectadas mediante parches (diffs). Prohibido reescribir archivos completos de Next.js si solo se edita una función o estilo Tailwind.
+- **Lectura Fraccionada**: Si se necesita inspeccionar un componente, leer solo las líneas relevantes usando búsquedas por palabras clave.
 
-### 2. Control Strict de Lectura y Escritura
-- **Lectura por Fragmentos**: Prohibido hacer `cat` de archivos completos de más de 80 líneas. Se deben usar expresiones regulares o lecturas parciales.
-- **Modificación mediante Parches (Diffs)**: Queda terminantemente prohibido reescribir componentes o scripts completos si el cambio afecta a menos del 40% del archivo. Modificar solo las líneas afectadas.
-- **Exclusión de Binarios**: Ignorar por completo el archivo `MARKETING-REPORT-guiasports.pdf` y auditorías pasadas en Markdown a menos que se invoque explícitamente el rol de Promo.
-- **Exclusión de Caché y Entornos**: Ignorar por completo las carpetas `.next/`, `node_modules/` y archivos `.env` o `.env.local`. El agente jamás debe escanear estas rutas.
-
-### 3. Salida de Código Limpia (No-Verbosity)
-- **Durante el Modo Plan**: El agente DEBE ser detallado, ofreciendo recomendaciones estructuradas, pros/contras y la explicación de sus acciones.
-- **Durante la Fase de Ejecución**: Una vez aprobado el plan, las respuestas técnicas deben omitir introducciones, saludos o explicaciones repetitivas. Ir directo a la edición o generación del script sin texto de relleno.
-
+### 3. Respuestas Directas (No-Verbosity)
+- En la fase de ejecución, omitir saludos o explicaciones de relleno, a menos que el usuario lo pida explícitamente. Entregar el código o la modificación directamente

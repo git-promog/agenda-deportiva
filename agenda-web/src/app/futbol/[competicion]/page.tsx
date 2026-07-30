@@ -3,14 +3,18 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 import { CalendarDays, ChevronRight, Tv } from 'lucide-react';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import LigaMxStandings, { StandingRow } from '@/components/ligamx/LigaMxStandings';
+import LigaMxTopScorers, { TopScorerRow } from '@/components/ligamx/LigaMxTopScorers';
+import LigaMxSeoFaq from '@/components/ligamx/LigaMxSeoFaq';
+import { LIGA_MX_FAQS } from '@/lib/ligamx-faqs';
 
 const COMPETITION_HUBS = {
   'liga-mx': {
     name: 'Liga MX',
     query: 'Liga MX',
-    title: 'Liga MX en Vivo | Horarios, Canales y Streaming en México',
-    description: 'Consulta dónde ver partidos de Liga MX hoy en México: horarios, canales de TV, streaming y agenda actualizada.',
-    intro: 'Toda la agenda de Liga MX en un solo lugar: partidos de hoy, transmisiones por TV abierta, cable y streaming para México.',
+    title: 'Liga MX Apertura 2026: Tabla General, Partidos y Dónde Ver',
+    description: 'Consulta la Tabla General de Liga MX Apertura 2026, resultados, próximos partidos y canales para verlos en vivo en México.',
+    intro: 'Todo el Hub Liga MX: partidos, canales de transmisión, tabla general, resultados y estadísticas del Apertura 2026.',
   },
   'champions-league': {
     name: 'Champions League',
@@ -103,12 +107,19 @@ export default async function CompetitionHub({ params }: Props) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const hoyStr = getTodayStr();
+
   let eventos: Evento[] = [];
   let noticias: NoticiaResumen[] = [];
+  let standings: StandingRow[] = [];
+  let topScorers: TopScorerRow[] = [];
+  let lastSyncedAt: string | undefined = undefined;
+
+  const isLigaMx = competicion === 'liga-mx';
 
   if (supabaseUrl && supabaseAnonKey) {
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
-    const [eventosResult, noticiasResult] = await Promise.all([
+
+    const [eventosRes, noticiasRes, standingsRes, scorersRes] = await Promise.all([
       supabase
         .from('eventos')
         .select('*')
@@ -124,20 +135,59 @@ export default async function CompetitionHub({ params }: Props) {
         .ilike('titulo', `%${hub.query}%`)
         .order('created_at', { ascending: false })
         .limit(6),
+      isLigaMx
+        ? supabase
+            .from('ligamx_standings_latest')
+            .select('*')
+            .eq('tournament_slug', 'apertura-2026')
+            .order('position', { ascending: true })
+        : Promise.resolve({ data: [] }),
+      isLigaMx
+        ? supabase
+            .from('ligamx_top_scorers_latest')
+            .select('*')
+            .eq('tournament_slug', 'apertura-2026')
+            .order('goals', { ascending: false })
+            .limit(9)
+        : Promise.resolve({ data: [] })
     ]);
 
-    eventos = eventosResult.data || [];
-    noticias = noticiasResult.data || [];
+    eventos = eventosRes.data || [];
+    noticias = noticiasRes.data || [];
+    standings = (standingsRes.data as StandingRow[]) || [];
+    topScorers = (scorersRes.data as TopScorerRow[]) || [];
+
+    if (standings.length > 0 && standings[0]?.synced_at) {
+      lastSyncedAt = standings[0].synced_at;
+    }
   }
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    "name": hub.title,
-    "description": hub.description,
-    "url": `https://www.guiasports.com/futbol/${competicion}`,
-    "inLanguage": "es-MX",
-  };
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": hub.title,
+      "description": hub.description,
+      "url": `https://www.guiasports.com/futbol/${competicion}`,
+      "inLanguage": "es-MX",
+    },
+    ...(isLigaMx
+      ? [
+          {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": LIGA_MX_FAQS.map((faq) => ({
+              "@type": "Question",
+              "name": faq.question,
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": faq.answer,
+              },
+            })),
+          },
+        ]
+      : []),
+  ];
 
   return (
     <>
@@ -151,16 +201,26 @@ export default async function CompetitionHub({ params }: Props) {
           />
 
           <header className="mb-12">
-            <p className="text-[10px] font-black text-[#a3e635] uppercase tracking-[0.3em] mb-4">Guía evergreen</p>
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-[10px] font-black text-[#a3e635] uppercase tracking-[0.3em] bg-[#a3e635]/10 px-3 py-1 rounded-full border border-[#a3e635]/20">
+                GuíaSports Hub
+              </span>
+              {isLigaMx && (
+                <span className="text-[10px] font-black text-blue-400 uppercase tracking-[0.3em] bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
+                  Estadísticas Oficiales
+                </span>
+              )}
+            </div>
             <h1 className="text-3xl md:text-5xl font-black italic uppercase leading-[0.95] tracking-tighter mb-5">
               {hub.name} <span className="text-blue-500">en Vivo</span>
             </h1>
             <p className="text-slate-400 max-w-2xl leading-relaxed">{hub.intro}</p>
           </header>
 
+          {/* Agenda de Partidos y Canales (Prioridad 1) */}
           <section className="mb-12">
             <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-5 flex items-center gap-2">
-              <CalendarDays className="w-4 h-4 text-blue-500" /> Próximos partidos
+              <CalendarDays className="w-4 h-4 text-blue-500" /> Próximos partidos y transmisiones
             </h2>
             {eventos.length > 0 ? (
               <div className="space-y-3">
@@ -184,6 +244,20 @@ export default async function CompetitionHub({ params }: Props) {
             )}
           </section>
 
+          {/* Bloque Tabla General (Solo Liga MX) */}
+          {isLigaMx && standings.length > 0 && (
+            <LigaMxStandings standings={standings} syncedAt={lastSyncedAt} />
+          )}
+
+          {/* Bloque Tabla de Goleo (Solo Liga MX) */}
+          {isLigaMx && topScorers.length > 0 && (
+            <LigaMxTopScorers scorers={topScorers} />
+          )}
+
+          {/* Preguntas Frecuentes SEO (Solo Liga MX) */}
+          {isLigaMx && <LigaMxSeoFaq />}
+
+          {/* Noticias y previas */}
           {noticias.length > 0 && (
             <section>
               <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-5">Noticias y previas</h2>

@@ -8,6 +8,7 @@
      "start": "next start",
      "lint": "eslint",
      "sync-fifa": "node scripts/sync-fifa.mjs",
+     "sync-ligamx": "node scripts/sync-ligamx.mjs",
      "broadcast:set": "node scripts/manage-broadcasters.mjs set",
      "broadcast:list": "node scripts/manage-broadcasters.mjs list",
      "broadcast:remove": "node scripts/manage-broadcasters.mjs remove",

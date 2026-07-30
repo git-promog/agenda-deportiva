@@ -1,111 +1,30 @@
-# Skill: Equipo Promo (Multi-Agente)
+# Skill: Equipo Promo (Optimizado para Gemini 3.6 Flash)
 
-Esta habilidad permite a Antigravity coordinar un equipo de agentes inteligentes trabajando en paralelo sobre el mismo proyecto, replicando la funcionalidad de "Agent Teams" de Claude Code.
+Esta habilidad enseña a Antigravity a ejecutar un flujo multi-rol nativo y serverless, minimizando el consumo de tokens y pasos en falso en proyectos web.
 
-## Configuración del Entorno
-El equipo utiliza una carpeta oculta en la raíz del proyecto para comunicarse:
-- `.antigravity/team/tasks.json` -> Lista maestra de tareas, estados y dependencias.
-- `.antigravity/team/mailbox/` -> Mensajes individuales (.msg).
-- `.antigravity/team/broadcast.msg` -> Mensajes globales para todo el equipo.
-- `.antigravity/team/locks/` -> Semáforos para evitar edición simultánea de archivos.
+## Configuración y Orquestación Eficiente
+En lugar de archivos .lock pesados y mensajería en bucle, el agente opera mediante asignaciones directas en memoria y alcances delimitados:
+- **Default Model**: `gemini-3.6-flash` con nivel de pensamiento `medium`.
+- **Raíz del Contexto**: Solo indexar el subdirectorio de la tarea activa (ej. `/agenda-web`).
 
-## Roles del Equipo
-1. **Director (Promo)**: El líder. Divide el problema, asigna roles y aprueba planes.
-2. **Arquitecto**: Define la estructura y patrones antes de codificar.
-3. **Especialista (Frontend/Backend/DB)**: Ejecuta tareas técnicas específicas.
-4. **Investigador**: Búsqueda de información, documentación, análisis de datos y análisis de mercado.
-5. **Seo**: Búsqueda de nuevas tendencias, análisis de proyecto y ejecución de mejoras SEO.
-6. **Marketer**: Análisis y creación de estrategias para campañas e ideas de mercadeo.
-7. **Diseño**: Creación de marca, logos, y diseño gráfico para elementos web y redes sociales.
-8. **Copy**: Creación de copywriting.
-9. **Revisor (Devil's Advocate)**: Busca fallos, bugs y problemas de seguridad.
+## Roles del Equipo (Simulados en Turnos Únicos)
+1. **Promo (Director/SEO/Copy)**: Fusiona la estrategia de negocio, optimización SEO y redacción. Valida y aprueba el plan técnico en un solo paso inicial.
+2. **Especialista Técnico**: Diseña e implementa el código en las carpetas `agenda-web` o `agenda-deportiva`.
+3. **Revisor**: Realiza auditorías rápidas de sintaxis en el código generado antes de guardarlo.
 
+## Protocolo Antigravity de Ahorro de Tokens
 
-## Protocolo de Orquestación Avanzada
+### 1. Planificación Unificada (Single-Turn Gatekeeping)
+- El agente NO generará archivos JSON intermedios en `.antigravity/team/` para comunicarse.
+- Antes de codificar, formulará un plan de máximo 3 líneas en consola. Si la terminal está en modo interactivo, esperará la confirmación del usuario; si está en modo background, asumirá aprobación automática basada en reglas.
 
-### 1. Modo de Planificación (Gatekeeping)
-Antes de realizar cambios significativos, cada agente debe enviar un **Plan de Acción** al buzón de Promo.
-- El agente se mantiene en modo `READ_ONLY` o `PLANNING` hasta que Promo responda con un mensaje de `APPROVED`.
+### 2. Control Strict de Lectura y Escritura
+- **Lectura por Fragmentos**: Prohibido hacer `cat` de archivos completos de más de 80 líneas. Se deben usar expresiones regulares o lecturas parciales.
+- **Modificación mediante Parches (Diffs)**: Queda terminantemente prohibido reescribir componentes o scripts completos si el cambio afecta a menos del 40% del archivo. Modificar solo las líneas afectadas.
+- **Exclusión de Binarios**: Ignorar por completo el archivo `MARKETING-REPORT-guiasports.pdf` y auditorías pasadas en Markdown a menos que se invoque explícitamente el rol de Promo.
+- **Exclusión de Caché y Entornos**: Ignorar por completo las carpetas `.next/`, `node_modules/` y archivos `.env` o `.env.local`. El agente jamás debe escanear estas rutas.
 
-### 2. Mensajería y Difusión (Broadcast)
-- **Mensaje Directo**: Coordinación 1 a 1 entre especialistas.
-- **Broadcast**: Promo puede escribir en `broadcast.msg` para dar nuevas directrices a todo el equipo simultáneamente.
+### 3. Salida de Código Limpia (No-Verbosity)
+- **Durante el Modo Plan**: El agente DEBE ser detallado, ofreciendo recomendaciones estructuradas, pros/contras y la explicación de sus acciones.
+- **Durante la Fase de Ejecución**: Una vez aprobado el plan, las respuestas técnicas deben omitir introducciones, saludos o explicaciones repetitivas. Ir directo a la edición o generación del script sin texto de relleno.
 
-### 3. Sincronización de Tareas y Dependencias
-- Las tareas en `tasks.json` pueden tener una lista de `dependencies`. Una IA no debe reclamar una tarea si sus dependencias no están en estado `COMPLETED`.
-
-## Reglas Críticas
-- NUNCA editar un archivo si existe un .lock activo en `.antigravity/team/locks/`.
-- Al completar una tarea, el agente debe liberar sus "locks" y notificar a Promo.
-```
-
----
-
-## 3. Script de Orquestación (team_manager.py)
-*Este script automatiza la gestión de las tareas y la comunicación. Guárdalo como `team_manager.py`.*
-
-```python
-import json
-import os
-import sys
-
-TEAM_DIR = ".antigravity/team"
-
-def init_team():
-    """Inicializa la infraestructura del equipo."""
-    os.makedirs(f"{TEAM_DIR}/mailbox", exist_ok=True)
-    os.makedirs(f"{TEAM_DIR}/locks", exist_ok=True)
-    tasks_path = f"{TEAM_DIR}/tasks.json"
-    if not os.path.exists(tasks_path):
-        with open(tasks_path, 'w') as f:
-            json.dump({"tasks": [], "members": []}, f, indent=2)
-    if not os.path.exists(f"{TEAM_DIR}/broadcast.msg"):
-        with open(f"{TEAM_DIR}/broadcast.msg", 'w') as f: f.write("")
-    print("✓ Infraestructura 'Equipo Promo' lista.")
-
-def assign_task(title, assigned_to, deps=[]):
-    """Asigna una nueva tarea con soporte para dependencias."""
-    path = f"{TEAM_DIR}/tasks.json"
-    with open(path, 'r+') as f:
-        data = json.load(f)
-        task = {
-            "id": len(data["tasks"]) + 1,
-            "title": title,
-            "status": "PENDING",
-            "plan_approved": False,
-            "assigned_to": assigned_to,
-            "dependencies": deps
-        }
-        data["tasks"].append(task)
-        f.seek(0)
-        json.dump(data, f, indent=2)
-    print(f"✓ Tarea {task['id']} ({title}) asignada a {assigned_to}.")
-
-def broadcast(sender, text):
-    """Envía un mensaje a todos los miembros del equipo."""
-    msg = {"de": sender, "tipo": "BROADCAST", "mensaje": text}
-    with open(f"{TEAM_DIR}/broadcast.msg", 'a') as f:
-        f.write(json.dumps(msg) + "\n")
-    print(f"✓ Mensaje global enviado por {sender}.")
-
-def send_message(sender, receiver, text):
-    """Envía un mensaje al buzón de un agente específico."""
-    msg = {"de": sender, "mensaje": text}
-    with open(f"{TEAM_DIR}/mailbox/{receiver}.msg", 'a') as f:
-        f.write(json.dumps(msg) + "\n")
-    print(f"✓ Mensaje enviado a {receiver}.")
-
-if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        cmd = sys.argv[1]
-        if cmd == "init": init_team()
-```
-
----
-
-## 4. Cómo usarlo
-1. **Activa el Líder**: Pídele a Antigravity: *"Usa la habilidad Equipo Promo para inicializar este proyecto"*.
-2. **Reparte el trabajo**: **Promo** dividirá el trabajo. Abre terminales nuevas para cada agente (Frontend, Marketer, etc.).
-3. **Flujo de Planificación**: Los agentes envían sus planes a Promo antes de empezar. Un equipo bien coordinado es imparable.
-
----

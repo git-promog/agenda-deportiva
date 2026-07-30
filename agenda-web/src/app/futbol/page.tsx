@@ -2,8 +2,9 @@ import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
 import NextImage from 'next/image';
 import { Metadata } from 'next';
-import { Calendar, Tv, Clock } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import SportEventCard from '@/components/SportEventCard';
 
 export const revalidate = 300;
 
@@ -22,12 +23,23 @@ export const metadata: Metadata = {
   },
 };
 
-const emojis: { [key: string]: string } = {
-  "Fútbol": "⚽️", "Básquetbol": "🏀", "Béisbol": "⚾️", "Fórmula 1": "🏎️",
-  "Motorismo": "🏍️", "Tenis": "🎾", "Fútbol Americano": "🏈", "Rugby": "🏉",
-  "Hockey": "🏒", "Combate": "🥊", "Ciclismo": "🚴", "Voleibol": "🏐",
-  "Golf": "⛳️", "Natación": "🏊", "Fútbol Sala": "👟", "Otros": "🏆"
-};
+interface Evento {
+  id: string;
+  fecha: string;
+  hora: string;
+  evento: string;
+  competicion: string;
+  deporte: string;
+  canales: string;
+}
+
+interface Noticia {
+  id: string;
+  titulo: string;
+  slug: string;
+  fecha: string;
+  imagen_url?: string;
+}
 
 function estaEnVivo(fecha: string, hora: string, hoyStr: string) {
   if (fecha !== hoyStr) return false;
@@ -61,11 +73,11 @@ export default async function FutbolHub() {
     supabase.from('noticias').select('*').order('created_at', { ascending: false }).limit(6),
   ]);
 
-  const eventosFutbol = eventos || [];
+  const eventosFutbol: Evento[] = eventos || [];
   const enVivo = eventosFutbol.filter(e => estaEnVivo(e.fecha, e.hora, hoyStr));
   const proximos = eventosFutbol.filter(e => e.fecha >= hoyStr);
 
-  const eventosAgrupados = proximos.reduce((groups: any, evento: any) => {
+  const eventosAgrupados = proximos.reduce((groups: Record<string, Evento[]>, evento: Evento) => {
     const f = evento.fecha;
     if (!groups[f]) groups[f] = [];
     groups[f].push(evento);
@@ -116,32 +128,8 @@ export default async function FutbolHub() {
                 </h2>
               </div>
               <div className="space-y-3">
-                {enVivo.map((evento: any) => (
-                  <div key={evento.id} className="group bg-gradient-to-r from-red-600/10 to-red-900/5 border border-red-500/20 rounded-2xl p-5 hover:border-red-500/40 transition-all relative overflow-hidden">
-                    <div className="absolute top-3 right-3">
-                      <span className="flex items-center gap-1.5 bg-red-600 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">
-                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
-                        LIVE
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="bg-[#020617] border border-slate-800 w-14 h-14 flex items-center justify-center rounded-2xl text-3xl shrink-0">
-                        {emojis[evento.deporte] || "⚽️"}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-[9px] font-black text-red-400 uppercase tracking-widest mb-1">{evento.competicion}</div>
-                        <h3 className="text-lg font-black italic uppercase text-white leading-tight mb-2">{evento.evento}</h3>
-                        <div className="flex flex-wrap items-center gap-4">
-                          <span className="flex items-center gap-1.5 text-[10px] font-bold text-[#a3e635] bg-[#a3e635]/10 px-3 py-1 rounded-lg border border-[#a3e635]/20">
-                            <Tv size={12} /> {evento.canales}
-                          </span>
-                          <span className="flex items-center gap-1.5 text-[10px] font-mono font-bold text-slate-400">
-                            <Clock size={12} /> {evento.hora}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                {enVivo.map((evento: Evento) => (
+                  <SportEventCard key={evento.id} evento={evento} isLive={true} />
                 ))}
               </div>
             </section>
@@ -158,27 +146,12 @@ export default async function FutbolHub() {
                   <div className="h-px w-full bg-slate-800/30"></div>
                 </div>
                 <div className="grid gap-3">
-                  {eventosAgrupados[fecha].map((evento: any) => (
-                    <div key={evento.id} className="group bg-slate-900/30 border border-slate-800/50 rounded-2xl p-4 hover:border-blue-500/30 hover:bg-slate-900/60 transition-all">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-                        <div className="flex items-center gap-3 w-full">
-                          <div className="flex flex-col justify-center min-w-[65px] text-blue-400 font-mono font-black text-sm md:text-xl shrink-0 border-r border-slate-800/60 pr-3">
-                            {evento.hora}
-                            {estaEnVivo(evento.fecha, evento.hora, hoyStr) && (
-                              <div className="flex items-center gap-1 mt-1 justify-center"><div className="w-1.5 h-1.5 bg-red-600 rounded-full animate-ping"></div><span className="text-[7px] font-black text-red-500 uppercase">LIVE</span></div>
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-[9px] font-black text-slate-500 uppercase mb-0.5 truncate">{evento.competicion}</div>
-                            <h3 className="text-sm font-bold text-slate-200 leading-snug">{evento.evento}</h3>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 bg-[#020617] px-4 py-2 rounded-xl border border-slate-800 shrink-0">
-                          <Tv className="w-3 h-3 text-slate-600 shrink-0" />
-                          <span className="text-[11px] font-black text-[#a3e635] italic uppercase">{evento.canales}</span>
-                        </div>
-                      </div>
-                    </div>
+                  {eventosAgrupados[fecha].map((evento: Evento) => (
+                    <SportEventCard
+                      key={evento.id}
+                      evento={evento}
+                      isLive={estaEnVivo(evento.fecha, evento.hora, hoyStr)}
+                    />
                   ))}
                 </div>
               </section>
@@ -197,7 +170,7 @@ export default async function FutbolHub() {
                 <Calendar className="w-4 h-4" /> Últimas Noticias
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {noticias.map((n: any) => (
+                {noticias.map((n: Noticia) => (
                   <Link key={n.id} href={`/noticias/${n.slug}`} className="group bg-slate-900/50 border border-slate-800/50 rounded-2xl overflow-hidden hover:border-blue-500/30 transition-all">
                     {n.imagen_url ? (
                       <div className="w-full h-32 overflow-hidden relative">

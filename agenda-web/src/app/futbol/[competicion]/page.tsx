@@ -1,12 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
 import { Metadata } from 'next';
-import { CalendarDays, ChevronRight, Tv } from 'lucide-react';
+import { CalendarDays, ChevronRight } from 'lucide-react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import LigaMxStandings, { StandingRow } from '@/components/ligamx/LigaMxStandings';
 import LigaMxTopScorers, { TopScorerRow } from '@/components/ligamx/LigaMxTopScorers';
 import LigaMxSeoFaq from '@/components/ligamx/LigaMxSeoFaq';
 import { LIGA_MX_FAQS } from '@/lib/ligamx-faqs';
+import SportEventCard from '@/components/SportEventCard';
 
 const COMPETITION_HUBS = {
   'liga-mx': {
@@ -44,6 +45,7 @@ interface Evento {
   hora: string;
   evento: string;
   competicion: string;
+  deporte: string;
   canales: string;
 }
 
@@ -80,6 +82,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url: `https://www.guiasports.com/futbol/${competicion}`,
     },
   };
+}
+
+function estaEnVivo(fecha: string, hora: string, hoyStr: string) {
+  if (fecha !== hoyStr) return false;
+  const ahora = new Date();
+  const [h, m] = hora.split(':').map(Number);
+  const horaEvento = new Date();
+  horaEvento.setHours(h, m, 0);
+  const dif = ahora.getTime() - horaEvento.getTime();
+  return dif >= 0 && dif < (2 * 60 * 60 * 1000);
 }
 
 function getTodayStr() {
@@ -119,16 +131,22 @@ export default async function CompetitionHub({ params }: Props) {
   if (supabaseUrl && supabaseAnonKey) {
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+    let eventosQuery = supabase
+      .from('eventos')
+      .select('*')
+      .eq('deporte', 'Fútbol')
+      .ilike('competicion', `%${hub.query}%`)
+      .gte('fecha', hoyStr)
+      .order('fecha', { ascending: true })
+      .order('hora', { ascending: true })
+      .limit(30);
+
+    if (isLigaMx) {
+      eventosQuery = eventosQuery.not('competicion', 'ilike', '%femenil%');
+    }
+
     const [eventosRes, noticiasRes, standingsRes, scorersRes] = await Promise.all([
-      supabase
-        .from('eventos')
-        .select('*')
-        .eq('deporte', 'Fútbol')
-        .ilike('competicion', `%${hub.query}%`)
-        .gte('fecha', hoyStr)
-        .order('fecha', { ascending: true })
-        .order('hora', { ascending: true })
-        .limit(30),
+      eventosQuery,
       supabase
         .from('noticias')
         .select('titulo, slug, fecha, created_at')
@@ -225,16 +243,11 @@ export default async function CompetitionHub({ params }: Props) {
             {eventos.length > 0 ? (
               <div className="space-y-3">
                 {eventos.map((evento) => (
-                  <article key={evento.id} className="bg-slate-900/40 border border-slate-800 rounded-2xl p-5 flex flex-col md:flex-row md:items-center gap-4">
-                    <div className="text-xl font-black text-[#a3e635] min-w-[90px]">{evento.hora}</div>
-                    <div className="flex-1">
-                      <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">{evento.fecha} · {evento.competicion}</p>
-                      <h3 className="font-black italic uppercase text-white leading-tight">{evento.evento}</h3>
-                    </div>
-                    <div className="flex items-center gap-2 text-[10px] font-black uppercase text-blue-400 bg-blue-500/5 border border-blue-500/10 px-3 py-2 rounded-xl">
-                      <Tv size={12} /> {evento.canales}
-                    </div>
-                  </article>
+                  <SportEventCard
+                    key={evento.id}
+                    evento={evento}
+                    isLive={estaEnVivo(evento.fecha, evento.hora, hoyStr)}
+                  />
                 ))}
               </div>
             ) : (

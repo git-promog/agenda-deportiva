@@ -4,7 +4,7 @@ import NextImage from 'next/image';
 import { Metadata } from 'next';
 import { Calendar } from 'lucide-react';
 import Breadcrumbs from '@/components/Breadcrumbs';
-import SportEventCard from '@/components/SportEventCard';
+import EventListWithModal from '@/components/EventListWithModal';
 
 export const revalidate = 300;
 
@@ -119,50 +119,10 @@ export default async function FutbolHub() {
             </div>
           </header>
 
-          {enVivo.length > 0 && (
-            <section className="mb-12">
-              <div className="flex items-center gap-2 mb-6">
-                <div className="w-2 h-2 bg-red-600 rounded-full animate-ping"></div>
-                <h2 className="text-[10px] font-black text-red-500 uppercase tracking-[0.3em]">
-                  {enVivo.length} partido{enVivo.length > 1 ? 's' : ''} en vivo
-                </h2>
-              </div>
-              <div className="space-y-3">
-                {enVivo.map((evento: Evento) => (
-                  <SportEventCard key={evento.id} evento={evento} isLive={true} />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {Object.keys(eventosAgrupados).length > 0 ? (
-            Object.keys(eventosAgrupados).sort().map((fecha) => (
-              <section key={fecha} className="mb-12">
-                <div className="flex items-center gap-4 mb-6">
-                  <h2 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-blue-500" />
-                    {new Date(fecha + 'T12:00:00').toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}
-                  </h2>
-                  <div className="h-px w-full bg-slate-800/30"></div>
-                </div>
-                <div className="grid gap-3">
-                  {eventosAgrupados[fecha].map((evento: Evento) => (
-                    <SportEventCard
-                      key={evento.id}
-                      evento={evento}
-                      isLive={estaEnVivo(evento.fecha, evento.hora, hoyStr)}
-                    />
-                  ))}
-                </div>
-              </section>
-            ))
-          ) : (
-            <div className="bg-slate-900/50 border border-slate-800 rounded-[32px] p-16 text-center text-slate-500">
-              <div className="text-6xl mb-6 opacity-30">⚽️</div>
-              <p className="font-bold text-lg mb-2 text-slate-400">No hay partidos de fútbol próximamente</p>
-              <p className="text-sm">Vuelve pronto para ver la cartelera actualizada.</p>
-            </div>
-          )}
+          <EventListWithModal
+            eventos={proximos}
+            emptyMessage="No hay partidos de fútbol próximos registrados. Vuelve pronto para ver la cartelera actualizada."
+          />
 
           {noticias && noticias.length > 0 && (
             <section className="mt-12">

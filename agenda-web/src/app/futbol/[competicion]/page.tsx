@@ -7,7 +7,7 @@ import LigaMxStandings, { StandingRow } from '@/components/ligamx/LigaMxStanding
 import LigaMxTopScorers, { TopScorerRow } from '@/components/ligamx/LigaMxTopScorers';
 import LigaMxSeoFaq from '@/components/ligamx/LigaMxSeoFaq';
 import { LIGA_MX_FAQS } from '@/lib/ligamx-faqs';
-import SportEventCard from '@/components/SportEventCard';
+import EventListWithModal from '@/components/EventListWithModal';
 
 const COMPETITION_HUBS = {
   'liga-mx': {
@@ -237,24 +237,10 @@ export default async function CompetitionHub({ params }: Props) {
 
           {/* Agenda de Partidos y Canales (Prioridad 1) */}
           <section className="mb-12">
-            <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-5 flex items-center gap-2">
-              <CalendarDays className="w-4 h-4 text-blue-500" /> Próximos partidos y transmisiones
-            </h2>
-            {eventos.length > 0 ? (
-              <div className="space-y-3">
-                {eventos.map((evento) => (
-                  <SportEventCard
-                    key={evento.id}
-                    evento={evento}
-                    isLive={estaEnVivo(evento.fecha, evento.hora, hoyStr)}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-8 text-slate-500 text-sm">
-                No hay partidos próximos registrados para esta competición. Revisa la agenda general para más eventos.
-              </div>
-            )}
+            <EventListWithModal
+              eventos={eventos}
+              emptyMessage="No hay partidos próximos registrados para esta competición. Revisa la agenda general para más eventos."
+            />
           </section>
 
           {/* Bloque Tabla General (Solo Liga MX) */}

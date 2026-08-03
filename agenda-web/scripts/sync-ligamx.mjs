@@ -6,14 +6,16 @@ const DRY_RUN = process.argv.includes('--dry-run');
 const TOURNAMENT_SLUG = 'apertura-2026';
 const LIGAMX_BASE_URL = 'https://ligamx.net';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY;
+const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '').trim();
+const supabaseKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || '').trim();
 
 let supabase = null;
 if (!DRY_RUN) {
   if (!supabaseUrl || !supabaseKey) {
     console.error('❌ Error: Variables de entorno Supabase no encontradas.');
-    console.error('Se requiere NEXT_PUBLIC_SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY.');
+    console.error(`  - URL presente: ${Boolean(supabaseUrl)}`);
+    console.error(`  - Key presente: ${Boolean(supabaseKey)}`);
+    console.error('Se requiere NEXT_PUBLIC_SUPABASE_URL/SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY/SUPABASE_KEY.');
     process.exit(1);
   }
   supabase = createClient(supabaseUrl, supabaseKey);

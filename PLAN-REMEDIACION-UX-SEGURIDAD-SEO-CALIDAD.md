@@ -395,6 +395,35 @@ git branch -D staging   # descarta la rama de staging local
 - **Secreto de sesión admin:** restaurar `/tmp/backup-env-20260818/.env.local.baseline` a `agenda-web/.env.local`.
 - **Servidor local:** reiniciar `npm run dev` con el log `/tmp/guidasports-dev-20260818.log` como referencia.
 
+## Pruebas automatizadas (Vitest) — 18/08/2026
+
+Estado: **implementadas en la rama `staging` (aislada desde `baseline-pre-staging`). Sin deploy, sin Supabase, sin cambios de datos.**
+
+Motivo: cerrar el prerrequisito "pruebas críticas automatizadas" de la "Regla de no deploy" antes del ciclo de staging/validación externa.
+
+Cambios realizados:
+
+- `agenda-web/vitest.config.mts`: config Vitest con `@vitejs/plugin-react`, resolución de paths de tsconfig nativa y entorno `jsdom`.
+- `agenda-web/package.json`: scripts `test` (`vitest run`) y `test:watch` (`vitest`).
+- DevDependencies: `vitest`, `@vitejs/plugin-react`, `jsdom`, `@testing-library/react`, `@testing-library/dom`, `vite-tsconfig-paths` (instalado y luego reemplazado por `resolve.tsconfigPaths` nativo; se mantiene en dependencias).
+
+Cobertura crítica mínima (4 archivos, 33 tests):
+
+- `src/lib/adminSession.test.ts`: creación de token firmado, verificación, rechazo de token alterado/expirado/malformado, `isAdminRequest` (cookie válida, ausente o forjada) e `isAuthorizedAdminRequest` (Bearer con `ADMIN_API_SECRET` correcto/incorrecto/ausente).
+- `src/app/api/admin/adminApi.test.ts`: login fail-closed sin `ADMIN_SESSION_SECRET` (500) y sin `ADMIN_PASSWORD` (500), contraseña incorrecta (401), contraseña correcta (200 con cookie HttpOnly+SameSite), password no-string (401); session con/sin cookie; logout que borra la cookie.
+- `src/hooks/useFavorites.test.tsx`: arranque vacío, JSON inválido → lista vacía, duplicados y no-strings descartados, toggle añadir/quitar, persistencia post-carga, `newValue === null` limpia entre pestañas, evento `storage` sincroniza.
+- `src/lib/mexicoTime.test.ts`: zona horaria, formato `YYYY-MM-DD`, `isEventLive`, `isUpcomingOrToday`, `formatMexicoDate` (Hoy/corto/button), `getDateRangeMexico`.
+
+Validaciones:
+
+- `npm run test`: **4 archivos / 33 tests pasan**.
+- `npx tsc --noEmit`: **0 errores**.
+- `npm run lint`: **0 errores, 0 advertencias**.
+- `git diff --check`: **limpio**.
+- Commit: `9a3a07f test: cobertura critica minima con Vitest (adminSession, APIs admin, useFavorites, mexicoTime)` en rama `staging`.
+
+Pendientes: los escenarios validados manualmente en Fase 4 (JSON inválido, `newValue === null`) quedaron formalizados como pruebas de regresión automatizadas. Queda el resto del prerrequisito de staging (backup Supabase, rotación de credenciales, RLS, staging aprobado) y la validación externa (Rich Results Test, Search Console).
+
 ## Regla de no deploy
 
 No publicar los cambios locales mientras falte cualquiera de estos puntos:

@@ -324,9 +324,11 @@ export default function Mundial2026() {
       "@context": "https://schema.org",
       "@type": "SportsEvent",
       "name": "Copa Mundial de la FIFA 2026™",
+      "url": "https://www.guiasports.com/mundial-2026",
       "startDate": WORLD_CUP_START_DATE,
       "endDate": WORLD_CUP_END_DATE,
       "eventStatus": "https://schema.org/EventCompleted",
+      "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
       "image": "https://www.guiasports.com/images/mundial/Copa_Mundial_FIFA_2026-logo.webp",
       "location": SEDES.map(s => ({
         "@type": "Place",
@@ -338,6 +340,15 @@ export default function Mundial2026() {
         }
       })),
       "organizer": { "@type": "Organization", "name": "FIFA", "url": "https://www.fifa.com" },
+      "offers": {
+        "@type": "Offer",
+        "url": "https://www.guiasports.com/mundial-2026",
+        "price": "0",
+        "priceCurrency": "MXN",
+        "availability": "https://schema.org/SoldOut",
+        "validFrom": WORLD_CUP_START_DATE,
+        "validThrough": WORLD_CUP_END_DATE
+      },
       "description": "Archivo histórico de la Copa Mundial de la FIFA 2026: 48 selecciones y 104 partidos disputados del 11 de junio al 19 de julio de 2026."
     },
     ...MATCHES.slice(0, 30).map(m => {
@@ -354,6 +365,7 @@ export default function Mundial2026() {
         "startDate": startDate.toISOString(),
         "endDate": endDate,
         "eventStatus": "https://schema.org/EventCompleted",
+        "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
         "image": "https://www.guiasports.com/images/mundial/Copa_Mundial_FIFA_2026-logo.webp",
         "location": { 
           "@type": "Place", 
@@ -363,6 +375,15 @@ export default function Mundial2026() {
             "addressLocality": m.ciudad,
             "addressCountry": getVenueAddressCountry(m.estadio)
           }
+        },
+        "offers": {
+          "@type": "Offer",
+          "url": buildWorldCupMatchUrl(m),
+          "price": "0",
+          "priceCurrency": "MXN",
+          "availability": "https://schema.org/SoldOut",
+          "validFrom": startDate.toISOString(),
+          "validThrough": endDate
         },
         "performer": [
           { "@type": "SportsTeam", "name": m.equipo1, "image": getFlagUrl(m.equipo1) },

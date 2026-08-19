@@ -106,6 +106,15 @@ export default async function MundialPartidoDetalle({ params }: Props) {
     "endDate": getWorldCupEndDateTime(match),
     "eventStatus": "https://schema.org/EventCompleted",
     "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+    "offers": {
+      "@type": "Offer",
+      "url": matchUrl,
+      "price": "0",
+      "priceCurrency": "MXN",
+      "availability": "https://schema.org/SoldOut",
+      "validFrom": getWorldCupStartDateTime(match),
+      "validThrough": getWorldCupEndDateTime(match)
+    },
     "sport": "Fútbol",
     "inLanguage": "es-MX",
     "image": "https://www.guiasports.com/images/mundial/Copa_Mundial_FIFA_2026-logo.webp",

@@ -339,6 +339,62 @@ Pendientes que permanecen:
 
 Límites: esta sesión se ejecutó sólo en local. No se hizo deploy, staging, sincronizaciones ni cambios en Supabase.
 
+## Sección de contingencia y reversión (baseline-pre-staging)
+
+Estado: **activa desde el 18/08/2026. Protege todo el avance local antes del ciclo de staging/validación externa.**
+
+Objetivo: permitir abortar el ciclo de staging en cualquier momento y restaurar el estado aprobado local sin depender del historial del chat.
+
+### Capa 1 — Punto de restauración Git
+
+- Commit: `f0c1b5b baseline-pre-staging: estado aprobado del plan de remediacion (Fases 0-4, 6 y QA SEO local)`.
+- Tag: `baseline-pre-staging`.
+- Rama: `main` (local, sin push). Contiene todo el working tree de las fases 0-4, 6 y QA SEO local.
+- Restaurar el estado aprobado en la rama actual (descartando cambios del staging):
+
+```bash
+git checkout baseline-pre-staging
+git reset --hard baseline-pre-staging   # sólo si se quiere descartar el estado actual
+```
+
+- Para volver a `main` desde `staging` sin perder el baseline:
+
+```bash
+git checkout main
+git tag -f baseline-pre-staging        # ya existe; no re-crear
+```
+
+### Capa 2 — Rama aislada de staging
+
+- Rama de trabajo del ciclo de staging/validación externa: `staging` (creada desde `baseline-pre-staging`).
+- `main` queda congelado en el estado aprobado. Si el ciclo colapsa, se borra `staging` y se continúa desde `main`:
+
+```bash
+git checkout main
+git branch -D staging   # descarta la rama de staging local
+```
+
+### Capa 3 — Respaldo externo de secretos y artefactos
+
+- `agenda-web/.env.local` copiado fuera del repo: `/tmp/backup-env-20260818/.env.local.baseline` (sha256 `69c89e0306e651859e10fe162ac55d511b865e48c8f6e6c8e57c75f24e2659b8`).
+- Logs conservados: `/tmp/guidasports-build-20260818.log` (build concluyente), `/tmp/guidasports-dev-20260818.log` (dev server).
+- Antes de cualquier SQL/RLS en Supabase: confirmar backup reciente en `Database → Backups` y documentar su fecha/identificador en este plan.
+
+### Criterios de aborto del ciclo de staging (se dispara con cualquiera)
+
+1. Un paso de staging modifica `main` o el baseline de forma no prevista.
+2. Un paso requiere SQL/RLS/escritura en Supabase sin backup reciente confirmado y documentado.
+3. `npx tsc --noEmit`, `npm run lint` o `git diff --check` dejan de pasar en la rama de staging.
+4. El deploy a staging rompe login, lectura, edición, publicación o generación de noticias y no existe reversión del proveedor inmediata.
+5. Cualquier decisión de la lista de "Regla de no deploy" se intenta omitir.
+
+### Reversión por capa
+
+- **Código local:** `git checkout main && git branch -D staging` (o `git reset --hard baseline-pre-staging` si se trabaja sobre `main`).
+- **Supabase:** restaurar desde el backup documentado; no ejecutar SQL adicional sin confirmarlo.
+- **Secreto de sesión admin:** restaurar `/tmp/backup-env-20260818/.env.local.baseline` a `agenda-web/.env.local`.
+- **Servidor local:** reiniciar `npm run dev` con el log `/tmp/guidasports-dev-20260818.log` como referencia.
+
 ## Regla de no deploy
 
 No publicar los cambios locales mientras falte cualquiera de estos puntos:

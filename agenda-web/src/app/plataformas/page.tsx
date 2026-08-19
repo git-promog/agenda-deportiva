@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Tv, ChevronRight, Info, CheckCircle2 } from 'lucide-react';
+import { ChevronRight, Info } from 'lucide-react';
 import { Metadata } from 'next';
 import { PLATFORMS } from '@/data/platformsData';
 import Breadcrumbs from '@/components/Breadcrumbs';
@@ -52,9 +52,11 @@ export default function PlataformasPage() {
               <div className="w-24 h-24 md:w-32 md:h-32 rounded-3xl bg-slate-950/40 border border-white/5 flex items-center justify-center shadow-2xl relative z-10 shrink-0 overflow-hidden group-hover:scale-105 transition-transform duration-500">
                  {platform.logo ? (
                    <div className="w-full h-full p-4 relative flex items-center justify-center">
-                     <img 
+                     <NextImage
                        src={platform.logo} 
                        alt={platform.name} 
+                       fill
+                       sizes="128px"
                        className="max-w-full max-h-full object-contain filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]" 
                      />
                    </div>

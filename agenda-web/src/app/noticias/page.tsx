@@ -4,6 +4,7 @@ import NextImage from 'next/image';
 import { Metadata } from 'next';
 import { Newspaper, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import type { Noticia } from '@/types';
 
 export const revalidate = 3600;
 
@@ -57,7 +58,7 @@ export default async function NoticiasIndex({
       "name": "GuíaSports",
       "url": "https://www.guiasports.com"
     },
-    "itemListElement": noticias?.map((n: any, index: number) => ({
+    "itemListElement": noticias?.map((n: Noticia, index: number) => ({
       "@type": "ListItem",
       "position": index + 1,
       "item": {
@@ -99,7 +100,7 @@ export default async function NoticiasIndex({
           {noticias && noticias.length > 0 ? (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {noticias.map((n: any, idx: number) => (
+                {noticias.map((n: Noticia, idx: number) => (
                   <Link key={n.id} href={`/noticias/${n.slug}`} className="group bg-slate-900/50 border border-slate-800/50 rounded-[32px] overflow-hidden hover:border-slate-700 hover:bg-slate-900/80 transition-all duration-300">
                     {n.imagen_url ? (
                       <div className="w-full h-44 overflow-hidden relative">

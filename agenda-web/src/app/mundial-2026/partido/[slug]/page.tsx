@@ -5,12 +5,18 @@ import { Calendar, Clock, ExternalLink, MapPin, Trophy, Tv, StickyNote } from "l
 import BackButton from "@/components/BackButton";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import ShareButton from "@/components/ShareButton";
-import { MATCHES, WCMatch } from "@/data/mundialData";
+import { MATCHES } from "@/data/mundialData";
 import {
   buildWorldCupMatchPath,
   buildWorldCupMatchUrl,
   getWorldCupMatchIdFromSlug,
 } from "@/lib/worldCupUrls";
+import {
+  getWorldCupBroadcastText,
+  getWorldCupEndDateTime,
+  getWorldCupResult,
+  getWorldCupStartDateTime,
+} from "@/lib/worldCupArchive";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -22,20 +28,6 @@ function getMatch(slug: string) {
   return MATCHES.find((match) => match.id === id) || null;
 }
 
-function getBroadcasters(match: WCMatch) {
-  if (match.broadcasters) return match.broadcasters;
-
-  // Solo transmisiones para México (Guía de programación deportiva México)
-  const mexicoBroadcasters = 'TUDN · Canal 5 · Azteca 7 · ViX';
-  
-  if (match.equipo1 === 'México' || match.equipo2 === 'México') return mexicoBroadcasters;
-  if (['Final', 'Semifinal', 'Cuartos de final', 'Octavos de final', 'Dieciseisavos de final', 'Partido por el tercer puesto'].includes(match.fase)) {
-    return mexicoBroadcasters;
-  }
-  
-  return 'ViX (Premium) · Consulte TUDN/Canal 5/Azteca 7';
-}
-
 function formatDate(fecha: string) {
   return new Date(`${fecha}T12:00:00`).toLocaleDateString("es-MX", {
     weekday: "long",
@@ -43,16 +35,6 @@ function formatDate(fecha: string) {
     month: "long",
     year: "numeric",
   });
-}
-
-function getStartDateTime(match: WCMatch) {
-  return match.utc || `${match.fecha}T${match.hora}:00-06:00`;
-}
-
-function getEndDateTime(match: WCMatch) {
-  const startDate = new Date(getStartDateTime(match));
-  if (Number.isNaN(startDate.getTime())) return `${match.fecha}T23:59:00-06:00`;
-  return new Date(startDate.getTime() + 2 * 60 * 60 * 1000).toISOString();
 }
 
 export function generateStaticParams() {
@@ -72,8 +54,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  const title = `${match.equipo1} vs ${match.equipo2}: horario, sede y dónde ver | Mundial 2026`;
-  const description = `Consulta horario, sede, fase y transmisión de ${match.equipo1} vs ${match.equipo2} en el Mundial 2026.`;
+  const title = `${match.equipo1} vs ${match.equipo2}: resultado, fecha y sede | Mundial 2026`;
+  const description = `Consulta el resultado ${getWorldCupResult(match)}, la fecha, sede y transmisión registrada de ${match.equipo1} vs ${match.equipo2} en el Mundial 2026.`;
   const url = buildWorldCupMatchUrl(match);
 
   return {
@@ -89,6 +71,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       locale: "es_MX",
       url,
       siteName: "GuíaSports",
+      images: [{
+        url: "https://www.guiasports.com/og/mundial-2026.webp",
+        width: 1200,
+        height: 630,
+        alt: `${match.equipo1} vs ${match.equipo2} — Mundial 2026`,
+      }],
     },
     twitter: {
       card: "summary",
@@ -106,21 +94,21 @@ export default async function MundialPartidoDetalle({ params }: Props) {
 
   const matchPath = buildWorldCupMatchPath(match);
   const matchUrl = buildWorldCupMatchUrl(match);
-  const broadcasters = getBroadcasters(match);
+  const broadcasters = getWorldCupBroadcastText(match);
   const title = `${match.equipo1} vs ${match.equipo2}`;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "SportsEvent",
     "name": `${title} - Mundial 2026`,
-    "description": `Horario, sede y transmisión de ${title} en el Mundial 2026.`,
+    "description": `Resultado ${getWorldCupResult(match)}, fecha, sede y transmisión registrada de ${title} en el archivo del Mundial 2026.`,
     "url": matchUrl,
-    "startDate": getStartDateTime(match),
-    "endDate": getEndDateTime(match),
-    "eventStatus": "https://schema.org/EventScheduled",
+    "startDate": getWorldCupStartDateTime(match),
+    "endDate": getWorldCupEndDateTime(match),
+    "eventStatus": "https://schema.org/EventCompleted",
     "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
     "sport": "Fútbol",
     "inLanguage": "es-MX",
-    "image": "https://www.guiasports.com/GuiaSports-logo.svg",
+    "image": "https://www.guiasports.com/images/mundial/Copa_Mundial_FIFA_2026-logo.webp",
     "location": {
       "@type": "Place",
       "name": match.estadio,
@@ -143,7 +131,16 @@ export default async function MundialPartidoDetalle({ params }: Props) {
         "@type": "SportsTeam",
         "name": match.equipo2
       }
-    ]
+    ],
+    "homeTeam": { "@type": "SportsTeam", "name": match.equipo1 },
+    "awayTeam": { "@type": "SportsTeam", "name": match.equipo2 },
+    "result": {
+      "@type": "SportsEvent",
+      "name": `${match.equipo1} ${getWorldCupResult(match)} ${match.equipo2}`,
+      "homeTeam": { "@type": "SportsTeam", "name": match.equipo1 },
+      "awayTeam": { "@type": "SportsTeam", "name": match.equipo2 },
+      "eventStatus": "https://schema.org/EventCompleted"
+    }
   };
 
   return (
@@ -167,11 +164,19 @@ export default async function MundialPartidoDetalle({ params }: Props) {
               {title}
             </h1>
             <p className="text-slate-400 leading-relaxed">
-              Consulta fase, fecha, sede y opciones de transmisión para este partido del Mundial 2026.
+              Archivo histórico con resultado, fase, fecha, sede y transmisión registrada de este partido del Mundial 2026.
             </p>
           </header>
 
           <section className="grid gap-4 mb-10">
+            <div className="bg-blue-600/10 border border-blue-500/30 rounded-2xl p-6 flex items-center justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-blue-300 mb-2">Resultado final</p>
+                <p className="text-lg font-black text-white">{match.equipo1} {getWorldCupResult(match)} {match.equipo2}</p>
+              </div>
+              <Trophy className="text-yellow-400 shrink-0" size={24} />
+            </div>
+
             <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 flex items-start gap-4">
               <Calendar className="text-blue-400 shrink-0 mt-1" size={20} />
               <div>
@@ -210,24 +215,10 @@ export default async function MundialPartidoDetalle({ params }: Props) {
              <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 flex items-start gap-4">
                <Tv className="text-purple-400 shrink-0 mt-1" size={20} />
                <div>
-                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Dónde ver</p>
+                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Transmisión registrada</p>
                  <p className="font-black text-white">{broadcasters}</p>
                </div>
              </div>
-             
-             {match.streaming && (
-               <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 flex items-start gap-4">
-                 <ExternalLink className="text-[#a3e635] shrink-0 mt-1" size={20} />
-                 <div>
-                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Streaming oficial</p>
-                   <p className="font-black text-white">
-                     <a href={match.streaming} target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">
-                       Ver partido en vivo
-                     </a>
-                   </p>
-                 </div>
-               </div>
-             )}
              
              {match.broadcastNotes && (
                <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 flex items-start gap-4">
@@ -243,7 +234,7 @@ export default async function MundialPartidoDetalle({ params }: Props) {
           <section className="bg-blue-600/5 border border-blue-500/10 rounded-2xl p-6 mb-10">
             <h2 className="text-xl font-black italic uppercase mb-3">Resumen rápido</h2>
             <p className="text-slate-300 leading-relaxed">
-              {title} se juega el {formatDate(match.fecha)} a las {match.hora} en {match.estadio}, {match.ciudad}. La transmisión marcada para México es {broadcasters}.
+              {title} terminó {getWorldCupResult(match)} el {formatDate(match.fecha)} en {match.estadio}, {match.ciudad}. La transmisión registrada para México fue {broadcasters}.
             </p>
           </section>
 

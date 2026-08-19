@@ -1,11 +1,21 @@
 import os
 import requests
 import json
+import sys
+from dotenv import load_dotenv
 
+load_dotenv('.env.local')
+
+admin_api_secret = os.getenv("ADMIN_API_SECRET")
 URL = "http://localhost:3000/api/noticias/generar"
+
+if not admin_api_secret:
+    print("Error: ADMIN_API_SECRET no configurado en entorno.")
+    sys.exit(1)
+
 headers = {
     "Content-Type": "application/json",
-    "Authorization": "Bearer guiasports-secret-2024"
+    "Authorization": f"Bearer {admin_api_secret}"
 }
 
 data = {
@@ -28,8 +38,6 @@ try:
 except Exception as e:
     print("Failed to reach localhost:3000. Is next dev running?")
     import google.generativeai as genai
-    from dotenv import load_dotenv
-    load_dotenv('.env.local')
     
     print("\nTesting Gemini API directly...")
     try:

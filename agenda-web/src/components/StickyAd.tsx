@@ -17,16 +17,16 @@ export default function StickyAd() {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[70] flex justify-center w-full px-4 pointer-events-none transition-transform duration-500 transform translate-y-0" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0.5rem)' }}>
-      <div className="relative bg-[#0f172a]/95 backdrop-blur-md border border-slate-700/50 p-2 rounded-t-xl md:rounded-xl shadow-2xl pointer-events-auto max-w-full sm:max-w-[320px] w-full flex flex-col items-center">
+    <div className="fixed left-0 right-0 bottom-[calc(var(--nav-mobile-h)+env(safe-area-inset-bottom))] md:bottom-4 z-[70] flex justify-center w-full px-4 pointer-events-none animate-in fade-in slide-in-from-bottom-5 duration-500">
+      <div className="relative bg-[#0f172a]/95 backdrop-blur-md border border-slate-700/50 p-2 rounded-xl shadow-2xl pointer-events-auto max-w-full sm:max-w-[320px] w-full flex flex-col items-center">
         
         {/* Close Button */}
         <button 
           onClick={() => setIsVisible(false)}
-          className="absolute -top-3 -right-3 bg-slate-800 text-slate-400 hover:text-white p-1 rounded-full border border-slate-700 shadow-md"
+          className="absolute -top-4 -right-3 bg-slate-800 text-slate-400 hover:text-white grid place-items-center w-11 h-11 rounded-full border border-slate-700 shadow-md"
           aria-label="Cerrar Anuncio"
         >
-          <X size={14} />
+          <X size={16} />
         </button>
         
         <div className="text-[8px] text-slate-500 uppercase tracking-widest font-black mb-1">

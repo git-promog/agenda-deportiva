@@ -1,4 +1,4 @@
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search } from 'lucide-react';
 import NextImage from 'next/image';
 
 export default function Loading() {

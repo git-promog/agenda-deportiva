@@ -1,13 +1,17 @@
 "use client";
 
+/* FIFA flag URLs are generated at runtime from external assets. */
+/* eslint-disable @next/next/no-img-element */
+
 import React, { useRef, useState, useEffect, forwardRef } from 'react';
 import { TransformWrapper, TransformComponent, useControls } from "react-zoom-pan-pinch";
 import { MATCHES, getFlagUrl, WCMatch } from '@/data/mundialData';
-import { ZoomIn, ZoomOut, RotateCcw, Maximize, Minimize, MousePointer2, MousePointerClick, Trophy, Calendar, Clock, MapPin } from 'lucide-react';
+import NextImage from 'next/image';
+import { ZoomIn, ZoomOut, RotateCcw, Maximize, Minimize, MousePointer2, MousePointerClick, Trophy } from 'lucide-react';
 
 interface Props {
   onMatchClick: (match: WCMatch, hora: string, nota: string) => void;
-  convertirHora: (match: any) => { hora: string; nota: string };
+  convertirHora: (match: WCMatch) => { hora: string; nota: string };
 }
 
 const Controls = ({ isFullscreen, onToggleFullscreen }: { isFullscreen: boolean; onToggleFullscreen: () => void }) => {
@@ -77,9 +81,6 @@ const WCVisualCalendar = forwardRef<HTMLDivElement, Props>(({ onMatchClick, conv
   };
 
   // Agrupar partidos por fase y grupo
-  const groupAtoF = ['A', 'B', 'C', 'D', 'E', 'F'];
-  const groupGtoL = ['G', 'H', 'I', 'J', 'K', 'L'];
-
   const getMatchesByGroup = (groupLabel: string) => 
     MATCHES.filter(m => m.grupo === groupLabel).sort((a, b) => a.fecha.localeCompare(b.fecha));
 
@@ -186,7 +187,7 @@ const WCVisualCalendar = forwardRef<HTMLDivElement, Props>(({ onMatchClick, conv
     }} className="relative w-full h-[600px] md:h-[800px] bg-slate-950 rounded-[40px] border border-white/5 overflow-hidden shadow-2xl">
       {/* Header del Calendario en el Canvas */}
       <div className="absolute top-8 left-0 right-0 z-30 flex flex-col items-center pointer-events-none">
-        <img src="/GuiaSports-logo.svg" alt="GuíaSports" className="h-5 md:h-7 w-auto mb-2 opacity-90 drop-shadow-md" />
+        <NextImage src="/GuiaSports-logo.svg" alt="GuíaSports" width={120} height={28} className="h-5 md:h-7 w-auto mb-2 opacity-90 drop-shadow-md" />
         <h2 className="text-lg md:text-3xl font-black italic uppercase text-white tracking-tighter text-center">
           Calendario <span className="text-yellow-500">Interactivo</span>
         </h2>

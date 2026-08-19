@@ -1,28 +1,26 @@
 import os
 import requests
-import json
+from dotenv import load_dotenv
 
-SUPABASE_URL = "https://dmutaluipvmrxuvxtluq.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtdXRhbHVpcHZtcnh1dnh0bHVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzMjg5ODIsImV4cCI6MjA4OTkwNDk4Mn0.X97I7C-5Ap4XfpJNd3xKg5EJCoqgyS1pqeOZSglYe0E"
+# Cargar variables desde .env.local si existe
+load_dotenv('.env.local')
+
+SUPABASE_URL = os.getenv("NEXT_PUBLIC_SUPABASE_URL")
+SUPABASE_KEY = os.getenv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
+
+if not SUPABASE_URL or not SUPABASE_KEY:
+    print("Error: NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY deben estar definidos en el entorno.")
+    exit(1)
 
 headers = {
     "apikey": SUPABASE_KEY,
     "Authorization": f"Bearer {SUPABASE_KEY}",
-    "Content-Type": "application/json",
-    "Prefer": "return=representation"
+    "Content-Type": "application/json"
 }
 
-data = {
-    "titulo": "Prueba API RLS",
-    "contenido": "Esta es una prueba de RLS en noticias",
-    "imagen_url": "https://example.com/img.jpg",
-    "fecha": "2024-06-20",
-    "slug": "prueba-api-rls"
-}
-
-url = f"{SUPABASE_URL}/rest/v1/noticias"
-print("Attempting to insert...")
-response = requests.post(url, headers=headers, data=json.dumps(data))
+url = f"{SUPABASE_URL}/rest/v1/noticias?select=id&limit=1"
+print("Verificando lectura pública de noticias...")
+response = requests.get(url, headers=headers, timeout=15)
 
 print(f"Status Code: {response.status_code}")
 print(f"Response: {response.text}")

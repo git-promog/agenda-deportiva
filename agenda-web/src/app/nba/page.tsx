@@ -4,18 +4,20 @@ import NextImage from 'next/image';
 import { Metadata } from 'next';
 import { Calendar, Tv, Clock } from 'lucide-react';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import { getTodayMexicoString, isEventLive } from '@/lib/mexicoTime';
+import type { Evento, Noticia } from '@/types';
 
-export const revalidate = 300;
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "NBA en Vivo | Dónde Ver Partidos Hoy en México | GuíaSports",
-  description: "Horarios y canales de TV para ver NBA en vivo en México. Dónde ver partidos de básquetbol hoy.",
+  description: "Dónde ver la NBA en vivo hoy en México. Horarios, televisión y streaming de todos los partidos de básquetbol.",
   alternates: {
     canonical: "https://www.guiasports.com/nba",
   },
   openGraph: {
-    title: "NBA en Vivo | Dónde Ver Partidos Hoy en México",
-    description: "Horarios y canales de TV para ver NBA en vivo en México.",
+    title: "NBA en Vivo | GuíaSports México",
+    description: "Horarios y canales para ver la NBA en vivo en México.",
     type: "website",
     locale: "es_MX",
     url: "https://www.guiasports.com/nba",
@@ -29,27 +31,10 @@ const emojis: { [key: string]: string } = {
   "Golf": "⛳️", "Natación": "🏊", "Fútbol Sala": "👟", "Otros": "🏆"
 };
 
-function estaEnVivo(fecha: string, hora: string, hoyStr: string) {
-  if (fecha !== hoyStr) return false;
-  const ahora = new Date();
-  const [h, m] = hora.split(':').map(Number);
-  const horaEvento = new Date();
-  horaEvento.setHours(h, m, 0);
-  const dif = ahora.getTime() - horaEvento.getTime();
-  return dif >= 0 && dif < (2 * 60 * 60 * 1000);
-}
-
-function getTodayStr() {
-  try {
-    const mxDate = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Mexico_City"}));
-    return mxDate.getFullYear() + "-" + String(mxDate.getMonth() + 1).padStart(2, '0') + "-" + String(mxDate.getDate()).padStart(2, '0');
-  } catch {
-    return new Date().toISOString().split('T')[0];
-  }
-}
+type HubNoticia = Noticia & { fecha?: string | null };
 
 export default async function NbaHub() {
-  const hoyStr = getTodayStr();
+  const hoyStr = getTodayMexicoString();
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -61,11 +46,12 @@ export default async function NbaHub() {
     supabase.from('noticias').select('*').order('created_at', { ascending: false }).limit(6),
   ]);
 
-  const eventosBasket = eventos || [];
-  const enVivo = eventosBasket.filter(e => estaEnVivo(e.fecha, e.hora, hoyStr));
+  const eventosBasket = (eventos ?? []) as Evento[];
+  const noticiasNBA = (noticias ?? []) as HubNoticia[];
+  const enVivo = eventosBasket.filter(e => isEventLive(e.fecha, e.hora));
   const proximos = eventosBasket.filter(e => e.fecha >= hoyStr);
 
-  const eventosAgrupados = proximos.reduce((groups: any, evento: any) => {
+  const eventosAgrupados = proximos.reduce<Record<string, Evento[]>>((groups, evento) => {
     const f = evento.fecha;
     if (!groups[f]) groups[f] = [];
     groups[f].push(evento);
@@ -116,7 +102,7 @@ export default async function NbaHub() {
                 </h2>
               </div>
               <div className="space-y-3">
-                {enVivo.map((evento: any) => (
+                {enVivo.map((evento) => (
                   <div key={evento.id} className="group bg-gradient-to-r from-red-600/10 to-red-900/5 border border-red-500/20 rounded-2xl p-5 hover:border-red-500/40 transition-all relative overflow-hidden">
                     <div className="absolute top-3 right-3">
                       <span className="flex items-center gap-1.5 bg-red-600 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">
@@ -158,13 +144,13 @@ export default async function NbaHub() {
                   <div className="h-px w-full bg-slate-800/30"></div>
                 </div>
                 <div className="grid gap-3">
-                  {eventosAgrupados[fecha].map((evento: any) => (
+                  {eventosAgrupados[fecha].map((evento) => (
                     <div key={evento.id} className="group bg-slate-900/30 border border-slate-800/50 rounded-2xl p-4 hover:border-blue-500/30 hover:bg-slate-900/60 transition-all">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                         <div className="flex items-center gap-3 w-full">
                           <div className="flex flex-col justify-center min-w-[65px] text-blue-400 font-mono font-black text-sm md:text-xl shrink-0 border-r border-slate-800/60 pr-3">
                             {evento.hora}
-                            {estaEnVivo(evento.fecha, evento.hora, hoyStr) && (
+                            {isEventLive(evento.fecha, evento.hora) && (
                               <div className="flex items-center gap-1 mt-1 justify-center"><div className="w-1.5 h-1.5 bg-red-600 rounded-full animate-ping"></div><span className="text-[7px] font-black text-red-500 uppercase">LIVE</span></div>
                             )}
                           </div>
@@ -197,7 +183,7 @@ export default async function NbaHub() {
                 <Calendar className="w-4 h-4" /> Últimas Noticias
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {noticias.map((n: any) => (
+                {noticiasNBA.map((n) => (
                   <Link key={n.id} href={`/noticias/${n.slug}`} className="group bg-slate-900/50 border border-slate-800/50 rounded-2xl overflow-hidden hover:border-blue-500/30 transition-all">
                     {n.imagen_url ? (
                       <div className="w-full h-32 overflow-hidden relative">

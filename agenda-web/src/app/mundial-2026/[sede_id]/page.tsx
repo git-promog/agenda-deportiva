@@ -1,9 +1,16 @@
+import type { Metadata } from 'next';
 import { SEDES, MATCHES } from '@/data/mundialData';
 import { notFound } from 'next/navigation';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { MapPin, Users, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import SedeMatchesList from '@/components/mundial/SedeMatchesList';
+import {
+  getWorldCupEndDateTime,
+  getWorldCupResult,
+  getWorldCupStartDateTime,
+} from '@/lib/worldCupArchive';
+import { buildWorldCupMatchUrl } from '@/lib/worldCupUrls';
 
 export async function generateStaticParams() {
   return SEDES.map(s => ({
@@ -11,17 +18,37 @@ export async function generateStaticParams() {
   }));
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ sede_id: string }> }) {
+export async function generateMetadata({ params }: { params: Promise<{ sede_id: string }> }): Promise<Metadata> {
   const resolvedParams = await params;
   const sede = SEDES.find(s => s.id === resolvedParams.sede_id);
   if (!sede) return { title: 'Sede no encontrada' };
 
+  const url = `https://www.guiasports.com/mundial-2026/${sede.id}`;
+  const title = `Mundial 2026 en ${sede.ciudad}: resultados y partidos | GuíaSports`;
+  const description = `Archivo histórico de los partidos del Mundial 2026 disputados en el ${sede.estadio}, ${sede.ciudad}, ${sede.pais}. Fechas, resultados y detalles de la sede.`;
+
   return {
-    title: `Partidos en el ${sede.estadio} (${sede.ciudad}) — Mundial 2026 | GuíaSports`,
-    description: `Descubre todos los partidos del Mundial 2026 que se jugarán en el ${sede.estadio} de ${sede.ciudad}, ${sede.pais}. Calendario, horarios y detalles de la sede oficial de la FIFA.`,
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: 'GuíaSports',
+      type: 'website',
+      locale: 'es_MX',
+      images: [{
+        url: 'https://www.guiasports.com/og/mundial-2026.webp',
+        width: 1200,
+        height: 630,
+        alt: `${sede.estadio} — archivo del Mundial 2026`,
+      }],
+    },
+    twitter: { card: 'summary_large_image', title, description },
     keywords: [
       `partidos ${sede.estadio}`,
-      `Mundial 2026 en ${sede.ciudad}`,
+      `resultados Mundial 2026 ${sede.ciudad}`,
       `${sede.estadio} Mundial 2026`,
       `sedes Mundial 2026 ${sede.pais}`
     ]
@@ -57,7 +84,15 @@ export default async function SedePage({ params }: { params: Promise<{ sede_id: 
     "event": partidos.map(m => ({
       "@type": "SportsEvent",
       "name": `${m.equipo1} vs ${m.equipo2}`,
-      "startDate": `${m.fecha}T${m.hora}:00`,
+      "description": `Resultado final: ${getWorldCupResult(m)} en ${sede.estadio}.`,
+      "url": buildWorldCupMatchUrl(m),
+      "startDate": getWorldCupStartDateTime(m),
+      "endDate": getWorldCupEndDateTime(m),
+      "eventStatus": "https://schema.org/EventCompleted",
+      "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+      "location": { "@type": "Place", "name": sede.estadio, "address": { "@type": "PostalAddress", "addressLocality": sede.ciudad } },
+      "homeTeam": { "@type": "SportsTeam", "name": m.equipo1 },
+      "awayTeam": { "@type": "SportsTeam", "name": m.equipo2 },
       "competitor": [
         { "@type": "SportsTeam", "name": m.equipo1 },
         { "@type": "SportsTeam", "name": m.equipo2 }
@@ -93,7 +128,7 @@ export default async function SedePage({ params }: { params: Promise<{ sede_id: 
                   <Users size={16} /> Capacidad: {sede.capacidad}
                 </div>
                 <div className="flex items-center gap-2 bg-slate-950/50 px-4 py-2 rounded-xl border border-slate-800">
-                  <Calendar size={16} /> {partidos.length} Partidos Oficiales
+                  <Calendar size={16} /> {partidos.length} Partidos del torneo
                 </div>
               </div>
 
@@ -106,7 +141,7 @@ export default async function SedePage({ params }: { params: Promise<{ sede_id: 
           <main>
             <h2 className="text-2xl font-black uppercase italic mb-8 flex items-center gap-3">
               <span className={`w-3 h-8 block rounded-sm ${isMx ? 'bg-green-500' : (isCa ? 'bg-red-500' : 'bg-blue-500')}`}></span>
-              Calendario de Partidos Oficiales
+              Archivo de partidos y resultados
             </h2>
 
             <SedeMatchesList partidos={partidos} />

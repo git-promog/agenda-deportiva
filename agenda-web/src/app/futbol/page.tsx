@@ -5,18 +5,19 @@ import { Metadata } from 'next';
 import { Calendar } from 'lucide-react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import EventListWithModal from '@/components/EventListWithModal';
+import { getTodayMexicoString } from '@/lib/mexicoTime';
 
-export const revalidate = 300;
+export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Fútbol en Vivo | Dónde Ver Partidos Hoy en México | GuíaSports",
-  description: "Horarios y canales de TV para ver fútbol en vivo en México. Liga MX, Champions League, Premier League, La Liga y más. Dónde ver partidos hoy.",
+  title: "Agenda de Fútbol en Vivo Hoy | México | GuíaSports",
+  description: "Dónde ver fútbol en vivo hoy en México. Horarios, canales de TV y transmisiones en vivo de la Liga MX, Champions League, Premier League, LaLiga y más.",
   alternates: {
     canonical: "https://www.guiasports.com/futbol",
   },
   openGraph: {
-    title: "Fútbol en Vivo | Dónde Ver Partidos Hoy en México",
-    description: "Horarios y canales de TV para ver fútbol en vivo en México. Liga MX, Champions League y más.",
+    title: "Agenda de Fútbol en Vivo Hoy | México | GuíaSports",
+    description: "Partidos de fútbol hoy en México. Liga MX, Champions League, Premier League y más en TV y Streaming.",
     type: "website",
     locale: "es_MX",
     url: "https://www.guiasports.com/futbol",
@@ -41,27 +42,8 @@ interface Noticia {
   imagen_url?: string;
 }
 
-function estaEnVivo(fecha: string, hora: string, hoyStr: string) {
-  if (fecha !== hoyStr) return false;
-  const ahora = new Date();
-  const [h, m] = hora.split(':').map(Number);
-  const horaEvento = new Date();
-  horaEvento.setHours(h, m, 0);
-  const dif = ahora.getTime() - horaEvento.getTime();
-  return dif >= 0 && dif < (2 * 60 * 60 * 1000);
-}
-
-function getTodayStr() {
-  try {
-    const mxDate = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Mexico_City"}));
-    return mxDate.getFullYear() + "-" + String(mxDate.getMonth() + 1).padStart(2, '0') + "-" + String(mxDate.getDate()).padStart(2, '0');
-  } catch {
-    return new Date().toISOString().split('T')[0];
-  }
-}
-
 export default async function FutbolHub() {
-  const hoyStr = getTodayStr();
+  const hoyStr = getTodayMexicoString();
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -73,17 +55,7 @@ export default async function FutbolHub() {
     supabase.from('noticias').select('*').order('created_at', { ascending: false }).limit(6),
   ]);
 
-  const eventosFutbol: Evento[] = eventos || [];
-  const enVivo = eventosFutbol.filter(e => estaEnVivo(e.fecha, e.hora, hoyStr));
-  const proximos = eventosFutbol.filter(e => e.fecha >= hoyStr);
-
-  const eventosAgrupados = proximos.reduce((groups: Record<string, Evento[]>, evento: Evento) => {
-    const f = evento.fecha;
-    if (!groups[f]) groups[f] = [];
-    groups[f].push(evento);
-    return groups;
-  }, {});
-
+  const proximos: Evento[] = (eventos || []).filter((evento: Evento) => evento.fecha >= hoyStr);
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",

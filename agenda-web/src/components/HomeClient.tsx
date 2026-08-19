@@ -1,22 +1,28 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Tv, Zap, Filter, Search, CalendarDays, ChevronLeft, ChevronRight, Newspaper, Radio } from 'lucide-react';
+import { Zap, ChevronRight, Newspaper } from 'lucide-react';
 import Link from 'next/link';
 import NextImage from 'next/image';
-import AdPlacement from '@/components/AdPlacement';
 import Header from '@/components/Header';
-import SportEventCard from '@/components/SportEventCard';
 import HomeHero from '@/components/HomeHero';
 import HomeDestacados from '@/components/HomeDestacados';
 import SportEventModal from '@/components/SportEventModal';
+import AgendaSearch from '@/components/agenda/AgendaSearch';
+import AgendaQuickActions from '@/components/agenda/AgendaQuickActions';
+import AgendaFilters from '@/components/agenda/AgendaFilters';
+import AgendaResults from '@/components/agenda/AgendaResults';
 import { trackContentClick, trackEvent, trackFilter, trackSearch } from '@/lib/analytics';
+import { getTodayMexicoString, isEventLive } from '@/lib/mexicoTime';
+import { isTvAbierta } from '@/lib/channelCatalog';
+import { searchEvents } from '@/lib/eventSearch';
+import { Evento, Noticia } from '@/types';
 
 const emojis: { [key: string]: string } = {
-  "Fútbol": "⚽️", "Básquetbol": "🏀", "Béisbol": "⚾️", "Fórmula 1": "🏎️", 
-  "Motorismo": "🏍️", "Tenis": "🎾", "Fútbol Americano": "🏈", "Rugby": "🏉", 
-  "Hockey": "🏒", "Combate": "🥊", "Ciclismo": "🚴", "Voleibol": "🏐", 
+  "Fútbol": "⚽️", "Básquetbol": "🏀", "Béisbol": "⚾️", "Fórmula 1": "🏎️",
+  "Motorismo": "🏍️", "Tenis": "🎾", "Fútbol Americano": "🏈", "Rugby": "🏉",
+  "Hockey": "🏒", "Combate": "🥊", "Ciclismo": "🚴", "Voleibol": "🏐",
   "Golf": "⛳️", "Natación": "🏊", "Fútbol Sala": "👟", "Otros": "🏆"
 };
 
@@ -26,26 +32,6 @@ interface HomeClientProps {
   initialEventos: Evento[];
   initialNoticias: Noticia[];
   initialUltimaAct: string;
-}
-
-interface Evento {
-  id: string;
-  fecha: string;
-  hora: string;
-  evento: string;
-  competicion: string;
-  deporte: string;
-  canales: string;
-  destacado?: boolean | null;
-}
-
-interface Noticia {
-  id: string;
-  titulo: string;
-  slug: string;
-  fecha: string;
-  imagen_url?: string;
-  autor?: string;
 }
 
 export default function HomeClient({ initialEventos, initialNoticias, initialUltimaAct }: HomeClientProps) {
@@ -58,15 +44,9 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   const [soloTvAbierta, setSoloTvAbierta] = useState(false);
   const [busqueda, setBusqueda] = useState(searchParams.get('q') || "");
   const [soloEnVivo, setSoloEnVivo] = useState(searchParams.get('envivo') === '1');
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const filtrosRef = useRef<HTMLDivElement>(null);
-  const [filtrosFixed, setFiltrosFixed] = useState(false);
-  const [filtrosHeight, setFiltrosHeight] = useState(0);
-  const [showFechaDropdown, setShowFechaDropdown] = useState(false);
-  const [showCompDropdown, setShowCompDropdown] = useState(false);
-  const [busquedaLigas, setBusquedaLigas] = useState("");
   const [selectedEvent, setSelectedEvent] = useState<Evento | null>(null);
 
+  // Listener para scroll a eventos en vivo (Header / NavMobile)
   useEffect(() => {
     const handleScrollToLive = () => {
       const eventosEnVivo = document.querySelectorAll('[data-envivo="true"]');
@@ -78,86 +58,22 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
     return () => window.removeEventListener('scroll-to-live', handleScrollToLive);
   }, []);
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (showFechaDropdown && !target.closest('[data-fecha-toggle]') && !target.closest('[data-fecha-dropdown]')) {
-        setShowFechaDropdown(false);
-      }
-      if (showCompDropdown && !target.closest('[data-comp-toggle]') && !target.closest('[data-comp-dropdown]')) {
-        setShowCompDropdown(false);
-      }
-    };
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [showFechaDropdown, showCompDropdown]);
-
-  useEffect(() => {
-    const updateMetrics = () => {
-      const filtros = filtrosRef.current;
-      setFiltrosHeight(filtros?.offsetHeight || 0);
-      return filtros?.offsetTop || 0;
-    };
-
-    let originalOffsetTop = updateMetrics();
-    
-    const handleScroll = () => {
-      setFiltrosFixed(window.scrollY >= originalOffsetTop);
-    };
-    const handleResize = () => {
-      originalOffsetTop = updateMetrics();
-      handleScroll();
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('resize', handleResize, { passive: true });
-    handleScroll();
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-
   // Tracking de búsqueda con debounce manual
   useEffect(() => {
     if (busqueda.length > 2) {
       const timer = setTimeout(() => {
-        trackSearch(busqueda, { location: 'home_header' });
+        trackSearch(busqueda, { location: 'home_search' });
       }, 1500);
       return () => clearTimeout(timer);
     }
   }, [busqueda]);
 
-  const scrollDeportes = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const scrollTo = direction === 'left' ? scrollRef.current.scrollLeft - 150 : scrollRef.current.scrollLeft + 150;
-      scrollRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
-    }
-};
-  
-  const getTodayStr = () => {
-    try {
-      const mxDate = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Mexico_City"}));
-      return mxDate.getFullYear() + "-" + String(mxDate.getMonth() + 1).padStart(2, '0') + "-" + String(mxDate.getDate()).padStart(2, '0');
-    } catch {
-      return new Date().toISOString().split('T')[0];
-    }
-  };
-  const hoyStr = getTodayStr();
+  const hoyStr = getTodayMexicoString();
   const safeText = (value: string | null | undefined, fallback = "") => value || fallback;
+
   const deportesUnicos = ["Todos", ...new Set(eventos.map(e => safeText(e.deporte, "Otros")))];
   const fechasUnicas = ["Todos", ...new Set(eventos.map(e => safeText(e.fecha)))].filter(f => f !== "" && f >= hoyStr);
   const competicionesUnicas = ["Todos", ...new Set(eventos.map(e => safeText(e.competicion)).filter(Boolean))];
-
-  const estaEnVivo = (fecha: string, hora: string) => {
-    if (fecha !== hoyStr) return false;
-    const ahora = new Date();
-    const [h, m] = safeText(hora, "00:00").split(':').map(Number);
-    const horaEvento = new Date();
-    horaEvento.setHours(h, m, 0);
-    const dif = ahora.getTime() - horaEvento.getTime();
-    return dif >= 0 && dif < (2 * 60 * 60 * 1000);
-  };
 
   const destacados = eventos.filter(e => {
     const esDeHoy = e.fecha === hoyStr;
@@ -170,10 +86,10 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
     return false;
   }).slice(0, 6);
 
-  const eventosEnVivo = eventos.filter((e) => estaEnVivo(e.fecha, e.hora));
-  let eventoHero = null;
+  const eventosEnVivo = eventos.filter((e) => isEventLive(e.fecha, e.hora));
+  let eventoHero: Evento | null = null;
   let tipoHero = "EN VIVO AHORA";
-  
+
   if (eventosEnVivo.length > 0) {
     eventoHero = eventosEnVivo.find(e => e.destacado === true) ||
                  eventosEnVivo.find(e => TOP_TEAMS.some(t => safeText(e.evento).toLowerCase().includes(t.toLowerCase()))) ||
@@ -183,24 +99,21 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
     tipoHero = "PARTIDO DEL DÍA";
   }
 
-  const eventosFiltrados = eventos.filter(e => {
-    const eventName = safeText(e.evento);
+  // Búsqueda universal con scoring
+  const eventosBuscados = busqueda.trim() ? searchEvents(eventos, busqueda) : eventos;
+
+  const eventosFiltrados = eventosBuscados.filter(e => {
     const competition = safeText(e.competicion);
-    const channels = safeText(e.canales);
     const fecha = safeText(e.fecha);
     const deporte = safeText(e.deporte, "Otros");
     const hora = safeText(e.hora, "00:00");
     const coincideDeporte = filtroDeporte === "Todos" || deporte === filtroDeporte;
-    // Solo mostrar eventos de hoy y futuros (nunca pasados)
     const esFechaPasada = fecha < hoyStr;
     const coincideFecha = (filtroFecha === "Todos" ? !esFechaPasada : fecha === filtroFecha);
     const coincideCompeticion = filtroCompeticion === "Todos" || competition === filtroCompeticion;
-    const coincideBusqueda = eventName.toLowerCase().includes(busqueda.toLowerCase()) ||
-                             competition.toLowerCase().includes(busqueda.toLowerCase());
-    const canalesLower = channels.toLowerCase();
-    const esTvAbierta = ["canal 5", "azteca 7", "las estrellas", "nu9ve", "imagen tv", "azteca uno", "canal 9"].some(c => canalesLower.includes(c));
-    const esEnVivo = estaEnVivo(fecha, hora);
-    return coincideDeporte && coincideFecha && coincideCompeticion && coincideBusqueda && (soloTvAbierta ? esTvAbierta : true) && (soloEnVivo ? esEnVivo : true);
+    const esTvAbiertaEvento = isTvAbierta(e.canales);
+    const esEnVivo = isEventLive(fecha, hora);
+    return coincideDeporte && coincideFecha && coincideCompeticion && (soloTvAbierta ? esTvAbiertaEvento : true) && (soloEnVivo ? esEnVivo : true);
   });
 
   const eventosAgrupados = eventosFiltrados.reduce<Record<string, Evento[]>>((groups, evento) => {
@@ -221,7 +134,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
     if (fStr === hoyStr) return "Hoy";
     return new Date(fStr + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
   };
-  
+
   const guessSportEmoji = (title: string) => {
     const t = title.toLowerCase();
     if (t.includes('fútbol') || t.includes('soccer') || t.includes('liga mx') || t.includes('champions')) return "⚽️";
@@ -240,393 +153,264 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
     setSoloTvAbierta(false);
     setSoloEnVivo(false);
     setBusqueda("");
-    // Limpiar URL
     window.history.replaceState({}, '', window.location.pathname);
   };
 
-  const toggleEnVivo = () => {
-    trackEvent('click_en_vivo', { location: 'header_filters' });
-    const eventosEnVivo = document.querySelectorAll('[data-envivo="true"]');
-    if (eventosEnVivo.length > 0) {
-      eventosEnVivo[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+  const irAEnVivo = () => {
+    trackEvent('click_en_vivo', { location: 'quick_actions' });
+    const enVivoEls = document.querySelectorAll('[data-envivo="true"]');
+    if (enVivoEls.length > 0) {
+      enVivoEls[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      setSoloEnVivo(true);
     }
   };
 
-  const activeFilters = [];
+  const irAHoy = () => {
+    trackFilter('date', hoyStr);
+    setFiltroFecha(hoyStr);
+  };
+
+  const activeFilters: string[] = [];
   if (filtroDeporte !== "Todos") activeFilters.push(`${emojis[filtroDeporte] || "🏆"} ${filtroDeporte}`);
   if (filtroFecha !== "Todos") activeFilters.push("📅 " + formatearLabelFecha(filtroFecha));
   if (filtroCompeticion !== "Todos") activeFilters.push("🛡️ " + filtroCompeticion);
   if (soloTvAbierta) activeFilters.push("📺 TV Abierta");
   if (soloEnVivo) activeFilters.push("🔴 En Vivo");
 
+  const activeFiltersCount = activeFilters.length;
+  const isDefaultView = !busqueda && filtroDeporte === "Todos" && filtroFecha === "Todos" && filtroCompeticion === "Todos" && !soloTvAbierta && !soloEnVivo;
+
   return (
     <>
-    <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-24 w-full relative">
-      
-      <Header ultimaAct={initialUltimaAct} showSearch={true} busqueda={busqueda} onBusquedaChange={setBusqueda} />
+      <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-24 w-full relative">
+        <Header ultimaAct={initialUltimaAct} />
 
-      <div ref={filtrosRef} className={`bg-[#020617]/95 backdrop-blur-xl border-b border-slate-800 shadow-2xl z-40 transition-all duration-300 ${filtrosFixed ? 'fixed top-0 left-0 right-0 py-2' : 'relative py-4'}`}>
-        <div className="max-w-4xl mx-auto px-4">
-          
-          {/* Logo que aparece solo en Scroll para Navegación Universal */}
-          {filtrosFixed && (
-            <div className="flex justify-center mb-3 animate-in fade-in slide-in-from-top-2 duration-500">
-              <Link href="/" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
-                <NextImage src="/GuiaSports-logo.svg" alt="GuíaSports - Agenda Deportiva de México en TV y Streaming" width={100} height={30} className="h-6 w-auto opacity-80 hover:opacity-100 transition-opacity" />
-              </Link>
+        <main id="envivo" className="w-full max-w-4xl mx-auto px-4 pt-8 pb-8">
+          {/* 1. H1 visible + propuesta de valor */}
+          <section className="mb-6 pt-2">
+            <div className="flex items-center gap-2 text-[10px] font-black text-[#a3e635] uppercase tracking-[0.25em] mb-3">
+              <span className="inline-block w-1.5 h-1.5 bg-[#a3e635] rounded-full" />
+              Agenda deportiva en vivo
             </div>
-          )}
+            <h1 className="text-3xl md:text-5xl font-black italic lowercase leading-[0.95] tracking-tighter text-white">
+              ¿Dónde ver deportes <span className="text-[#a3e635]">hoy en México</span>?
+            </h1>
+            <p className="text-slate-300 text-xs md:text-sm mt-3 font-medium max-w-xl">
+              Agenda actualizada de TV abierta, de paga y streaming: partidos en vivo, horarios y canales.
+            </p>
+          </section>
 
-          {/* ROW 1: Barra de acción rápida */}
-          <div className="flex items-center gap-2 mb-3 overflow-x-auto scrollbar-hide">
-            <button
-              onClick={toggleEnVivo}
-              className="bg-red-600 text-white rounded-xl px-3 py-2 font-black uppercase text-[10px] tracking-widest shadow-[0_0_20px_rgba(220,38,38,0.5)] animate-pulse flex items-center gap-1.5"
-            >
-              <div className="w-1.5 h-1.5 bg-white rounded-full animate-ping"></div>
-              <span className="hidden sm:inline">En Vivo</span>
-              <Radio size={14} className="sm:hidden" />
-            </button>
+          {/* 2. Búsqueda grande */}
+          <section className="mb-5">
+            <AgendaSearch value={busqueda} onChange={setBusqueda} />
+          </section>
 
-            <div className="hidden md:flex items-center gap-1">
-              {fechasUnicas.slice(0, 4).map((f) => (
-                <button 
-                  key={f} 
-                  onClick={() => {
-                    trackFilter('date', f);
-                    setFiltroFecha(f);
-                  }} 
-                  className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${filtroFecha === f ? "text-[#a3e635] bg-[#a3e635]/10 border border-[#a3e635]/30" : "bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800"}`}
-                >
-                  {formatearBotonFecha(f)}
-                </button>
-              ))}
-            </div>
+          {/* 3. Accesos rápidos + 4. Deportes principales */}
+          <section className="mb-5">
+            <AgendaQuickActions
+              deportes={deportesUnicos}
+              deporteActivo={filtroDeporte}
+              onDeporteChange={(dep) => { trackFilter('sport', dep); setFiltroDeporte(dep); }}
+              onEnVivo={irAEnVivo}
+              onHoy={irAHoy}
+              emojis={emojis}
+            />
+          </section>
 
-            <div className="md:hidden">
-              <button data-fecha-toggle onClick={() => setShowFechaDropdown(!showFechaDropdown)} className={`flex items-center gap-1 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${filtroFecha !== "Todos" ? "text-[#a3e635] bg-[#a3e635]/10 border border-[#a3e635]/30" : "bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800"}`}>
-                📅 {filtroFecha === "Todos" ? "Hoy" : formatearLabelFecha(filtroFecha)}
-                <ChevronRight size={12} className={`transition-transform ${showFechaDropdown ? 'rotate-[-90deg]' : 'rotate-90'}`} />
-              </button>
-            </div>
+          {/* 5. Botón Filtrar + filtros activos */}
+          <section className="mb-6 flex flex-wrap items-center gap-2">
+            <AgendaFilters
+              filtroFecha={filtroFecha}
+              fechas={fechasUnicas}
+              onFechaChange={(f) => { trackFilter('date', f); setFiltroFecha(f); }}
+              filtroCompeticion={filtroCompeticion}
+              competiciones={competicionesUnicas}
+              onCompeticionChange={(c) => { trackFilter('league', c); setFiltroCompeticion(c); }}
+              soloTvAbierta={soloTvAbierta}
+              onTvAbiertaChange={(v) => { trackFilter('tv_abierta', v); setSoloTvAbierta(v); }}
+              activeCount={activeFiltersCount}
+              onReset={resetFilters}
+              formatButtonFecha={formatearBotonFecha}
+            />
 
-            {competicionesUnicas.length > 1 && (
-              <div className="relative">
-                <button data-comp-toggle onClick={() => { setShowCompDropdown(!showCompDropdown); setBusquedaLigas(""); }} className={`flex items-center gap-1 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${filtroCompeticion !== "Todos" ? "text-blue-400 bg-blue-600/10 border border-blue-500/30" : "bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800"}`}>
-                  🛡️ <span className="hidden sm:inline">{filtroCompeticion === "Todos" ? "Ligas" : filtroCompeticion}</span><span className="sm:hidden">Ligas</span>
-                  <ChevronRight size={12} className={`transition-transform ${showCompDropdown ? 'rotate-[-90deg]' : 'rotate-90'}`} />
-                </button>
-              </div>
-            )}
-
-            <button
-              onClick={() => {
-                const newState = !soloTvAbierta;
-                trackFilter('tv_abierta', newState);
-                setSoloTvAbierta(newState);
-              }}
-              className={`flex items-center gap-1 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${soloTvAbierta ? "bg-white text-black border border-white" : "text-slate-500 border border-slate-800 hover:text-slate-300 bg-slate-900/50"}`}
-            >
-              <Tv size={12} /> <span className="hidden sm:inline">{soloTvAbierta ? "TV Abierta" : "TV Abierta"}</span><span className="sm:hidden">📺</span>
-            </button>
-          </div>
-
-          {/* CONTENEDOR DE MENÚS DESPLEGABLES (Fuera del scroll) */}
-          <div className="relative">
-            {showFechaDropdown && (
-              <div data-fecha-dropdown className="absolute top-0 left-0 mt-1 bg-slate-900 border border-slate-700 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-[100] py-1 min-w-[180px]">
-                {fechasUnicas.map((f) => (
-                  <button 
-                    key={f} 
-                    onClick={() => { 
-                      trackFilter('date', f);
-                      setFiltroFecha(f); 
-                      setShowFechaDropdown(false); 
-                    }} 
-                    className={`w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest border-b border-white/5 last:border-0 transition-all ${filtroFecha === f ? "text-[#a3e635] bg-[#a3e635]/10" : "text-slate-400 hover:bg-slate-800"}`}
-                  >
-                    {formatearBotonFecha(f)}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {showCompDropdown && (
-              <div data-comp-dropdown className="absolute top-0 left-0 mt-1 bg-slate-900 border border-slate-700 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-[100] py-1 min-w-[240px] max-h-[380px] flex flex-col overflow-hidden">
-                <div className="px-3 py-3 border-b border-slate-700 bg-slate-950/50">
-                  <div className="relative">
-                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                    <input
-                      type="text"
-                      placeholder="Buscar liga..."
-                      value={busquedaLigas}
-                      onChange={(e) => setBusquedaLigas(e.target.value)}
-                      className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2.5 pl-9 pr-3 text-base text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 shadow-inner"
-                      autoFocus
-                    />
-                  </div>
-                </div>
-                <div className="overflow-y-auto max-h-[280px] scrollbar-hide">
-                  {competicionesUnicas.filter((c) => c.toLowerCase().includes(busquedaLigas.toLowerCase())).map((c) => (
-                    <button 
-                      key={c} 
-                      onClick={() => { 
-                        trackFilter('league', c);
-                        setFiltroCompeticion(c); 
-                        setShowCompDropdown(false); 
-                        setBusquedaLigas(""); 
-                      }} 
-                      className={`w-full text-left px-5 py-4 text-[10px] font-black uppercase tracking-widest border-b border-white/5 last:border-0 transition-all ${filtroCompeticion === c ? "text-blue-400 bg-blue-600/10" : "text-slate-400 hover:bg-slate-800"}`}
-                    >
-                      {c === "Todos" ? "🛡️ Todas las ligas" : c}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* ROW 2: Filtro de deportes con scroll */}
-          <div className="relative flex items-center">
-            <button onClick={() => scrollDeportes('left')} className="absolute left-0 z-10 bg-slate-900/80 p-2 rounded-full shadow-lg"><ChevronLeft size={16} /></button>
-            <div ref={scrollRef} className="flex gap-2 overflow-x-auto py-1 px-4 scrollbar-hide scroll-smooth w-full">
-              {deportesUnicos.map((dep) => (
-                <button 
-                  key={dep} 
-                  onClick={() => {
-                    trackFilter('sport', dep);
-                    setFiltroDeporte(dep);
-                  }} 
-                  className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all whitespace-nowrap border uppercase tracking-wider ${filtroDeporte === dep ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-900/40" : "bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800"}`}
-                >
-                  {emojis[dep] || "🏆"} {dep}
-                </button>
-              ))}
-            </div>
-            <button onClick={() => scrollDeportes('right')} className="absolute right-0 z-10 bg-slate-900/80 p-2 rounded-full shadow-lg"><ChevronRight size={16} /></button>
-          </div>
-
-          {/* ROW 3: Breadcrumb de filtros activos */}
-          {activeFilters.length > 0 && (
-            <div className="flex items-center gap-3 mt-2 pt-2 border-t border-slate-700/50 bg-slate-900/30 px-3 py-2 rounded-xl">
-              <span className="text-[10px] font-black text-[#a3e635] uppercase tracking-wider flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 bg-[#a3e635] rounded-full"></span>Mostrando:
+            {activeFilters.map((f, i) => (
+              <span key={i} className="text-[10px] font-bold text-white bg-blue-600/30 px-2.5 py-1.5 rounded-lg border border-blue-500/30">
+                {f}
               </span>
-              <div className="flex flex-wrap gap-1.5">
-                {activeFilters.map((f, i) => (
-                  <span key={i} className="text-[10px] font-black text-white bg-blue-600/30 px-2.5 py-1 rounded-lg border border-blue-500/30">{f}</span>
-                ))}
-              </div>
-              <button onClick={resetFilters} className="text-[10px] font-black text-white bg-red-600 hover:bg-red-500 transition-colors ml-auto uppercase px-3 py-1.5 rounded-lg border border-red-500 shadow-[0_0_10px_rgba(220,38,38,0.3)] flex items-center gap-1">
-                <span>✕</span>Limpiar
+            ))}
+
+            {activeFiltersCount > 0 && (
+              <button
+                onClick={resetFilters}
+                className="text-[10px] font-black text-white bg-red-600 hover:bg-red-500 transition-colors uppercase px-3 py-1.5 rounded-lg border border-red-500 flex items-center gap-1"
+              >
+                <span>✕</span> Limpiar
               </button>
-            </div>
-          )}
-        </div>
-      </div>
-      {filtrosFixed && <div style={{ height: filtrosHeight }}></div>}
+            )}
+          </section>
 
-      <main id="envivo" className="w-full max-w-4xl mx-auto px-4 pt-24 pb-8">
-        {!busqueda && (filtroFecha === "Todos" || filtroFecha === hoyStr) && (
-          <>
+          {/* Hero del evento destacado/en vivo (solo vista por defecto) */}
+          {isDefaultView && eventoHero && (
             <HomeHero evento={eventoHero} tipo={tipoHero} onClick={() => setSelectedEvent(eventoHero)} />
+          )}
 
-            {filtroFecha === "Todos" && filtroDeporte === "Todos" && (
-              <HomeDestacados destacados={destacados} onEventClick={setSelectedEvent} />
-            )}
-
-            {noticias.length > 0 && (
-              <div className="mb-12 w-full">
-                <div className="flex items-center justify-between mb-6 px-2">
-                  <h2 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] flex items-center gap-2"><Newspaper className="w-3 h-3" /> Últimas Noticias</h2>
-                  <Link href="/noticias" className="text-[9px] font-black text-slate-500 uppercase tracking-widest hover:text-blue-400 transition-colors flex items-center gap-1">
-                    Ver todas <ChevronRight size={10} />
-                  </Link>
-                </div>
-                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
-                  {noticias.slice(0, 5).map((n) => {
-                    const emoji = guessSportEmoji(n.titulo);
-                    return (
-                      <Link key={n.id} href={`/noticias/${n.slug}`} className="min-w-[280px] w-[85vw] max-w-[340px] bg-slate-900/50 border border-slate-800 p-4 rounded-[32px] flex gap-4 items-center hover:bg-slate-800/80 hover:border-slate-700 transition-all cursor-pointer group flex-shrink-0">
-                        <div className="w-20 h-20 bg-slate-800 rounded-2xl flex-shrink-0 flex items-center justify-center border border-white/5 group-hover:scale-105 transition-all overflow-hidden relative">
-                          {n.imagen_url ? (
-                            <NextImage 
-                              src={n.imagen_url} 
-                              alt={n.titulo} 
-                              fill 
-                              className="object-cover opacity-80 group-hover:opacity-100 transition-opacity" 
-                              sizes="80px"
-                            />
-                          ) : (
-                            <div className="flex flex-col items-center">
-                              {emoji ? (
-                                <span className="text-2xl mb-1">{emoji}</span>
-                              ) : (
-                                <Newspaper className="text-blue-500/50" size={24} />
-                              )}
-                            </div>
-                          )}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <h3 className="text-[11px] font-black uppercase italic leading-tight mb-2 text-slate-200 group-hover:text-white line-clamp-2">{n.titulo}</h3>
-                          <div className="flex items-center justify-between">
-                          <div className="flex flex-col gap-1">
-                             <p className="text-[9px] text-slate-500 uppercase font-bold">{n.fecha}</p>
-                             {n.autor ? (
-                               <p className="text-[8px] font-black text-blue-500 uppercase tracking-widest">Por {n.autor}</p>
-                             ) : (
-                               <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest">GuíaSports</p>
-                             )}
-                          </div>
-                          <span className="text-[9px] text-blue-500 font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Leer →</span>
-                          </div>
-                        </div>
-                      </Link>
-                    )
-                  })}
-                  
-                  {/* Card de "Ver más" al final */}
-                  <Link href="/noticias" className="min-w-[150px] bg-slate-900/20 border border-dashed border-slate-800 p-5 rounded-[32px] flex flex-col items-center justify-center hover:bg-slate-800/40 hover:border-slate-700 transition-all cursor-pointer group flex-shrink-0">
-                    <div className="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                      <Zap className="text-blue-500" size={20} />
-                    </div>
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest group-hover:text-white transition-colors">+ Ver más</span>
-                  </Link>
-                </div>
-              </div>
-            )}
-          </>
-        )}
-
-        {/* HUBS DE COMPETICIONES */}
-        <section className="mb-12 w-full">
-          <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-3 px-2">Competiciones Destacadas</h2>
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4">
-            <Link 
-              href="/mundial-2026" 
-              onClick={() => trackContentClick('hub', 'mundial_2026')}
-              className="flex-shrink-0 relative overflow-hidden group bg-slate-900 border border-yellow-500/30 px-6 py-4 rounded-2xl text-center transition-all duration-500 hover:border-yellow-400 hover:shadow-[0_0_25px_rgba(234,179,8,0.3)] hover:-translate-y-0.5 active:scale-95 shadow-xl shadow-black/20"
-            >
-              {/* Animated background glow */}
-              <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/10 via-transparent to-yellow-600/5 opacity-50 group-hover:opacity-100 transition-opacity"></div>
-              
-              {/* Shimmer effect */}
-              <div className="absolute -inset-[100%] group-hover:animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-[25deg] pointer-events-none"></div>
-
-              <div className="relative z-10 flex flex-col items-center">
-                <div className="h-10 w-auto mb-1.5 transform group-hover:scale-110 transition-transform duration-500 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">
-                  <img src="/images/mundial/Copa_Mundial_FIFA_2026-logo.webp" alt="FIFA 2026" className="h-full w-auto object-contain" />
-                </div>
-                <div className="text-[10px] font-black uppercase text-yellow-500 tracking-widest group-hover:text-yellow-400 transition-colors whitespace-nowrap">Mundial 2026</div>
-              </div>
-            </Link>
-            <Link 
-              href="/futbol/liga-mx" 
-              onClick={() => trackContentClick('hub', 'liga_mx')} 
-              className="flex-shrink-0 relative overflow-hidden group bg-slate-900 border border-slate-800/80 px-6 py-4 rounded-2xl text-center transition-all duration-500 hover:border-blue-500/50 hover:shadow-[0_0_25px_rgba(59,130,246,0.2)] hover:-translate-y-0.5 active:scale-95 shadow-xl shadow-black/20"
-            >
-              {/* Animated background glow */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-indigo-500/5 opacity-50 group-hover:opacity-100 transition-opacity"></div>
-              
-              {/* Shimmer effect */}
-              <div className="absolute -inset-[100%] group-hover:animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-[25deg] pointer-events-none"></div>
-
-              <div className="relative z-10 flex flex-col items-center">
-                <div className="h-10 w-auto mb-1.5 transform group-hover:scale-110 transition-transform duration-500 drop-shadow-[0_0_8px_rgba(255,255,255,0.15)] flex items-center justify-center">
-                  <img src="/images/logo_ligas/liga_mx.webp" alt="Liga MX" className="h-full w-auto object-contain" />
-                </div>
-                <div className="text-[10px] font-black uppercase text-slate-400 group-hover:text-blue-400 transition-colors whitespace-nowrap">Liga MX</div>
-              </div>
-            </Link>
-            <Link 
-              href="/futbol/champions-league" 
-              onClick={() => trackContentClick('hub', 'champions_league')} 
-              className="flex-shrink-0 relative overflow-hidden group bg-slate-900 border border-slate-800/80 px-6 py-4 rounded-2xl text-center transition-all duration-500 hover:border-sky-500/50 hover:shadow-[0_0_25px_rgba(14,165,233,0.2)] hover:-translate-y-0.5 active:scale-95 shadow-xl shadow-black/20"
-            >
-              {/* Animated background glow */}
-              <div className="absolute inset-0 bg-gradient-to-br from-sky-500/10 via-transparent to-blue-600/5 opacity-50 group-hover:opacity-100 transition-opacity"></div>
-              
-              {/* Shimmer effect */}
-              <div className="absolute -inset-[100%] group-hover:animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-[25deg] pointer-events-none"></div>
-
-              <div className="relative z-10 flex flex-col items-center">
-                <div className="h-10 w-auto mb-1.5 transform group-hover:scale-110 transition-transform duration-500 drop-shadow-[0_0_8px_rgba(255,255,255,0.15)] flex items-center justify-center">
-                  <img src="/images/logo_ligas/uefa_champions_league.webp" alt="Champions League" className="h-full w-auto object-contain" />
-                </div>
-                <div className="text-[10px] font-black uppercase text-slate-400 group-hover:text-sky-400 transition-colors whitespace-nowrap">Champions</div>
-              </div>
-            </Link>
-            <Link 
-              href="/futbol/premier-league" 
-              onClick={() => trackContentClick('hub', 'premier_league')} 
-              className="flex-shrink-0 relative overflow-hidden group bg-slate-900 border border-slate-800/80 px-6 py-4 rounded-2xl text-center transition-all duration-500 hover:border-purple-500/50 hover:shadow-[0_0_25px_rgba(168,85,247,0.2)] hover:-translate-y-0.5 active:scale-95 shadow-xl shadow-black/20"
-            >
-              {/* Animated background glow */}
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-pink-500/5 opacity-50 group-hover:opacity-100 transition-opacity"></div>
-              
-              {/* Shimmer effect */}
-              <div className="absolute -inset-[100%] group-hover:animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-[25deg] pointer-events-none"></div>
-
-              <div className="relative z-10 flex flex-col items-center">
-                <div className="h-10 w-auto mb-1.5 transform group-hover:scale-110 transition-transform duration-500 drop-shadow-[0_0_8px_rgba(255,255,255,0.15)] flex items-center justify-center">
-                  <img src="/images/logo_ligas/premier_league.webp" alt="Premier League" className="h-full w-auto object-contain" />
-                </div>
-                <div className="text-[10px] font-black uppercase text-slate-400 group-hover:text-purple-400 transition-colors whitespace-nowrap">Premier League</div>
-              </div>
-            </Link>
+          {/* 6. Resultados */}
+          <div id="listado-eventos-principal" className="w-full">
+            <AgendaResults
+              eventosAgrupados={eventosAgrupados}
+              onEventClick={(evento) => {
+                trackEvent('view_event_detail', {
+                  event_name: evento.evento,
+                  sport: evento.deporte,
+                  competition: evento.competicion
+                });
+                setSelectedEvent(evento);
+              }}
+              onFiltrarLiga={(liga) => {
+                trackFilter('league', liga);
+                setFiltroCompeticion(liga);
+              }}
+              onReset={resetFilters}
+            />
           </div>
-        </section>
 
+          {/* 7. Imperdibles */}
+          {isDefaultView && (
+            <HomeDestacados destacados={destacados} onEventClick={setSelectedEvent} />
+          )}
 
-        <div id="listado-eventos-principal" className="w-full">
-        {Object.keys(eventosAgrupados).length > 0 ? (
-          Object.keys(eventosAgrupados).sort().map((fecha) => (
-            <section key={fecha} className="mb-12 w-full">
-              <div className="flex items-center gap-4 mb-6">
-                <h2 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] flex items-center gap-2 whitespace-nowrap"><CalendarDays className="w-4 h-4 text-blue-500" /> {new Date(fecha + 'T12:00:00').toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}</h2>
-                <div className="h-px w-full bg-slate-800/30"></div>
+          {/* 8. Noticias y hubs */}
+          {isDefaultView && noticias.length > 0 && (
+            <section className="my-12 w-full">
+              <div className="flex items-center justify-between mb-6 px-2">
+                <h2 className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.25em] flex items-center gap-2">
+                  <Newspaper className="w-3 h-3" /> Últimas Noticias
+                </h2>
+                <Link href="/noticias" className="text-[10px] font-bold text-slate-400 uppercase tracking-wider hover:text-blue-400 transition-colors flex items-center gap-1">
+                  Ver todas <ChevronRight size={10} />
+                </Link>
               </div>
-              <div className="flex flex-col gap-3 w-full">
-                {eventosAgrupados[fecha].map((evento, index) => (
-                  <div key={evento.id} id={`evento-${evento.id}`} data-envivo={estaEnVivo(evento.fecha, evento.hora) ? 'true' : 'false'} className="w-full">
-                    <SportEventCard 
-                      evento={evento} 
-                      isLive={estaEnVivo(evento.fecha, evento.hora)} 
-                      onFiltrarLiga={(liga) => { 
-                        trackFilter('league', liga);
-                        setFiltroCompeticion(liga); 
-                        setShowCompDropdown(false); 
-                      }} 
-                      onClick={() => {
-                        trackEvent('view_event_detail', { 
-                          event_name: evento.evento,
-                          sport: evento.deporte,
-                          competition: evento.competicion
-                        });
-                        setSelectedEvent(evento);
-                      }}
-                    />
-                    {(index + 1) % 8 === 0 && index !== eventosAgrupados[fecha].length - 1 && <AdPlacement />}
+              <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
+                {noticias.slice(0, 5).map((n) => {
+                  const emoji = guessSportEmoji(n.titulo);
+                  return (
+                    <Link key={n.id} href={`/noticias/${n.slug}`} className="min-w-[280px] w-[85vw] max-w-[340px] bg-slate-900/50 border border-slate-800 p-4 rounded-[32px] flex gap-4 items-center hover:bg-slate-800/80 hover:border-slate-700 transition-all cursor-pointer group flex-shrink-0">
+                      <div className="w-20 h-20 bg-slate-800 rounded-2xl flex-shrink-0 flex items-center justify-center border border-white/5 group-hover:scale-105 transition-all overflow-hidden relative">
+                        {n.imagen_url ? (
+                          <NextImage
+                            src={n.imagen_url}
+                            alt={n.titulo}
+                            fill
+                            className="object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                            sizes="80px"
+                          />
+                        ) : (
+                          <div className="flex flex-col items-center">
+                            {emoji ? (
+                              <span className="text-2xl mb-1">{emoji}</span>
+                            ) : (
+                              <Newspaper className="text-blue-500/50" size={24} />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-sm font-bold leading-snug mb-2 text-slate-100 group-hover:text-white line-clamp-2">{n.titulo}</h3>
+                        <div className="flex items-center justify-between">
+                          <div className="flex flex-col gap-1">
+                            {n.fecha_publicacion && (
+                              <p className="text-[10px] text-slate-400 font-medium">{n.fecha_publicacion}</p>
+                            )}
+                            {n.autor ? (
+                              <p className="text-[10px] font-bold text-blue-400 tracking-wide">Por {n.autor}</p>
+                            ) : (
+                              <p className="text-[10px] font-bold text-slate-500 tracking-wide">GuíaSports</p>
+                            )}
+                          </div>
+                          <span className="text-[10px] text-blue-400 font-bold tracking-wide opacity-0 group-hover:opacity-100 transition-opacity">Leer →</span>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+
+                <Link href="/noticias" className="min-w-[150px] bg-slate-900/20 border border-dashed border-slate-800 p-5 rounded-[32px] flex flex-col items-center justify-center hover:bg-slate-800/40 hover:border-slate-700 transition-all cursor-pointer group flex-shrink-0">
+                  <div className="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                    <Zap className="text-blue-500" size={20} />
                   </div>
-                ))}
+                  <span className="text-[10px] font-bold text-slate-400 tracking-wide group-hover:text-white transition-colors">+ Ver más</span>
+                </Link>
               </div>
             </section>
-          ))
-        ) : (
-          <div className="text-center py-20 flex flex-col items-center">
-             <div className="bg-slate-900 p-4 rounded-full mb-4"><Filter className="w-8 h-8 text-slate-700" /></div>
-             <p className="text-slate-500 uppercase font-black text-[10px]">Sin resultados</p>
-          </div>
-        )}
-        </div>
-      </main>
+          )}
 
-    </div>
-    <SportEventModal 
-      evento={selectedEvent} 
-      isOpen={!!selectedEvent} 
-      onClose={() => setSelectedEvent(null)} 
-    />
+          {/* Hubs de competiciones */}
+          <section className="mb-12 w-full">
+            <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.25em] mb-3 px-2">Competiciones Destacadas</h2>
+            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4">
+              <Link
+                href="/mundial-2026"
+                onClick={() => trackContentClick('hub', 'mundial_2026')}
+                className="flex-shrink-0 relative overflow-hidden group bg-slate-900 border border-yellow-500/30 px-6 py-4 rounded-2xl text-center transition-[border-color,transform] duration-300 hover:border-yellow-400 hover:-translate-y-0.5 active:scale-95 shadow-xl shadow-black/20"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/10 via-transparent to-yellow-600/5 opacity-50 group-hover:opacity-100 transition-opacity"></div>
+                <div className="relative z-10 flex flex-col items-center">
+                  <div className="h-10 w-auto mb-1.5 transform group-hover:scale-110 transition-transform duration-500">
+                    <NextImage src="/images/mundial/Copa_Mundial_FIFA_2026-logo.webp" alt="FIFA 2026" width={40} height={40} className="h-full w-auto object-contain" />
+                  </div>
+                  <div className="text-[10px] font-black uppercase text-yellow-500 tracking-widest group-hover:text-yellow-400 transition-colors whitespace-nowrap">Mundial 2026</div>
+                </div>
+              </Link>
+              <Link
+                href="/futbol/liga-mx"
+                onClick={() => trackContentClick('hub', 'liga_mx')}
+                className="flex-shrink-0 relative overflow-hidden group bg-slate-900 border border-slate-800/80 px-6 py-4 rounded-2xl text-center transition-[border-color,transform] duration-300 hover:border-blue-500/50 hover:-translate-y-0.5 active:scale-95 shadow-xl shadow-black/20"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-indigo-500/5 opacity-50 group-hover:opacity-100 transition-opacity"></div>
+                <div className="relative z-10 flex flex-col items-center">
+                  <div className="h-10 w-auto mb-1.5 transform group-hover:scale-110 transition-transform duration-500 flex items-center justify-center">
+                    <NextImage src="/images/logo_ligas/liga_mx.webp" alt="Liga MX" width={40} height={40} className="h-full w-auto object-contain" />
+                  </div>
+                  <div className="text-[10px] font-black uppercase text-slate-400 group-hover:text-blue-400 transition-colors whitespace-nowrap">Liga MX</div>
+                </div>
+              </Link>
+              <Link
+                href="/futbol/champions-league"
+                onClick={() => trackContentClick('hub', 'champions_league')}
+                className="flex-shrink-0 relative overflow-hidden group bg-slate-900 border border-slate-800/80 px-6 py-4 rounded-2xl text-center transition-[border-color,transform] duration-300 hover:border-sky-500/50 hover:-translate-y-0.5 active:scale-95 shadow-xl shadow-black/20"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-sky-500/10 via-transparent to-blue-600/5 opacity-50 group-hover:opacity-100 transition-opacity"></div>
+                <div className="relative z-10 flex flex-col items-center">
+                  <div className="h-10 w-auto mb-1.5 transform group-hover:scale-110 transition-transform duration-500 flex items-center justify-center">
+                    <NextImage src="/images/logo_ligas/uefa_champions_league.webp" alt="Champions League" width={40} height={40} className="h-full w-auto object-contain" />
+                  </div>
+                  <div className="text-[10px] font-black uppercase text-slate-400 group-hover:text-sky-400 transition-colors whitespace-nowrap">Champions</div>
+                </div>
+              </Link>
+              <Link
+                href="/futbol/premier-league"
+                onClick={() => trackContentClick('hub', 'premier_league')}
+                className="flex-shrink-0 relative overflow-hidden group bg-slate-900 border border-slate-800/80 px-6 py-4 rounded-2xl text-center transition-[border-color,transform] duration-300 hover:border-purple-500/50 hover:-translate-y-0.5 active:scale-95 shadow-xl shadow-black/20"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-pink-500/5 opacity-50 group-hover:opacity-100 transition-opacity"></div>
+                <div className="relative z-10 flex flex-col items-center">
+                  <div className="h-10 w-auto mb-1.5 transform group-hover:scale-110 transition-transform duration-500 flex items-center justify-center">
+                    <NextImage src="/images/logo_ligas/premier_league.webp" alt="Premier League" width={40} height={40} className="h-full w-auto object-contain" />
+                  </div>
+                  <div className="text-[10px] font-black uppercase text-slate-400 group-hover:text-purple-400 transition-colors whitespace-nowrap">Premier League</div>
+                </div>
+              </Link>
+            </div>
+          </section>
+        </main>
+      </div>
+
+      <SportEventModal
+        evento={selectedEvent}
+        isOpen={!!selectedEvent}
+        onClose={() => setSelectedEvent(null)}
+      />
     </>
   );
 }

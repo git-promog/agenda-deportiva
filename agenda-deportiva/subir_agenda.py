@@ -138,55 +138,68 @@ def actualizar_base_de_datos():
                     eventos_para_ia[idx]['destacado'] = True
                     print(f"      ✨ IA destacó: {eventos_para_ia[idx]['evento']}")
 
-        # 3. Subir a Supabase
+        # 3. Sincronizar con Supabase (UPSERT no destructivo)
         print(f"3. Sincronizando {len(eventos_finales)} eventos con la DB...")
-        
-        # Limpieza final de datos
+
         columnas = ['fecha', 'hora', 'evento', 'competicion', 'deporte', 'canales', 
                     'destacado', 'destacado_dia', 'estelar_dia', 'destacado_finde', 
                     'carrusel_ig', 'ajuste_manual']
-        
-        datos_subir = [{k: v for k, v in ev.items() if k in columnas} for ev in eventos_finales]
-        
-        # Agregar eventos que existen en la DB pero NO vienen del scraper (creados/editados manualmente)
-        # Estos se preservan automáticamente para que no se pierdan al actualizar
-        eventos_en_scraper = {f"{ev['evento']}||{ev['fecha']}||{ev['competicion']}" for ev in datos_scraper}
-        
-        for key, existente in eventos_existentes.items():
-            if key not in eventos_en_scraper:
-                # El evento está en DB pero no en scraper = fue creado/editado manualmente, lo preservamos
-                evento_manual = {k: v for k, v in existente.items() if k in columnas}
-                evento_manual['destacado'] = existente.get('destacado')
-                evento_manual['destacado_dia'] = existente.get('destacado_dia', False)
-                evento_manual['estelar_dia'] = existente.get('estelar_dia', False)
-                evento_manual['destacado_finde'] = existente.get('destacado_finde', False)
-                evento_manual['carrusel_ig'] = existente.get('carrusel_ig', False)
-                evento_manual['ajuste_manual'] = True  # Se marca como manual para futuras actualizaciones
-                datos_subir.append(evento_manual)
-                print(f"   ✅ Preservando evento manual: {evento_manual['evento']} ({evento_manual['fecha']})")
-        
-        # --- LIMPIEZA DE ÚLTIMA MILLA (Sanitización de Canales) ---
-        # Esto asegura que incluso eventos manuales o preservados se limpien de CTAs
-        for ev in datos_subir:
-            if ev.get('canales'):
-                # Limpiamos cada canal individualmente y eliminamos duplicados resultantes
-                canales_limpios = [sanitizar_canal(c.strip()) for c in ev['canales'].split(",")]
-                ev['canales'] = ", ".join(list(dict.fromkeys(filter(None, canales_limpios))))
 
-        # Primero eliminar todos los eventos existentes (solo los del scraper, no los manuales)
-        supabase.table("eventos").delete().neq("id", 0).execute()
-        
-        # Luego insertar los eventos combinados (scraper + manuales preservados)
+        # Clasificación por clave compuesta: {fecha}||{evento}||{competicion}
+        # - Clave ya existe en DB  -> UPDATE (se conserva el mismo 'id', no cambian las URLs)
+        # - Clave nueva            -> INSERT (solo se agregan eventos nuevos)
+        # - Con ajuste manual      -> se respeta tal cual, no se sobrescribe
+        datos_actualizar = []  # filas con 'id': upsert on_conflict='id' las actualiza en sitio
+        datos_insertar = []    # filas sin 'id': upsert on_conflict='id' las inserta como nuevas
+        untouched_manuales = 0
+
+        for ev in eventos_finales:
+            key = f"{ev['evento']}||{ev['fecha']}||{ev['competicion']}"
+            existente = eventos_existentes.get(key)
+
+            # Los eventos con ajuste manual no se tocan: el editor humano manda
+            if existente and existente.get('ajuste_manual'):
+                untouched_manuales += 1
+                continue
+
+            filtrado = {k: v for k, v in ev.items() if k in columnas}
+
+            # --- LIMPIEZA DE ÚLTIMA MILLA (Sanitización de Canales) ---
+            if filtrado.get('canales'):
+                canales_limpios = [sanitizar_canal(c.strip()) for c in filtrado['canales'].split(",")]
+                filtrado['canales'] = ", ".join(list(dict.fromkeys(filter(None, canales_limpios))))
+
+            if existente:
+                # Mismo id => no se rompen las URLs indexadas por Google
+                filtrado['id'] = existente['id']
+                datos_actualizar.append(filtrado)
+            else:
+                datos_insertar.append(filtrado)
+
+        # Eventos en DB que NO vienen del scraper (histórico vigente o creados a mano):
+        # se preservan intactos. El UPSERT nunca borra filas.
+        eventos_en_scraper = {f"{ev['evento']}||{ev['fecha']}||{ev['competicion']}" for ev in eventos_finales}
+        preservados_sin_scraper = sum(1 for key in eventos_existentes if key not in eventos_en_scraper)
+
+        # UPSERT en lotes: on_conflict='id' actualiza lo existente e inserta lo nuevo
+        datos_subir = datos_insertar + datos_actualizar
         for i in range(0, len(datos_subir), 100):
-            supabase.table("eventos").insert(datos_subir[i:i+100]).execute()
-        
-        print(f"✅ Sincronización completada: {len(datos_subir)} eventos totales.")
+            supabase.table("eventos").upsert(datos_subir[i:i+100], on_conflict="id").execute()
 
-        # 4. Actualizar Status
+        print(f"✅ Sincronización completada: {len(datos_insertar)} insertados, {len(datos_actualizar)} actualizados, {preservados_sin_scraper} históricos preservados, {untouched_manuales} manuales intactos.")
+
+        # 4. Actualizar Status (UPSERT con fallback)
         tz_mx = pytz.timezone('America/Mexico_City')
         ahora_mx = datetime.now(tz_mx).strftime("%d/%m/%Y %I:%M %p")
-        supabase.table("status").delete().eq("nombre", "ultima_actualizacion").execute()
-        supabase.table("status").insert({"nombre": "ultima_actualizacion", "valor": f"ACTUALIZADO - {ahora_mx}"}).execute()
+        try:
+            supabase.table("status").upsert(
+                {"nombre": "ultima_actualizacion", "valor": f"ACTUALIZADO - {ahora_mx}"},
+                on_conflict="nombre"
+            ).execute()
+        except Exception:
+            # Fallback si "nombre" no tiene constraint único en la tabla status
+            supabase.table("status").delete().eq("nombre", "ultima_actualizacion").execute()
+            supabase.table("status").insert({"nombre": "ultima_actualizacion", "valor": f"ACTUALIZADO - {ahora_mx}"}).execute()
         
         print(f"🚀 Sincronización Finalizada: {ahora_mx}")
 

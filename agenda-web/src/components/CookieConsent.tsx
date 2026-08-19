@@ -6,8 +6,13 @@ export default function CookieConsent() {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    // Check localStorage in real app
-    const consent = localStorage.getItem('cookie-consent');
+    let consent: string | null = null;
+    try {
+      consent = localStorage.getItem('cookie-consent');
+    } catch (error) {
+      console.error('Error reading cookie consent from localStorage', error);
+    }
+
     if (!consent) {
       // Delay to not bombard the user immediately
       const timer = setTimeout(() => setShow(true), 1500);
@@ -16,7 +21,11 @@ export default function CookieConsent() {
   }, []);
 
   const accept = () => {
-    localStorage.setItem('cookie-consent', 'true');
+    try {
+      localStorage.setItem('cookie-consent', 'true');
+    } catch (error) {
+      console.error('Error saving cookie consent to localStorage', error);
+    }
     setShow(false);
   };
 

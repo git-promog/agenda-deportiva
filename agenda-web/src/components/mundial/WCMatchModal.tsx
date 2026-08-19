@@ -1,10 +1,13 @@
+/* FIFA flag URLs are generated at runtime from external assets. */
+/* eslint-disable @next/next/no-img-element */
 import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WCMatch, getFlagUrl } from '@/data/mundialData';
-import { Calendar, MapPin, Clock, Tv, X, Star, CalendarPlus, ExternalLink, StickyNote, GripVertical } from 'lucide-react';
+import { Calendar, MapPin, Clock, Tv, X, Star, ExternalLink, StickyNote } from 'lucide-react';
 import ShareButton from '@/components/ShareButton';
 import { buildWorldCupMatchPath, buildWorldCupMatchUrl } from '@/lib/worldCupUrls';
+import { getWorldCupBroadcastText } from '@/lib/worldCupArchive';
 
 interface Props {
   match: WCMatch | null;
@@ -82,39 +85,8 @@ export default function WCMatchModal({
   const matchPath = buildWorldCupMatchPath(match);
   const matchUrl = buildWorldCupMatchUrl(match);
 
-  const getBroadcasters = () => {
-    if (match.broadcasters) return match.broadcasters;
-
-    // Solo transmisiones para México (Guía de programación deportiva México)
-    const mexicoBroadcasters = 'TUDN · Canal 5 · Azteca 7 · ViX';
-    
-    // Partidos de México: todas las cadenas mexicanas
-    if (match.equipo1 === 'México' || match.equipo2 === 'México') return mexicoBroadcasters;
-    
-    // Fase final: cobertura extendida en México
-    if (['Final', 'Semifinal', 'Cuartos de final', 'Octavos de final', 'Dieciseisavos de final', 'Partido por el tercer puesto'].includes(match.fase)) {
-      return mexicoBroadcasters;
-    }
-    
-    // Resto de partidos fase de grupos: ViX (streaming) + posible señal abierta
-    return 'ViX (Premium) · Consulte TUDN/Canal 5/Azteca 7';
-  };
-
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) onClose();
-  };
-
-  // Build calendar link (Google Calendar)
-  const buildCalendarLink = () => {
-    const startDate = new Date(`${match.fecha}T${match.hora}:00-06:00`); // Base CDMX
-    const endDate = new Date(startDate.getTime() + (120 * 60 * 1000));
-    
-    const formatTime = (d: Date) => d.toISOString().replace(/-|:|\.\d\d\d/g, '');
-    const title = encodeURIComponent(`Mundial 2026: ${match.equipo1} vs ${match.equipo2}`);
-    const details = encodeURIComponent(`Fase: ${match.fase}\nTransmisión: ${getBroadcasters()}`);
-    const location = encodeURIComponent(`${match.estadio}, ${match.ciudad}`);
-    
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${formatTime(startDate)}/${formatTime(endDate)}&details=${details}&location=${location}`;
   };
 
   return (
@@ -189,7 +161,10 @@ export default function WCMatchModal({
                     </span>
                   )}
                   
-                  <div className="text-2xl font-black italic text-slate-700 select-none">VS</div>
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Resultado final</span>
+                    <div className="text-2xl font-black italic text-slate-700 select-none">VS</div>
+                  </div>
 
                   {match.goles2 !== undefined && (
                     <span className="text-3xl font-black italic text-blue-400 bg-blue-500/10 border-2 border-blue-500/20 px-4 py-2 rounded-2xl shadow-inner min-w-[50px] text-center leading-none">
@@ -251,26 +226,10 @@ export default function WCMatchModal({
                      <Tv size={20} className="text-purple-400" />
                    </div>
                    <div>
-                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Transmisión</p>
-                     <p className="text-sm font-bold text-white">{getBroadcasters()}</p>
+                   <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Transmisión registrada</p>
+                   <p className="text-sm font-bold text-white">{getWorldCupBroadcastText(match)}</p>
                    </div>
                  </div>
-                 
-                 {match.streaming && (
-                   <div className="flex items-center gap-4 bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50">
-                     <div className="bg-blue-500/20 p-2 rounded-xl">
-                       <ExternalLink size={20} className="text-blue-400" />
-                     </div>
-                     <div>
-                       <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Streaming</p>
-                       <p className="text-sm font-bold text-white truncate">
-                         <a href={match.streaming} target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">
-                           Ver en vivo
-                         </a>
-                       </p>
-                     </div>
-                   </div>
-                 )}
                  
                  {match.broadcastNotes && (
                    <div className="flex items-center gap-4 bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50">
@@ -288,15 +247,7 @@ export default function WCMatchModal({
 
             {/* Actions (fixed at bottom) */}
             <div className="p-6 pt-0 border-t border-white/5 shrink-0">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4">
-                <a 
-                  href={buildCalendarLink()} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-colors border border-slate-700"
-                >
-                  <CalendarPlus size={16} /> Agendar
-                </a>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4">
                 <Link
                   href={matchPath}
                   className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-colors border border-slate-700"

@@ -1,10 +1,60 @@
 "use client";
 
+/* Supabase-hosted editorial images are runtime URLs; next/image requires host allowlisting. */
+/* eslint-disable @next/next/no-img-element */
+
 import { useState, useEffect, useMemo } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Trash2, Star, Plus, Edit3, Check, X, LogIn, Zap, LogOut, Search, AlertCircle, Newspaper, CalendarDays, ImageIcon, Bot, ActivitySquare, ArrowRight } from 'lucide-react';
+import { Trash2, Star, Plus, Edit3, Check, X, Zap, LogOut, Search, AlertCircle, Newspaper, CalendarDays, ImageIcon, Bot, ArrowRight } from 'lucide-react';
 import NextImage from 'next/image';
 import { EDITORIAL_TEAM } from '@/data/teamData';
+import { getTodayMexicoString } from '@/lib/mexicoTime';
+import type { Evento, Noticia } from '@/types';
+
+type AdminEvento = Evento & {
+  destacado_dia?: boolean | null;
+  estelar_dia?: boolean | null;
+  destacado_finde?: boolean | null;
+  carrusel_ig?: boolean | null;
+  ajuste_manual?: boolean | null;
+};
+
+type EventoEditable = Pick<AdminEvento, 'evento' | 'hora' | 'canales' | 'competicion' | 'deporte' | 'fecha'> & {
+  id?: string;
+  destacado?: boolean | null;
+  ajuste_manual?: boolean | null;
+};
+
+type AdminNoticia = Pick<Noticia, 'id' | 'titulo' | 'slug'> & {
+  contenido?: string | null;
+  imagen_url?: string | null;
+  fecha?: string | null;
+  fecha_publicacion?: string | null;
+  autor?: string | null;
+};
+
+type NoticiaEditable = {
+  id?: string;
+  titulo: string;
+  contenido: string;
+  imagen_url: string;
+  fecha: string;
+  autor: string;
+  slug?: string;
+};
+
+type GeneratedPreview = NoticiaEditable;
+
+type NoticiaModalInput = {
+  id?: string;
+  titulo: string;
+  contenido?: string | null;
+  imagen_url?: string | null;
+  fecha?: string | null;
+  fecha_publicacion?: string | null;
+  autor?: string | null;
+  slug?: string;
+};
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -23,12 +73,11 @@ const TOP_TEAMS = ["América", "Chivas", "Real Madrid", "Barcelona", "México", 
 export default function AdminPanel() {
   const [mounted, setMounted] = useState(false);
   const [autenticado, setAutenticado] = useState(false);
-  const [password, setPassword] = useState("");
   const [tab, setTab] = useState<'eventos' | 'noticias' | 'ia'>('eventos');
   
   // Estados para Eventos
-  const [eventos, setEventos] = useState<any[]>([]);
-  const [editando, setEditando] = useState<any>(null);
+  const [eventos, setEventos] = useState<AdminEvento[]>([]);
+  const [editando, setEditando] = useState<EventoEditable | null>(null);
   const [filtroDeporte, setFiltroDeporte] = useState("Todos");
   const [filtroFecha, setFiltroFecha] = useState("Todos");
   const [filtroCompeticion, setFiltroCompeticion] = useState("Todos");
@@ -36,35 +85,26 @@ export default function AdminPanel() {
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
   
   // Estados para Noticias
-  const [noticias, setNoticias] = useState<any[]>([]);
+  const [noticias, setNoticias] = useState<AdminNoticia[]>([]);
   const [isNoticiaModalOpen, setIsNoticiaModalOpen] = useState(false);
-  const [editandoNoticia, setEditandoNoticia] = useState<any>({ titulo: "", contenido: "", imagen_url: "", fecha: "", autor: "" });
+  const [editandoNoticia, setEditandoNoticia] = useState<NoticiaEditable>({ titulo: "", contenido: "", imagen_url: "", fecha: "", autor: "" });
 
   // Estados para Generador IA
   const [promptIA, setPromptIA] = useState("");
   const [instruccionesIA, setInstruccionesIA] = useState("");
   const [generandoIA, setGenerandoIA] = useState(false);
-  const [previewIA, setPreviewIA] = useState<any>(null);
+  const [previewIA, setPreviewIA] = useState<GeneratedPreview | null>(null);
   
-  const [eventoSugeridoFiltrado, setEventoSugeridoFiltrado] = useState<any[]>([]);
+  const [eventoSugeridoFiltrado, setEventoSugeridoFiltrado] = useState<AdminEvento[]>([]);
   const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
-  const [eventoSeleccionadoIA, setEventoSeleccionadoIA] = useState<any>(null);
+  const [eventoSeleccionadoIA, setEventoSeleccionadoIA] = useState<AdminEvento | null>(null);
 
   const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 3000);
   };
 
-  const getTodayStr = () => {
-    try {
-      const mxDate = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Mexico_City"}));
-      return mxDate.getFullYear() + "-" + String(mxDate.getMonth() + 1).padStart(2, '0') + "-" + String(mxDate.getDate()).padStart(2, '0');
-    } catch {
-      return new Date().toISOString().split('T')[0];
-    }
-  };
-
-  const hoyStr = getTodayStr();
+  const hoyStr = getTodayMexicoString();
 
   const destacadosPreview = useMemo(() => {
     return eventos.filter(e => {
@@ -78,17 +118,42 @@ export default function AdminPanel() {
     }).slice(0, 6);
   }, [eventos, hoyStr]);
 
-  const login = () => {
-    if (password === "GUIA2024") setAutenticado(true);
-    else alert("Contraseña incorrecta");
+  const checkSession = async () => {
+    try {
+      const res = await fetch('/api/admin/session');
+      const data = await res.json();
+      if (data.authenticated) {
+        setAutenticado(true);
+      } else {
+        // El proxy del servidor ya redirige, esto es un fallback del cliente
+        window.location.href = '/admin/login';
+      }
+    } catch (e) {
+      console.error("Error verificando sesión admin:", e);
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await fetch('/api/admin/logout', { method: 'POST' });
+      window.location.href = '/admin/login';
+    } catch (e) {
+      console.error("Error al cerrar sesión:", e);
+    }
   };
 
   useEffect(() => {
     setMounted(true);
+    checkSession();
+  }, []);
+
+  useEffect(() => {
     if (autenticado) {
       cargarEventos();
       cargarNoticias();
     }
+  // These loaders are stable function declarations and intentionally run only after authentication changes.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autenticado]);
 
   if (!mounted) return null;
@@ -102,7 +167,7 @@ export default function AdminPanel() {
     if (data) {
       console.log("Raw destacado values:", data.slice(0, 5).map(e => `id=${e.id} val="${e.destacado}" type=${typeof e.destacado}`).join(" | "));
       const normalized = data.map(e => {
-        const normalizeBool = (val: any) => {
+        const normalizeBool = (val: unknown): boolean | null => {
           if (val === true || val === 'true' || val === 'TRUE' || val === '1' || val === 1) return true;
           if (val === false || val === 'false' || val === 'FALSE' || val === '0' || val === 0) return false;
           return null;
@@ -118,13 +183,13 @@ export default function AdminPanel() {
         };
       });
       console.log("Normalized sample:", normalized.slice(0, 3).map(e => ({ id: e.id, estelar: e.estelar_dia })));
-      setEventos(normalized);
+      setEventos(normalized as AdminEvento[]);
     }
   }
 
   async function cargarNoticias() {
     const { data } = await supabase.from('noticias').select('*').order('fecha', { ascending: false });
-    if (data) setNoticias(data);
+    if (data) setNoticias(data as AdminNoticia[]);
   }
 
   // --- LOGICA EVENTOS ---
@@ -141,30 +206,28 @@ export default function AdminPanel() {
     return coincideDeporte && coincideFecha && coincideCompeticion && coincideBusqueda;
   });
 
+  // Las escrituras pasan por la API del servidor (SERVICE_ROLE_KEY + sesión firmada).
+  // La clave anónima del cliente solo puede LEER gracias a las políticas RLS.
   async function eliminarEvento(id: string) {
     if (confirm("¿Borrar evento?")) {
-      const { error } = await supabase.from('eventos').delete().eq('id', id);
-      if (error) showToast("Error al eliminar", "error");
+      const res = await fetch('/api/admin/eventos', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      if (!res.ok) showToast("Error al eliminar", "error");
       else { showToast("Evento eliminado"); cargarEventos(); }
     }
   }
 
   async function actualizarDestacado(id: string, valor: boolean | null) {
-    console.log("Intentando actualizar:", { id, valor, tipoId: typeof id });
-    const { data, error } = await supabase
-      .from('eventos')
-      .update({ 
-        destacado: valor,
-        ajuste_manual: true // <--- AHORA MARCADO COMO MANUAL SIEMPRE QUE TOQUES
-      })
-      .eq('id', String(id))
-      .select();
-    
-    console.log("Respuesta Supabase:", { data, error });
-    if (error) {
-      showToast("Error: " + error.message, "error");
-    } else if (data && data.length === 0) {
-      showToast("No se encontró el evento. Revisa permisos RLS en Supabase", "error");
+    const res = await fetch('/api/admin/eventos', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, data: { destacado: valor, ajuste_manual: true } })
+    });
+    if (!res.ok) {
+      showToast("Error al actualizar", "error");
     } else {
       const label = valor === true ? "Destacado" : valor === false ? "No destacado" : "Modo auto";
       showToast(`${label} aplicado (Manual)`);
@@ -175,22 +238,24 @@ export default function AdminPanel() {
   async function aplicarDestacadoAMuchos(valor: boolean | null) {
     if (!confirm(`¿Aplicar estado a todos los ${eventosFiltrados.length} eventos visibles?`)) return;
     const ids = eventosFiltrados.map(e => e.id);
-    const { error } = await supabase
-      .from('eventos')
-      .update({ 
-        destacado: valor,
-        ajuste_manual: true // <--- BLOQUEO GLOBAL DE IA PARA ESTOS EVENTOS
-      })
-      .in('id', ids);
-    if (error) showToast("Error al actualizar", "error");
+    const res = await fetch('/api/admin/eventos', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids, data: { destacado: valor, ajuste_manual: true } })
+    });
+    if (!res.ok) showToast("Error al actualizar", "error");
     else { showToast(`${ids.length} eventos actualizados (Manual)`); cargarEventos(); }
   }
 
-  async function toggleMarketing(id: string, campo: string, valorActual: boolean | undefined) {
+  async function toggleMarketing(id: string, campo: string, valorActual: boolean | null | undefined) {
     const nuevoValor = !valorActual;
-    const { error } = await supabase.from('eventos').update({ [campo]: nuevoValor }).eq('id', id);
-    if (error) {
-      showToast("Error al actualizar: " + error.message, "error");
+    const res = await fetch('/api/admin/eventos', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, data: { [campo]: nuevoValor } })
+    });
+    if (!res.ok) {
+      showToast("Error al actualizar", "error");
     } else {
       showToast(`Automatización actualizada`);
       setEventos(prev => prev.map(e => e.id === id ? { ...e, [campo]: nuevoValor } : e));
@@ -199,26 +264,34 @@ export default function AdminPanel() {
 
   async function guardarEvento(e: React.FormEvent) {
     e.preventDefault();
-    let error;
-    if (editando.id) {
-      const res = await supabase.from('eventos').update({ ...editando, ajuste_manual: true }).eq('id', editando.id);
-      error = res.error;
-    } else {
-      const res = await supabase.from('eventos').insert([{ ...editando, ajuste_manual: true }]);
-      error = res.error;
-    }
-    if (error) showToast("Error al guardar", "error");
+    if (!editando) return;
+    const { id, ...datos } = editando;
+    const payload = { ...datos, ajuste_manual: true };
+    const res = await fetch('/api/admin/eventos', {
+      method: id ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(id ? { id, data: payload } : payload)
+    });
+    if (!res.ok) showToast("Error al guardar", "error");
     else {
-      showToast(editando.id ? "Evento actualizado" : "Evento creado");
+      showToast(id ? "Evento actualizado" : "Evento creado");
       setEditando(null);
       cargarEventos();
     }
   }
 
   // --- LOGICA NOTICIAS ---
-  function abrirModalNoticia(noticia?: any) {
+  function abrirModalNoticia(noticia?: NoticiaModalInput) {
     if (noticia) {
-      setEditandoNoticia(noticia);
+      setEditandoNoticia({
+        id: noticia.id,
+        titulo: noticia.titulo,
+        contenido: noticia.contenido ?? "",
+        imagen_url: noticia.imagen_url ?? "",
+        fecha: noticia.fecha ?? noticia.fecha_publicacion ?? "",
+        autor: noticia.autor ?? "",
+        slug: noticia.slug,
+      });
     } else {
       setEditandoNoticia({ titulo: "", contenido: "", imagen_url: "", fecha: new Date().toISOString().split('T')[0], autor: EDITORIAL_TEAM[0].name });
     }
@@ -232,23 +305,12 @@ export default function AdminPanel() {
 
   async function guardarNoticia(e: React.FormEvent) {
     e.preventDefault();
-    const slug = editandoNoticia.titulo
-      .toLowerCase()
-      .trim()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9 -]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-");
-
-    const noticiaParaSubir = { ...editandoNoticia, slug };
-
     let res;
     if (editandoNoticia.id) {
       res = await fetch("/api/noticias/editar", {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET || "guiasports-secret-2024"}`,
         },
         body: JSON.stringify({
           id: editandoNoticia.id,
@@ -264,9 +326,8 @@ export default function AdminPanel() {
     } else {
       res = await fetch("/api/noticias/publicar", {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET || "guiasports-secret-2024"}`,
         },
         body: JSON.stringify({
           titulo: editandoNoticia.titulo,
@@ -287,8 +348,12 @@ export default function AdminPanel() {
 
   async function eliminarNoticia(id: string) {
     if (confirm("¿Borrar noticia permanentemente?")) {
-      const { error } = await supabase.from('noticias').delete().eq('id', id);
-      if (error) showToast("Error al eliminar", "error");
+      const res = await fetch('/api/admin/noticias', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      if (!res.ok) showToast("Error al eliminar", "error");
       else { showToast("Noticia eliminada"); cargarNoticias(); }
     }
   }
@@ -309,7 +374,7 @@ export default function AdminPanel() {
     setMostrarSugerencias(true);
   };
 
-  const seleccionarEventoIA = (e: any) => {
+  const seleccionarEventoIA = (e: AdminEvento) => {
     setPromptIA(e.evento);
     setEventoSeleccionadoIA(e);
     setMostrarSugerencias(false);
@@ -323,9 +388,8 @@ export default function AdminPanel() {
     try {
       const res = await fetch("/api/noticias/generar", {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET || "guiasports-secret-2024"}`,
         },
         body: JSON.stringify({ 
           evento: promptIA, 
@@ -341,7 +405,7 @@ export default function AdminPanel() {
       } else {
         showToast("Error IA: " + (data.error || "No se pudo generar"), "error");
       }
-    } catch (e) {
+    } catch {
       showToast("Error de conexión con el Robot", "error");
     } finally {
       setGenerandoIA(false);
@@ -353,9 +417,8 @@ export default function AdminPanel() {
     try {
       const res = await fetch("/api/noticias/publicar", {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET || "guiasports-secret-2024"}`,
         },
         body: JSON.stringify(previewIA),
       });
@@ -370,7 +433,7 @@ export default function AdminPanel() {
       } else {
         showToast("Error al publicar: " + (data.error || "Error desconocido"), "error");
       }
-    } catch (e) {
+    } catch {
       showToast("Error al publicar", "error");
     }
   }
@@ -380,18 +443,8 @@ export default function AdminPanel() {
     dispararGeneracionIA();
   }
 
-  if (!autenticado) {
-    return (
-      <div className="min-h-screen bg-[#020617] flex items-center justify-center p-6 text-white">
-        <div className="max-w-md w-full bg-[#0f172a] shadow-2xl border border-slate-800 p-10 rounded-[40px] text-center">
-          <NextImage src="/GuiaSports-logo.svg" alt="GuíaSports" width={180} height={60} className="mx-auto mb-8" />
-          <h1 className="text-xl font-black uppercase mb-6 text-slate-300">Acceso Restringido</h1>
-          <input type="password" placeholder="Contraseña de Admin" className="w-full bg-[#020617] border border-slate-800 rounded-2xl p-4 mb-6 text-center text-white outline-none focus:border-[#a3e635] shadow-inner" onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && login()} />
-          <button onClick={login} className="w-full bg-[#a3e635] hover:bg-[#86c523] transition-colors text-black font-black p-4 rounded-2xl uppercase italic shadow-lg">Comenzar</button>
-        </div>
-      </div>
-    );
-  }
+  // Sin sesión válida el proxy redirige a /admin/login; no renderizamos nada aquí
+  if (!autenticado) return null;
 
   return (
     <div className="min-h-screen bg-[#020617] text-slate-100 p-4 md:p-10 font-sans">
@@ -413,7 +466,7 @@ export default function AdminPanel() {
             <button onClick={() => setTab('noticias')} className={`px-4 sm:px-8 py-3 text-[10px] sm:text-xs font-black uppercase transition-all flex-1 ${tab === 'noticias' ? 'bg-[#a3e635] text-black' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50'}`}>Noticias (SEO)</button>
             <button onClick={() => setTab('ia')} className={`px-4 sm:px-8 py-3 text-[10px] sm:text-xs font-black uppercase transition-all flex-1 flex items-center justify-center gap-2 ${tab === 'ia' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50'}`}><Bot size={14} className="hidden sm:block"/> Robot IA</button>
           </div>
-          <button onClick={() => setAutenticado(false)} className="bg-slate-800 p-3 rounded-xl text-slate-400 hover:text-white hover:bg-red-600/80 transition-colors"><LogOut size={20} /></button>
+          <button onClick={logout} className="bg-slate-800 p-3 rounded-xl text-slate-400 hover:text-white hover:bg-red-600/80 transition-colors"><LogOut size={20} /></button>
         </div>
 
         {/* TAB EVENTOS */}

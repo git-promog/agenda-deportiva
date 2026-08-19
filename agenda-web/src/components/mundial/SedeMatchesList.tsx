@@ -4,16 +4,17 @@ import React, { useState } from 'react';
 import WCMatchCard from './WCMatchCard';
 import WCMatchModal from './WCMatchModal';
 import { useFavorites } from '@/hooks/useFavorites';
+import type { WCMatch } from '@/data/mundialData';
 
 interface Props {
-  partidos: any[];
+  partidos: WCMatch[];
 }
 
 export default function SedeMatchesList({ partidos }: Props) {
   const { favorites, toggleFavorite } = useFavorites();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMatchData, setSelectedMatchData] = useState<{
-    match: any;
+    match: WCMatch;
     hora: string;
     nota: string;
   } | null>(null);
@@ -26,6 +27,7 @@ export default function SedeMatchesList({ partidos }: Props) {
             <WCMatchCard 
               match={m} 
               tzShort="H. Local"
+              matchStatus="completed"
               onClick={() => { setSelectedMatchData({ match: m, hora: m.hora, nota: 'Hora local sede' }); setIsModalOpen(true); }}
               isFavorite={favorites.includes(m.id)}
               onToggleFavorite={(e) => { e.stopPropagation(); toggleFavorite(m.id); }}

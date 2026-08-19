@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Trophy, ArrowLeft, Users, ShieldCheck, Zap, Newspaper, Target, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Users, ShieldCheck, Zap, Target, CheckCircle2 } from 'lucide-react';
 import NextImage from 'next/image';
 import { Metadata } from 'next';
 import { EDITORIAL_TEAM } from '@/data/teamData';

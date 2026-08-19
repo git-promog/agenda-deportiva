@@ -1,10 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
-import NextImage from 'next/image';
 import { Metadata } from 'next';
-import { Radio, ArrowLeft, Tv, Clock, CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Radio, Tv, Clock, CalendarDays, ChevronLeft } from 'lucide-react';
 import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import { getTodayMexicoString, isEventLive } from '@/lib/mexicoTime';
+import type { Evento } from '@/types';
 
 export const revalidate = 60;
 
@@ -30,27 +30,8 @@ const emojis: { [key: string]: string } = {
   "Golf": "⛳️", "Natación": "🏊", "Fútbol Sala": "👟", "Otros": "🏆"
 };
 
-function estaEnVivo(fecha: string, hora: string, hoyStr: string) {
-  if (fecha !== hoyStr) return false;
-  const ahora = new Date();
-  const [h, m] = hora.split(':').map(Number);
-  const horaEvento = new Date();
-  horaEvento.setHours(h, m, 0);
-  const dif = ahora.getTime() - horaEvento.getTime();
-  return dif >= 0 && dif < (2 * 60 * 60 * 1000);
-}
-
-function getTodayStr() {
-  try {
-    const mxDate = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Mexico_City"}));
-    return mxDate.getFullYear() + "-" + String(mxDate.getMonth() + 1).padStart(2, '0') + "-" + String(mxDate.getDate()).padStart(2, '0');
-  } catch {
-    return new Date().toISOString().split('T')[0];
-  }
-}
-
 export default async function EnVivo() {
-  const hoyStr = getTodayStr();
+  const hoyStr = getTodayMexicoString();
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -63,9 +44,10 @@ export default async function EnVivo() {
     .order('fecha', { ascending: true })
     .order('hora', { ascending: true });
 
-  const eventosEnVivo = (eventos || []).filter(e => estaEnVivo(e.fecha, e.hora, hoyStr));
+  const eventosAgenda = (eventos ?? []) as Evento[];
+  const eventosEnVivo = eventosAgenda.filter(e => isEventLive(e.fecha, e.hora));
 
-  const eventosProximos = (eventos || [])
+  const eventosProximos = eventosAgenda
     .filter(e => {
       if (e.fecha !== hoyStr) return false;
       const [h, m] = e.hora.split(':').map(Number);
@@ -125,7 +107,7 @@ export default async function EnVivo() {
                   {eventosEnVivo.length} evento{eventosEnVivo.length > 1 ? 's' : ''} en vivo
                 </span>
               </div>
-              {eventosEnVivo.map((evento: any) => (
+              {eventosEnVivo.map((evento) => (
                 <div key={evento.id} className="group bg-gradient-to-r from-red-600/10 to-red-900/5 border border-red-500/20 rounded-2xl p-5 hover:border-red-500/40 transition-all duration-300 relative overflow-hidden">
                   <div className="absolute top-3 right-3">
                     <span className="flex items-center gap-1.5 bg-red-600 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">
@@ -167,7 +149,7 @@ export default async function EnVivo() {
                 <Clock className="w-4 h-4" /> Próximos a iniciar
               </h2>
               <div className="space-y-3">
-                {eventosProximos.map((evento: any) => (
+                {eventosProximos.map((evento) => (
                   <div key={`prox-${evento.id}`} className="group bg-slate-900/30 border border-slate-800/50 rounded-xl p-4 hover:border-blue-500/30 transition-all">
                     <div className="flex items-center gap-4">
                       <div className="bg-[#020617] border border-slate-800 w-10 h-10 flex items-center justify-center rounded-xl text-xl shrink-0">

@@ -1,3 +1,5 @@
+// Tailwind loads this configuration as CommonJS in the current build setup.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { fontFamily } = require('tailwindcss/defaultTheme')
 
 /** @type {import('tailwindcss').Config} */

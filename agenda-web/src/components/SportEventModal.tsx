@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Clock, ExternalLink, Tv, X, CalendarPlus, Trophy, GripVertical } from 'lucide-react';
+import { Calendar, Clock, ExternalLink, Tv, X, CalendarPlus, Trophy } from 'lucide-react';
 import ShareButton from '@/components/ShareButton';
 import { trackEvent } from '@/lib/analytics';
 import { buildEventPath, buildEventUrl } from '@/lib/eventUrls';
@@ -32,6 +32,7 @@ interface Props {
 export default function SportEventModal({ evento, isOpen, onClose }: Props) {
 
   const modalRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
   const startY = useRef(0);
   const currentY = useRef(0);
   const isDragging = useRef(false);
@@ -45,6 +46,55 @@ export default function SportEventModal({ evento, isOpen, onClose }: Props) {
     }
     return () => { document.body.style.overflow = 'unset'; };
   }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || !evento) return;
+
+    previousFocusRef.current = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
+
+    const focusableSelector = 'button:not([disabled]), a[href], input:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    const focusFirstElement = () => {
+      modalRef.current?.querySelector<HTMLElement>(focusableSelector)?.focus();
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+
+      if (event.key !== 'Tab' || !modalRef.current) return;
+
+      const focusableElements = Array.from(
+        modalRef.current.querySelectorAll<HTMLElement>(focusableSelector),
+      );
+      if (focusableElements.length === 0) return;
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    };
+
+    const focusFrame = window.requestAnimationFrame(focusFirstElement);
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.cancelAnimationFrame(focusFrame);
+      window.removeEventListener('keydown', handleKeyDown);
+      previousFocusRef.current?.focus();
+      previousFocusRef.current = null;
+    };
+  }, [evento, isOpen, onClose]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     startY.current = e.touches[0].clientY;
@@ -113,6 +163,9 @@ export default function SportEventModal({ evento, isOpen, onClose }: Props) {
         >
           <motion.div
             ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Detalles de ${evento.evento}`}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -134,7 +187,7 @@ export default function SportEventModal({ evento, isOpen, onClose }: Props) {
                   {evento.deporte}
                 </span>
               </div>
-              <button onClick={onClose} className="p-3 md:p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors" aria-label="Cerrar">
+              <button type="button" onClick={onClose} className="p-3 md:p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors" aria-label="Cerrar">
                 <X size={20} className="text-slate-300" />
               </button>
             </div>

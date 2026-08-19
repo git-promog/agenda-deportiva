@@ -1,4 +1,6 @@
 import React from 'react';
+/* FIFA flag URLs are generated at runtime from external assets. */
+/* eslint-disable @next/next/no-img-element */
 import { WCGroup, getFlagUrl } from '@/data/mundialData';
 
 interface Props {
@@ -40,7 +42,7 @@ export default function WCGroupTable({ grupo }: Props) {
               const directQualify = pos <= 2;
               const thirdPlace = pos === 3;
               
-              let rowClass = "group transition-colors relative hover:bg-white/5";
+              const rowClass = "group transition-colors relative hover:bg-white/5";
               let posClass = "w-1.5 h-full absolute left-0 top-0 ";
               let numClass = "text-slate-600 font-black px-2";
 

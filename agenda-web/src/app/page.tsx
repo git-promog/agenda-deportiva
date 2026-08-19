@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import HomeClient from '@/components/HomeClient';
 import { Metadata } from 'next';
+import { getTodayMexicoString, getDateRangeMexico } from '@/lib/mexicoTime';
 
 // ISR every 5 minutes (300 seconds) to balance freshness with performance
 export const revalidate = 300; 
@@ -42,11 +43,18 @@ export default async function Home() {
   let noticias = [];
   let ultimaAct = "Recargando...";
 
+  // Ventana de agenda en home: hoy + 3 días (4 días totales)
+  const hoyStr = getTodayMexicoString();
+  const dateRange = getDateRangeMexico(4);
+  const maxDateStr = dateRange[dateRange.length - 1];
+
   try {
-    // 1. Cargar Partidos (todos)
+    // 1. Cargar Partidos (solo ventana activa: hoy + 3 días)
     const { data: evData } = await supabase
       .from('eventos')
       .select('*')
+      .gte('fecha', hoyStr)
+      .lte('fecha', maxDateStr)
       .order('fecha', { ascending: true })
       .order('hora', { ascending: true });
     
@@ -82,56 +90,22 @@ export default async function Home() {
     console.error("Error cargando datos en servidor:", err);
   }
 
-  const calculateEndDate = (e: HomeEvento) => {
-    const startHora = e.hora || '00:00';
-    const [h, m] = startHora.split(':').map(Number);
-    const fin = new Date();
-    fin.setHours(h + 2, m, 0);
-    return String(fin.getHours()).padStart(2, '0') + ':' + String(fin.getMinutes()).padStart(2, '0');
-  };
-
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
     "itemListElement": eventos.slice(0, 50).map((e, index: number) => {
       const startDateTime = `${e.fecha}T${e.hora || '00:00'}:00-06:00`;
-      const endDateTime = `${e.fecha}T${calculateEndDate(e)}:00-06:00`;
-      
+
       return {
         "@type": "ListItem",
         "position": index + 1,
         "item": {
           "@type": "SportsEvent",
           "name": e.evento,
-          "description": `Transmisión de ${e.competicion}: ${e.evento} en vivo por ${e.canales}.`,
-          "image": "https://www.guiasports.com/GuiaSports-logo.svg",
+          "description": `Transmisión de ${e.competicion}: ${e.evento} en ${e.canales}.`,
           "startDate": startDateTime,
-          "endDate": endDateTime,
           "eventStatus": "https://schema.org/EventScheduled",
-          "eventAttendanceMode": "https://schema.org/OnlineEventAttendanceMode",
-          "sport": e.deporte,
-          "location": {
-            "@type": "VirtualLocation",
-            "name": "Televisión y Streaming (México)",
-            "url": "https://www.guiasports.com"
-          },
-          "organizer": {
-            "@type": "Organization",
-            "name": e.competicion || "GuíaSports",
-            "url": "https://www.guiasports.com"
-          },
-          "performer": {
-            "@type": "PerformingGroup",
-            "name": e.evento
-          },
-          "offers": {
-            "@type": "Offer",
-            "url": "https://www.guiasports.com",
-            "price": "0",
-            "priceCurrency": "MXN",
-            "availability": "https://schema.org/InStock",
-            "validFrom": startDateTime
-          }
+          "sport": e.deporte
         }
       };
     })
@@ -139,15 +113,14 @@ export default async function Home() {
 
   return (
     <>
-      <h1 className="sr-only">GuíaSports | Agenda Deportiva Hoy en TV y Streaming</h1>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <HomeClient 
-        initialEventos={eventos} 
-        initialNoticias={noticias} 
-        initialUltimaAct={ultimaAct} 
+      <HomeClient
+        initialEventos={eventos}
+        initialNoticias={noticias}
+        initialUltimaAct={ultimaAct}
       />
     </>
   );

@@ -17,7 +17,7 @@ export default function AdPlacement({ className = "" }: { className?: string }) 
             [ Espacio de AdSense Inactivo ]
           </div>
           <p className="text-[10px] text-slate-600 text-center px-4">
-            Este bloque reservado garantiza que la estructura no "brinque" cuando se activen los anuncios reales (Previene Cumulative Layout Shift).
+            Este bloque reservado garantiza que la estructura no &quot;brinque&quot; cuando se activen los anuncios reales (Previene Cumulative Layout Shift).
           </p>
         </div>
 

@@ -1,19 +1,19 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Copa Mundial de la FIFA 2026™ | Calendario, Grupos y Sedes | GuíaSports',
+  title: 'Mundial 2026: resultados, calendario y sedes | GuíaSports',
   description:
-    'Calendario oficial de los 104 partidos de la Copa Mundial de la FIFA 2026™ en México, USA y Canadá. Horarios en tu zona horaria, tabla de posiciones y sedes.',
+    'Archivo histórico de los 104 partidos del Mundial 2026 en México, Estados Unidos y Canadá: resultados, fechas, sedes y tablas.',
   keywords: [
     'Copa Mundial de la FIFA 2026™',
     'Mundial 2026',
     'FIFA World Cup 2026',
-    'calendario oficial Mundial 2026',
+    'resultados Mundial 2026',
     'partidos México Mundial 2026',
     'sedes Copa del Mundo 2026',
     'FIFA 2026 schedule',
-    'horarios Mundial 2026 México',
-    'donde ver el Mundial 2026',
+    'fechas Mundial 2026',
+    'sedes Mundial 2026',
   ],
   authors: [{ name: 'GuíaSports', url: 'https://www.guiasports.com' }],
   creator: 'GuíaSports',
@@ -24,9 +24,9 @@ export const metadata: Metadata = {
     googleBot: { index: true, follow: true, 'max-snippet': -1, 'max-image-preview': 'large' },
   },
   openGraph: {
-    title: 'Hub del Mundial 2026 — GuíaSports',
+    title: 'Mundial 2026: resultados, calendario y sedes — GuíaSports',
     description:
-      'Calendario oficial, grupos, sedes y más del Mundial de Fútbol 2026 en México, USA y Canadá.',
+      'Archivo histórico del Mundial 2026 con resultados, grupos, sedes y fechas en México, Estados Unidos y Canadá.',
     url: 'https://www.guiasports.com/mundial-2026',
     siteName: 'GuíaSports',
     type: 'website',
@@ -42,8 +42,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Hub del Mundial 2026 — GuíaSports',
-    description: 'Calendario, grupos, sedes y horarios en tu zona horaria del Mundial 2026.',
+    title: 'Mundial 2026: resultados, calendario y sedes — GuíaSports',
+    description: 'Resultados, grupos, sedes y fechas del archivo histórico del Mundial 2026.',
     images: ['https://www.guiasports.com/og/mundial-2026.webp'],
   },
   alternates: {

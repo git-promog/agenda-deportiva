@@ -1,12 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-
-const API_SECRET = process.env.API_SECRET || "guiasports-secret-2024";
+import { isAuthorizedAdminRequest } from "@/lib/adminSession";
+import { getRequiredServerEnv } from "@/lib/serverConfig";
 
 export async function POST(request: Request) {
   try {
-    const authHeader = request.headers.get('authorization');
-    if (authHeader !== `Bearer ${API_SECRET}`) {
+    if (!isAuthorizedAdminRequest(request)) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
@@ -17,8 +16,8 @@ export async function POST(request: Request) {
     }
 
     const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
+      getRequiredServerEnv("NEXT_PUBLIC_SUPABASE_URL"),
+      getRequiredServerEnv("SUPABASE_SERVICE_ROLE_KEY")
     );
 
     const slug = titulo
@@ -39,8 +38,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, noticia: data[0] });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error editando noticia:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Error al editar noticia" }, { status: 500 });
   }
 }

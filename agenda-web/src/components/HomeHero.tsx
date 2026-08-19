@@ -1,16 +1,17 @@
 import React from 'react';
 import { Tv, Clock } from 'lucide-react';
 import ShareButton from '@/components/ShareButton';
+import { Evento } from '@/types';
 
 const EMOJIS: { [key: string]: string } = {
-  "Fútbol": "⚽️", "Básquetbol": "🏀", "Béisbol": "⚾️", "Fórmula 1": "🏎️", 
-  "Motorismo": "🏍️", "Tenis": "🎾", "Fútbol Americano": "🏈", "Rugby": "🏉", 
-  "Hockey": "🏒", "Combate": "🥊", "Ciclismo": "🚴", "Voleibol": "🏐", 
+  "Fútbol": "⚽️", "Básquetbol": "🏀", "Béisbol": "⚾️", "Fórmula 1": "🏎️",
+  "Motorismo": "🏍️", "Tenis": "🎾", "Fútbol Americano": "🏈", "Rugby": "🏉",
+  "Hockey": "🏒", "Combate": "🥊", "Ciclismo": "🚴", "Voleibol": "🏐",
   "Golf": "⛳️", "Natación": "🏊", "Fútbol Sala": "👟", "Otros": "🏆"
 };
 
 interface Props {
-  evento: any;
+  evento: Evento | null;
   tipo: string;
   onClick?: () => void;
 }
@@ -33,9 +34,9 @@ export default function HomeHero({ evento, tipo, onClick }: Props) {
             {tipo === "EN VIVO AHORA" && <div className="w-2 h-2 bg-white rounded-full animate-ping mr-1"></div>}
             {tipo}
           </div>
-          <ShareButton 
-            titulo={evento.evento} 
-            url={`https://www.guiasports.com/?evento=${evento.id}`} 
+          <ShareButton
+            titulo={evento.evento}
+            url={`https://www.guiasports.com/?evento=${evento.id}`}
             variant="icon"
             className="!bg-white/10 !text-white !p-3 !rounded-full !hover:!bg-white/20"
           />

@@ -1,13 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
 import { Metadata } from 'next';
-import { CalendarDays, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import LigaMxStandings, { StandingRow } from '@/components/ligamx/LigaMxStandings';
 import LigaMxTopScorers, { TopScorerRow } from '@/components/ligamx/LigaMxTopScorers';
 import LigaMxSeoFaq from '@/components/ligamx/LigaMxSeoFaq';
 import { LIGA_MX_FAQS } from '@/lib/ligamx-faqs';
 import EventListWithModal from '@/components/EventListWithModal';
+import { getTodayMexicoString } from '@/lib/mexicoTime';
 
 const COMPETITION_HUBS = {
   'liga-mx': {
@@ -84,25 +85,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-function estaEnVivo(fecha: string, hora: string, hoyStr: string) {
-  if (fecha !== hoyStr) return false;
-  const ahora = new Date();
-  const [h, m] = hora.split(':').map(Number);
-  const horaEvento = new Date();
-  horaEvento.setHours(h, m, 0);
-  const dif = ahora.getTime() - horaEvento.getTime();
-  return dif >= 0 && dif < (2 * 60 * 60 * 1000);
-}
-
-function getTodayStr() {
-  try {
-    const mxDate = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
-    return `${mxDate.getFullYear()}-${String(mxDate.getMonth() + 1).padStart(2, '0')}-${String(mxDate.getDate()).padStart(2, '0')}`;
-  } catch {
-    return new Date().toISOString().split('T')[0];
-  }
-}
-
 export default async function CompetitionHub({ params }: Props) {
   const { competicion } = await params;
   const hub = COMPETITION_HUBS[competicion as CompetitionSlug];
@@ -118,7 +100,7 @@ export default async function CompetitionHub({ params }: Props) {
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const hoyStr = getTodayStr();
+  const hoyStr = getTodayMexicoString();
 
   let eventos: Evento[] = [];
   let noticias: NoticiaResumen[] = [];

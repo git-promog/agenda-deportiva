@@ -15,29 +15,20 @@ const EMOJIS: { [key: string]: string } = {
 
 interface Theme {
   borderHover: string;
-  neonGlow: string;
   textColor: string;
   bgTV: string;
 }
 
 const THEMES: { [key: string]: Theme } = {
-  "Fútbol": { borderHover: "hover:border-green-500/40", neonGlow: "group-hover:shadow-[0_0_30px_rgba(34,197,94,0.25)]", textColor: "text-green-400", bgTV: "bg-green-950/20" },
-  "Básquetbol": { borderHover: "hover:border-orange-500/40", neonGlow: "group-hover:shadow-[0_0_30px_rgba(249,115,22,0.25)]", textColor: "text-orange-400", bgTV: "bg-orange-950/20" },
-  "Béisbol": { borderHover: "hover:border-blue-500/40", neonGlow: "group-hover:shadow-[0_0_30px_rgba(59,130,246,0.25)]", textColor: "text-blue-400", bgTV: "bg-blue-950/20" },
-  "Fórmula 1": { borderHover: "hover:border-red-500/40", neonGlow: "group-hover:shadow-[0_0_30px_rgba(239,68,68,0.25)]", textColor: "text-red-400", bgTV: "bg-red-950/20" },
+  "Fútbol": { borderHover: "hover:border-green-500/40", textColor: "text-green-400", bgTV: "bg-green-950/20" },
+  "Básquetbol": { borderHover: "hover:border-orange-500/40", textColor: "text-orange-400", bgTV: "bg-orange-950/20" },
+  "Béisbol": { borderHover: "hover:border-blue-500/40", textColor: "text-blue-400", bgTV: "bg-blue-950/20" },
+  "Fórmula 1": { borderHover: "hover:border-red-500/40", textColor: "text-red-400", bgTV: "bg-red-950/20" },
 };
 
-const DEFAULT_THEME = { borderHover: "hover:border-blue-400/30", neonGlow: "group-hover:shadow-[0_0_30px_rgba(96,165,250,0.15)]", textColor: "text-[#a3e635]", bgTV: "bg-[#020617]" };
+const DEFAULT_THEME = { borderHover: "hover:border-blue-400/40", textColor: "text-[#a3e635]", bgTV: "bg-[#020617]" };
 
-interface Evento {
-  id: string;
-  fecha: string;
-  hora: string;
-  evento: string;
-  competicion: string;
-  deporte: string;
-  canales: string;
-}
+import { Evento } from '@/types';
 
 interface Props {
   evento: Evento;
@@ -51,17 +42,17 @@ const formatChannels = (canalesStr: string, theme: Theme) => {
   return canales.map((c, i) => {
     let color = `${theme.bgTV} ${theme.textColor} border-white/5`;
     const cl = c.toLowerCase();
-    if (cl.includes("vix")) color = "bg-orange-600/20 text-orange-400 border-orange-500/30 shadow-[0_0_10px_rgba(234,88,12,0.1)]";
-    else if (cl.includes("espn")) color = "bg-red-900/30 text-red-400 border-red-500/30 shadow-[0_0_10px_rgba(239,68,68,0.1)]";
-    else if (cl.includes("fox")) color = "bg-blue-900/30 text-blue-400 border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.1)]";
-    else if (cl.includes("tudn") || cl.includes("canal 5")) color = "bg-green-900/30 text-green-400 border-green-500/30 shadow-[0_0_10px_rgba(34,197,94,0.1)]";
-    else if (cl.includes("azteca")) color = "bg-purple-900/30 text-purple-400 border-purple-500/30 shadow-[0_0_10px_rgba(168,85,247,0.1)]";
-    else if (cl.includes("claro")) color = "bg-red-900/30 text-red-500 border-red-600/30 shadow-[0_0_10px_rgba(220,38,38,0.1)]";
+    if (cl.includes("vix")) color = "bg-orange-600/20 text-orange-400 border-orange-500/30";
+    else if (cl.includes("espn")) color = "bg-red-900/30 text-red-400 border-red-500/30";
+    else if (cl.includes("fox")) color = "bg-blue-900/30 text-blue-400 border-blue-500/30";
+    else if (cl.includes("tudn") || cl.includes("canal 5")) color = "bg-green-900/30 text-green-400 border-green-500/30";
+    else if (cl.includes("azteca")) color = "bg-purple-900/30 text-purple-400 border-purple-500/30";
+    else if (cl.includes("claro")) color = "bg-red-900/30 text-red-400 border-red-600/30";
     
     return (
       <div key={i} className={`flex items-center gap-1.5 border px-3 py-1.5 rounded-lg ${color}`}>
         <Tv size={12} />
-        <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap">{c.trim()}</span>
+        <span className="text-[10px] font-bold tracking-wide whitespace-nowrap">{c.trim()}</span>
       </div>
     );
   });
@@ -72,20 +63,17 @@ export default function SportEventCard({ evento, isLive, onFiltrarLiga, onClick 
   const eventPath = buildEventPath(evento);
   const eventUrl = buildEventUrl(evento);
 
-  const liveBorder = isLive ? "border-red-500/50 shadow-[0_0_20px_rgba(220,38,38,0.25)]" : "border-slate-800/80";
-  const liveHover = isLive ? "hover:border-red-400/80 hover:shadow-[0_0_35px_rgba(220,38,38,0.4)]" : `${theme.borderHover} ${theme.neonGlow}`;
+  const liveBorder = isLive ? "border-red-500/60" : "border-slate-800/80";
+  const liveHover = isLive ? "hover:border-red-400/70" : theme.borderHover;
 
   const teams = evento.evento.split(/ vs /i);
   const isMatch = teams.length === 2;
 
   return (
-    <article
-      onClick={onClick}
-      className={`group bg-slate-900/40 backdrop-blur-xl border ${liveBorder} ${liveHover} rounded-2xl p-4 md:p-5 hover:bg-slate-900/60 transition-all duration-300 relative flex flex-col md:flex-row md:items-center gap-4 shadow-xl cursor-pointer`}
-    >
+    <article className={`group bg-slate-900/40 backdrop-blur-xl border ${liveBorder} ${liveHover} rounded-2xl p-4 md:p-5 hover:bg-slate-900/60 transition-colors duration-300 relative flex flex-col md:flex-row md:items-center gap-4 shadow-xl`}>
       {isLive && (
-        <div className="absolute top-0 left-0 bg-red-600 text-white text-[8px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-br-xl rounded-tl-2xl flex items-center gap-1 shadow-lg shadow-red-900/50 z-10">
-          <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" /> EN VIVO
+        <div className="absolute top-0 left-0 bg-red-600 text-white text-[8px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-br-xl rounded-tl-2xl flex items-center gap-1 z-10">
+          <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" aria-hidden="true" /> EN VIVO
         </div>
       )}
 
@@ -93,8 +81,8 @@ export default function SportEventCard({ evento, isLive, onFiltrarLiga, onClick 
       <div className="flex flex-row md:flex-col items-center md:items-start justify-between md:justify-center border-b md:border-b-0 md:border-r border-white/10 pb-3 md:pb-0 md:pr-6 gap-2 w-full md:w-auto md:min-w-[120px]">
         <div className="flex items-center gap-3 md:block">
           <div className="text-3xl md:text-4xl opacity-80 md:mb-1">{EMOJIS[evento.deporte] || "🏆"}</div>
-          <div className="flex items-center gap-2 text-slate-300 font-black text-xl tracking-tighter">
-            <Clock size={16} className={isLive ? "text-red-400" : "text-slate-600"} />
+          <div className="flex items-center gap-2 text-slate-200 font-bold text-xl tracking-tighter">
+            <Clock size={16} className={isLive ? "text-red-400" : "text-slate-400"} />
             <span className={isLive ? "text-red-400" : ""}>{evento.hora}</span>
           </div>
         </div>
@@ -102,35 +90,50 @@ export default function SportEventCard({ evento, isLive, onFiltrarLiga, onClick 
 
       {/* Main Info */}
       <div className="flex-1 flex flex-col justify-center min-w-0 pr-2">
-        <button 
-          onClick={(e) => { e.stopPropagation(); onFiltrarLiga?.(evento.competicion); }}
-          className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 truncate hover:text-blue-400 transition-colors text-left flex items-center gap-1"
-        >
-          {evento.competicion}
-          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-0 group-hover:opacity-100 transition-opacity">
-            <path d="m15 18-6-6 6-6"/>
-          </svg>
-        </button>
-        
-        {isMatch ? (
-          <div className="flex items-center gap-3 md:gap-6 my-2">
-            <div className="flex items-center gap-1.5 sm:gap-2 flex-1 justify-end min-w-0">
-              <span className="text-[11px] sm:text-sm md:text-base font-black uppercase italic text-white line-clamp-2 text-right leading-tight">{teams[0].trim()}</span>
-              <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center border-2 border-white/10 shadow-lg text-[10px] font-black shrink-0 text-slate-300">
-                {teams[0].trim().substring(0,2).toUpperCase()}
-              </div>
-            </div>
-            <div className="text-[10px] font-black italic text-slate-700 select-none">VS</div>
-            <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
-              <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center border-2 border-white/10 shadow-lg text-[10px] font-black shrink-0 text-slate-300">
-                {teams[1].trim().substring(0,2).toUpperCase()}
-              </div>
-              <span className="text-[11px] sm:text-sm md:text-base font-black uppercase italic text-white line-clamp-2 leading-tight">{teams[1].trim()}</span>
-            </div>
-          </div>
+        {onFiltrarLiga ? (
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onFiltrarLiga?.(evento.competicion); }}
+            className="min-h-11 text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1 truncate hover:text-blue-400 transition-colors text-left flex items-center gap-1"
+          >
+            {evento.competicion}
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-0 group-hover:opacity-100 transition-opacity">
+              <path d="m15 18-6-6 6-6"/>
+            </svg>
+          </button>
         ) : (
-          <h3 className="text-base md:text-lg font-black italic text-slate-200 group-hover:text-white uppercase leading-tight mb-2 line-clamp-2">{evento.evento}</h3>
+          <span className="min-h-11 text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1 truncate flex items-center">
+            {evento.competicion}
+          </span>
         )}
+
+        <button
+          type="button"
+          onClick={onClick}
+          disabled={!onClick}
+          aria-label={`Ver detalles de ${evento.evento}`}
+          className="w-full min-h-11 rounded-xl text-left focus-visible:ring-2 focus-visible:ring-[#a3e635] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+        >
+          {isMatch ? (
+            <span className="flex items-center gap-3 md:gap-6 my-2">
+              <span className="flex items-center gap-1.5 sm:gap-2 flex-1 justify-end min-w-0">
+                <span className="text-[11px] sm:text-sm md:text-base font-bold text-white line-clamp-2 text-right leading-snug">{teams[0].trim()}</span>
+                <span className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center border-2 border-white/10 shadow-lg text-[10px] font-black shrink-0 text-slate-300" aria-hidden="true">
+                  {teams[0].trim().substring(0,2).toUpperCase()}
+                </span>
+              </span>
+              <span className="text-[10px] font-bold text-slate-500 select-none" aria-hidden="true">VS</span>
+              <span className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
+                <span className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center border-2 border-white/10 shadow-lg text-[10px] font-black shrink-0 text-slate-300" aria-hidden="true">
+                  {teams[1].trim().substring(0,2).toUpperCase()}
+                </span>
+                <span className="text-[11px] sm:text-sm md:text-base font-bold text-white line-clamp-2 leading-snug">{teams[1].trim()}</span>
+              </span>
+            </span>
+          ) : (
+            <span className="block text-base md:text-lg font-bold text-slate-200 group-hover:text-white leading-snug mb-2 line-clamp-2">{evento.evento}</span>
+          )}
+        </button>
 
         {/* Canales */}
         <div className="flex flex-wrap items-center gap-2 mt-1">
@@ -139,20 +142,20 @@ export default function SportEventCard({ evento, isLive, onFiltrarLiga, onClick 
       </div>
 
       {/* Share / Actions */}
-      <div className="absolute bottom-4 right-4 md:static flex items-center gap-2">
+      <div className="flex items-center justify-end gap-2 w-full md:w-auto md:shrink-0 mt-1 md:mt-0">
         <Link
           href={eventPath}
           onClick={(e) => e.stopPropagation()}
-          className="hidden sm:flex items-center gap-1.5 p-2.5 bg-slate-800/50 rounded-xl hover:bg-white/10 transition-colors text-slate-400 hover:text-white"
+          className="hidden sm:flex min-h-11 min-w-11 items-center justify-center gap-1.5 p-2.5 bg-slate-800/50 rounded-xl hover:bg-white/10 transition-colors text-slate-400 hover:text-white"
           aria-label={`Ver página de ${evento.evento}`}
         >
-          <ExternalLink size={14} />
+          <ExternalLink size={14} aria-hidden="true" />
         </Link>
         <ShareButton 
           titulo={evento.evento} 
           url={eventUrl} 
           variant="icon"
-          className="bg-slate-800/50 hover:bg-white/10"
+          className="min-h-11 min-w-11 grid place-items-center bg-slate-800/50 hover:bg-white/10"
         />
       </div>
     </article>

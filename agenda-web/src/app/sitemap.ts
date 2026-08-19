@@ -5,6 +5,8 @@ import { PLATFORMS } from '@/data/platformsData';
 import { EDITORIAL_TEAM } from '@/data/teamData';
 import { buildEventUrl } from '@/lib/eventUrls';
 import { buildWorldCupMatchUrl } from '@/lib/worldCupUrls';
+import { getMexicoDate } from '@/lib/mexicoTime';
+import { WORLD_CUP_ARCHIVE_LAST_MODIFIED } from '@/lib/worldCupArchive';
 
 const SITE_URL = 'https://www.guiasports.com';
 const STATIC_LAST_MODIFIED = new Date('2026-04-25');
@@ -13,7 +15,7 @@ const COMPETITION_HUBS = ['liga-mx', 'champions-league', 'premier-league'];
 const EVENT_SITEMAP_DAYS = 14;
 
 function getMexicoDateString(offsetDays = 0) {
-  const date = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+  const date = getMexicoDate();
   date.setDate(date.getDate() + offsetDays);
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
@@ -146,21 +148,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     {
       url: `${SITE_URL}/mundial-2026`,
-      lastModified: STATIC_LAST_MODIFIED,
-      changeFrequency: 'daily',
-      priority: 1.0,
+      lastModified: WORLD_CUP_ARCHIVE_LAST_MODIFIED,
+      changeFrequency: 'yearly',
+      priority: 0.8,
     },
     ...SEDES.map(s => ({
       url: `${SITE_URL}/mundial-2026/${s.id}`,
-      lastModified: STATIC_LAST_MODIFIED,
-      changeFrequency: 'weekly' as const,
-      priority: 0.8,
+      lastModified: WORLD_CUP_ARCHIVE_LAST_MODIFIED,
+      changeFrequency: 'yearly' as const,
+      priority: 0.6,
     })),
     ...MATCHES.map((match) => ({
       url: buildWorldCupMatchUrl(match),
-      lastModified: STATIC_LAST_MODIFIED,
-      changeFrequency: 'weekly' as const,
-      priority: 0.85,
+      lastModified: WORLD_CUP_ARCHIVE_LAST_MODIFIED,
+      changeFrequency: 'yearly' as const,
+      priority: 0.65,
     })),
     {
       url: `${SITE_URL}/plataformas`,

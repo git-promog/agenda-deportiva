@@ -5,6 +5,7 @@ import { CalendarDays } from 'lucide-react';
 import SportEventCard from '@/components/SportEventCard';
 import SportEventModal from '@/components/SportEventModal';
 import { trackEvent } from '@/lib/analytics';
+import { isEventLive } from '@/lib/mexicoTime';
 
 interface Evento {
   id: string;
@@ -28,20 +29,6 @@ export default function EventListWithModal({
 }: EventListWithModalProps) {
   const [selectedEvent, setSelectedEvent] = useState<Evento | null>(null);
 
-  const estaEnVivo = (fechaStr: string, horaStr: string) => {
-    if (!fechaStr || !horaStr) return false;
-    try {
-      const [year, month, day] = fechaStr.split('-').map(Number);
-      const [hours, minutes] = horaStr.split(':').map(Number);
-      const eventTime = new Date(year, month - 1, day, hours, minutes);
-      const now = new Date();
-      const diffInMinutes = (now.getTime() - eventTime.getTime()) / (1000 * 60);
-      return diffInMinutes >= 0 && diffInMinutes <= 120;
-    } catch {
-      return false;
-    }
-  };
-
   // Agrupar eventos por fecha YYYY-MM-DD
   const eventosAgrupados = eventos.reduce<{ [fecha: string]: Evento[] }>((acc, evento) => {
     const key = evento.fecha || 'Sin Fecha';
@@ -62,7 +49,7 @@ export default function EventListWithModal({
 
   return (
     <>
-      <div className="w-full space-y-10">
+      <div className="w-full space-y-8 sm:space-y-10">
         {fechasOrdenadas.map((fecha) => {
           const eventosDelDia = eventosAgrupados[fecha];
           const dateObj = new Date(fecha + 'T12:00:00');
@@ -77,11 +64,11 @@ export default function EventListWithModal({
           return (
             <section key={fecha} className="w-full">
               <div className="flex items-center gap-4 mb-5">
-                <h2 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] flex items-center gap-2 whitespace-nowrap">
-                  <CalendarDays className="w-4 h-4 text-blue-500" />
+                <h2 className="text-[10px] sm:text-[11px] font-black text-slate-400 uppercase tracking-[0.18em] sm:tracking-[0.3em] flex items-center gap-2 whitespace-nowrap">
+                  <CalendarDays className="w-4 h-4 text-blue-500 shrink-0" aria-hidden="true" />
                   {dateFormatted}
                 </h2>
-                <div className="h-px w-full bg-slate-800/30"></div>
+                <div className="h-px min-w-0 flex-1 bg-slate-800/30" aria-hidden="true"></div>
               </div>
 
               <div className="flex flex-col gap-3 w-full">
@@ -89,7 +76,7 @@ export default function EventListWithModal({
                   <div key={evento.id} className="w-full">
                     <SportEventCard
                       evento={evento}
-                      isLive={estaEnVivo(evento.fecha, evento.hora)}
+                      isLive={isEventLive(evento.fecha, evento.hora)}
                       onClick={() => {
                         trackEvent('view_event_detail', {
                           event_name: evento.evento,

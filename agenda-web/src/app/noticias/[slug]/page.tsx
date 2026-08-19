@@ -21,7 +21,7 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 import AuthorBio from '@/components/AuthorBio';
 import ArticleViewTracker from '@/components/ArticleViewTracker';
 import { EDITORIAL_TEAM } from '@/data/teamData';
-import { PLATFORMS } from '@/data/platformsData';
+import { getTodayMexicoString } from '@/lib/mexicoTime';
 import type { JSX } from 'react';
 
 // ISR update every 12 hours for news
@@ -36,152 +36,6 @@ interface NoticiaRelacionada {
   slug: string;
   fecha: string;
   imagen_url?: string | null;
-}
-
-interface ChannelInfo {
-  name: string;
-  type: string;
-  price: string;
-  url: string;
-  keywords: string[];
-}
-
-const getChannelsDb = (): ChannelInfo[] => {
-  const traditional: ChannelInfo[] = [
-    {
-      name: "Fox Sports México",
-      type: "Televisión de paga",
-      price: "Incluido en cable",
-      url: "https://www.foxsports.com.mx",
-      keywords: ["fox sports", "fox sports 1", "fox sports 2", "fox sports 3", "fox sports premium", "foxsports"]
-    },
-    {
-      name: "ESPN México",
-      type: "Televisión de paga",
-      price: "Incluido en cable",
-      url: "https://www.espn.com.mx",
-      keywords: ["espn", "espn 1", "espn 2", "espn 3", "espn 4", "espn+"]
-    },
-    {
-      name: "TUDN",
-      type: "Televisión de paga",
-      price: "Incluido en cable",
-      url: "https://www.tudn.com",
-      keywords: ["tudn"]
-    },
-    {
-      name: "Sky Sports",
-      type: "Televisión satelital",
-      price: "Suscripción mensual Sky",
-      url: "https://www.sky.com.mx",
-      keywords: ["sky sports", "skysports", "sky mx", "sky"]
-    },
-    {
-      name: "Azteca 7",
-      type: "Televisión abierta",
-      price: "Gratis (Canal 7)",
-      url: "https://www.tvazteca.com/aztecadeportes",
-      keywords: ["azteca 7", "tv azteca", "azteca deportes", "canal 7"]
-    },
-    {
-      name: "Canal 5",
-      type: "Televisión abierta",
-      price: "Gratis (Canal 5)",
-      url: "https://www.televisa.com",
-      keywords: ["canal 5", "televisa", "canal 5*"]
-    },
-    {
-      name: "Las Estrellas",
-      type: "Televisión abierta",
-      price: "Gratis (Canal 2)",
-      url: "https://www.televisa.com",
-      keywords: ["las estrellas", "canal 2"]
-    },
-    {
-      name: "Caliente TV",
-      type: "Plataforma / Canal de TV",
-      price: "Gratis / Incluido",
-      url: "https://www.caliente.tv",
-      keywords: ["caliente tv", "calientetv", "caliente"]
-    }
-  ];
-
-  const digital = PLATFORMS.map(p => {
-    let name = p.name;
-    if (p.id === 'vix') name = "ViX Premium";
-    return {
-      name,
-      type: "Plataforma digital",
-      price: p.price.split("/")[0].trim() || p.price,
-      url: p.ctaUrl,
-      keywords: [p.name.toLowerCase(), p.slug.toLowerCase(), p.id.toLowerCase()]
-    };
-  });
-
-  const vixFreeIndex = digital.findIndex(d => d.keywords.includes('vix'));
-  if (vixFreeIndex >= 0) {
-    digital[vixFreeIndex].keywords.push("vix premium");
-    digital[vixFreeIndex].keywords.push("vix+");
-  }
-
-  return [...digital, ...traditional];
-};
-
-function extractMatchedChannels(content: string): ChannelInfo[] {
-  const lines = content.split('\n');
-  let isDondeVer = false;
-  const subLines: string[] = [];
-
-  const getHeadingInfoForExtraction = (line: string) => {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.length > 80) return false;
-    const cleanLine = trimmed.replace(/^[#\s*_-]+/, '').replace(/[#\s*_-]+$/, '').replace(/:$/, '').trim();
-    const sectionHeadingPatterns = [
-      /ANÁLISIS DE GUIASPORTS/i,
-      /ALINEACIONES PROBABLES/i,
-      /DÓNDE VER|CANALES|STREAMING|TRANSMISIÓN|TELEVISIÓN|TV|VERLO/i,
-      /HORARIO/i,
-      /CLAVES DEL PARTIDO/i,
-      /ESTADÍSTICAS/i,
-      /SITUACIÓN ACTUAL/i,
-      /ANTECEDENTES/i,
-      /CONCLUSIÓN/i
-    ];
-    for (const pattern of sectionHeadingPatterns) {
-      if (pattern.test(cleanLine)) return true;
-    }
-    if (cleanLine === cleanLine.toUpperCase() && cleanLine.length > 3 && cleanLine.length < 50) return true;
-    return false;
-  };
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed) continue;
-    
-    const cleanLine = trimmed.replace(/^[#\s*_-]+/, '').replace(/[#\s*_-]+$/, '').replace(/:$/, '').trim();
-    if (getHeadingInfoForExtraction(trimmed)) {
-      if (/DÓNDE VER|CANALES|STREAMING|TRANSMISIÓN|TELEVISIÓN|TV|VERLO/i.test(cleanLine)) {
-        isDondeVer = true;
-      } else {
-        isDondeVer = false;
-      }
-      continue;
-    }
-
-    if (isDondeVer) {
-      subLines.push(trimmed);
-    }
-  }
-
-  const sectionText = subLines.join(" ").toLowerCase();
-  const channelsDb = getChannelsDb();
-  return channelsDb.filter(ch => {
-    return ch.keywords.some(kw => {
-      const escaped = kw.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-      const regex = new RegExp(`\\b${escaped}\\b|${escaped}(?=\\s|\\+|$)`, 'i');
-      return regex.test(sectionText);
-    });
-  });
 }
 
 function extractChannelsFromContent(content: string): { tvText: string; streamText: string } {
@@ -364,6 +218,11 @@ function extractScheduleFromContent(content: string): string {
   return extractedLines.join(". ").replace(/\.\./g, '.');
 }
 
+function isNoticiaHistorica(fecha: string): boolean {
+  if (!fecha) return false;
+  return fecha < getTodayMexicoString();
+}
+
 function getFaqs(titulo: string, fecha: string, contenido: string): { question: string; answer: string }[] {
   let eventName = titulo.split(':')[0].trim();
   eventName = eventName.replace(/horario|canal|dónde ver|en vivo|méxico/gi, '').replace(/\s+/g, ' ').trim();
@@ -372,8 +231,30 @@ function getFaqs(titulo: string, fecha: string, contenido: string): { question: 
   }
   if (!eventName) eventName = "este evento deportivo";
 
+  const historica = isNoticiaHistorica(fecha);
   const { tvText, streamText } = extractChannelsFromContent(contenido);
   const scheduleText = extractScheduleFromContent(contenido);
+
+  if (historica) {
+    const scheduleAnswer = scheduleText
+      ? `El partido de ${eventName} se disputó: ${scheduleText}.`
+      : `El partido de ${eventName} se disputó el día ${fecha}.`;
+
+    return [
+      {
+        question: `¿Cuándo y a qué hora se disputó el partido de ${eventName}?`,
+        answer: scheduleAnswer
+      },
+      {
+        question: `¿En qué canal de televisión abierta o de paga se transmitió ${eventName}?`,
+        answer: `La transmisión por televisión de este encuentro para el territorio mexicano estuvo disponible a través de las señales de ${tvText}.`
+      },
+      {
+        question: `¿Cómo se transmitió en vivo online y por streaming el juego de ${eventName}?`,
+        answer: `El compromiso de ${eventName} se transmitió de forma online y por streaming en México a través de las plataformas de ${streamText}.`
+      }
+    ];
+  }
 
   const scheduleAnswer = scheduleText
     ? `El partido de ${eventName} está programado para: ${scheduleText}. Te sugerimos sintonizar con anticipación para no perderte el inicio.`
@@ -403,9 +284,11 @@ const getArticleKeywords = (title: string) =>
     .filter((word) => word.length > 3 && !["donde", "para", "vivo", "hora", "canal", "como", "guia", "sports"].includes(word))
     .slice(0, 8);
 
-const buildSeoDescription = (title: string, content: string) => {
+const buildSeoDescription = (title: string, content: string, fecha?: string) => {
   const cleanContent = content.replace(/\s+/g, " ").trim();
-  const fallback = `Consulta horario, canal de TV y streaming para ver ${title} en vivo en México.`;
+  const fallback = isNoticiaHistorica(fecha || "")
+    ? `Consulta el horario, canal de TV y streaming del partido de ${title} disputado en México.`
+    : `Consulta horario, canal de TV y streaming para ver ${title} en vivo en México.`;
   return (cleanContent.length > 80 ? cleanContent : fallback).slice(0, 155);
 };
 
@@ -646,7 +529,7 @@ export async function generateMetadata(
     };
   }
 
-  const seoDescription = buildSeoDescription(noticia.titulo, noticia.contenido);
+  const seoDescription = buildSeoDescription(noticia.titulo, noticia.contenido, noticia.fecha || undefined);
   const keywords = getArticleKeywords(noticia.titulo);
 
   return {
@@ -761,7 +644,6 @@ export default async function NoticiaDetalle({ params }: Props) {
   };
 
   // Channels and FAQ resolution
-  const matchedChannels = extractMatchedChannels(noticia.contenido);
   const faqs = getFaqs(noticia.titulo, noticia.fecha, noticia.contenido);
 
   // JSON-LD NewsArticle

@@ -1,13 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
-const API_SECRET = process.env.API_SECRET || "guiasports-secret-2024";
+import { isAuthorizedAdminRequest } from "@/lib/adminSession";
 
 const requestCounts = new Map<string, { count: number; resetAt: number }>();
 
@@ -32,8 +25,7 @@ function checkRateLimit(ip: string): boolean {
 
 export async function POST(request: Request) {
   try {
-    const authHeader = request.headers.get('authorization');
-    if (authHeader !== `Bearer ${API_SECRET}`) {
+    if (!isAuthorizedAdminRequest(request)) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
@@ -205,8 +197,8 @@ export async function POST(request: Request) {
       }
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error IA Gen:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Error al generar la noticia" }, { status: 500 });
   }
 }

@@ -4,8 +4,8 @@ import { ChevronLeft, CheckCircle2, Star, Info, Calendar, Zap } from 'lucide-rea
 import { Metadata } from 'next';
 import { PLATFORMS } from '@/data/platformsData';
 import Breadcrumbs from '@/components/Breadcrumbs';
-import NextImage from 'next/image';
 import TrackedOutboundLink from '@/components/TrackedOutboundLink';
+import NextImage from 'next/image';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -53,9 +53,11 @@ export default async function PlatformDetail({ params }: Props) {
           <div className="w-32 h-32 md:w-40 md:h-40 bg-slate-950/40 backdrop-blur-md border border-white/10 rounded-[40px] flex items-center justify-center mx-auto mb-8 shadow-[0_20px_60px_rgba(0,0,0,0.55)] transform rotate-3 overflow-hidden">
              {platform.logo ? (
                <div className="w-full h-full p-6 relative flex items-center justify-center">
-                 <img 
+                 <NextImage
                    src={platform.logo} 
                    alt={platform.name} 
+                   fill
+                   sizes="160px"
                    className="max-w-full max-h-full object-contain filter drop-shadow-[0_10px_25px_rgba(0,0,0,0.55)]" 
                  />
                </div>

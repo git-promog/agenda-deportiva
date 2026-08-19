@@ -1,18 +1,22 @@
 "use client";
 
+/* FIFA flag URLs are generated at runtime from external assets. */
+/* eslint-disable @next/next/no-img-element */
+
 import React from 'react';
 import Link from 'next/link';
 import { WCMatch, getFlagUrl } from '@/data/mundialData';
 import { Calendar, MapPin, Clock, Tv, Trophy, Star, ExternalLink, StickyNote } from 'lucide-react';
 import ShareButton from '@/components/ShareButton';
 import { buildWorldCupMatchPath, buildWorldCupMatchUrl } from '@/lib/worldCupUrls';
+import { getWorldCupBroadcastText } from '@/lib/worldCupArchive';
 
 interface Props {
   match: WCMatch;
   horaConvertida?: string;
   notaHora?: string;
   tzShort?: string;
-  matchStatus?: 'none' | 'today' | 'live';
+  matchStatus?: 'none' | 'today' | 'live' | 'upcoming' | 'completed';
   onClick?: () => void;
   isFavorite?: boolean;
   onToggleFavorite?: (e: React.MouseEvent) => void;
@@ -29,20 +33,6 @@ export default function WCMatchCard({
   onToggleFavorite
 }: Props) {
   const horaFinal = horaConvertida ?? match.hora;
-
-  const getBroadcasters = () => {
-    if (match.broadcasters) return match.broadcasters;
-
-    // Solo transmisiones para México (Guía de programación deportiva México)
-    const mexicoBroadcasters = 'TUDN · Canal 5 · Azteca 7 · ViX';
-    
-    if (match.equipo1 === 'México' || match.equipo2 === 'México') return mexicoBroadcasters;
-    if (['Final', 'Semifinal', 'Cuartos de final', 'Octavos de final', 'Dieciseisavos de final', 'Partido por el tercer puesto'].includes(match.fase)) {
-      return mexicoBroadcasters;
-    }
-    
-    return 'ViX (Premium) · Consulte TUDN/Canal 5/Azteca 7';
-  };
 
   const flag1 = getFlagUrl(match.equipo1);
   const flag2 = getFlagUrl(match.equipo2);
@@ -77,15 +67,9 @@ export default function WCMatchCard({
         </button>
       )}
 
-      {matchStatus === 'live' && (
-        <div className="absolute top-0 left-0 bg-red-600 text-white text-[8px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-br-xl rounded-tl-2xl flex items-center gap-1 shadow-lg shadow-red-900/50 z-10">
-          <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" /> EN VIVO
-        </div>
-      )}
-      
-      {matchStatus === 'today' && (
-        <div className="absolute top-0 left-0 bg-green-600 text-white text-[8px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-br-xl rounded-tl-2xl z-10 shadow-lg shadow-green-900/30">
-          HOY
+      {matchStatus === 'completed' && (
+        <div className="absolute top-0 left-0 bg-slate-700 text-slate-200 text-[8px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-br-xl rounded-tl-2xl z-10">
+          FINALIZADO
         </div>
       )}
 
@@ -162,15 +146,8 @@ export default function WCMatchCard({
 
          <div className="flex items-center gap-2 bg-blue-600/10 border border-blue-500/20 px-3 py-1.5 rounded-lg">
            <Tv size={11} className="text-blue-400 shrink-0" />
-           <span className="text-[9px] font-black text-blue-400 uppercase whitespace-nowrap">{getBroadcasters()}</span>
+           <span className="text-[9px] font-black text-blue-400 uppercase whitespace-nowrap">{getWorldCupBroadcastText(match)}</span>
          </div>
-         
-         {match.streaming && (
-           <div className="flex items-center gap-1 bg-green-600/10 border border-green-500/20 px-2 py-1 rounded-lg">
-             <ExternalLink size={10} className="text-green-400" />
-             <span className="text-[8px] font-black text-green-400 uppercase whitespace-nowrap">EN VIVO</span>
-           </div>
-         )}
          
          {match.broadcastNotes && (
            <div className="flex items-center gap-1 bg-blue-600/10 border border-blue-500/20 px-2 py-1 rounded-lg">

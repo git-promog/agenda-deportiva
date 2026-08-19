@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import HomeClient from '@/components/HomeClient';
 import { Metadata } from 'next';
 import { getTodayMexicoString, getDateRangeMexico } from '@/lib/mexicoTime';
+import { buildEventUrl } from '@/lib/eventUrls';
 
 // ISR every 5 minutes (300 seconds) to balance freshness with performance
 export const revalidate = 300; 
@@ -95,6 +96,8 @@ export default async function Home() {
     "@type": "ItemList",
     "itemListElement": eventos.slice(0, 50).map((e, index: number) => {
       const startDateTime = `${e.fecha}T${e.hora || '00:00'}:00-06:00`;
+      const endDate = new Date(startDateTime);
+      const eventUrl = buildEventUrl(e);
 
       return {
         "@type": "ListItem",
@@ -103,9 +106,37 @@ export default async function Home() {
           "@type": "SportsEvent",
           "name": e.evento,
           "description": `Transmisión de ${e.competicion}: ${e.evento} en ${e.canales}.`,
+          "url": eventUrl,
           "startDate": startDateTime,
+          "endDate": !Number.isNaN(endDate.getTime())
+            ? new Date(endDate.getTime() + 2 * 60 * 60 * 1000).toISOString()
+            : `${e.fecha}T23:59:00-06:00`,
           "eventStatus": "https://schema.org/EventScheduled",
-          "sport": e.deporte
+          "eventAttendanceMode": "https://schema.org/OnlineEventAttendanceMode",
+          "sport": e.deporte,
+          "inLanguage": "es-MX",
+          "location": {
+            "@type": "VirtualLocation",
+            "name": "TV y streaming en México",
+            "url": eventUrl
+          },
+          "organizer": {
+            "@type": "Organization",
+            "name": e.competicion || "GuíaSports",
+            "url": "https://www.guiasports.com"
+          },
+          "performer": {
+            "@type": "PerformingGroup",
+            "name": e.evento
+          },
+          "offers": {
+            "@type": "Offer",
+            "url": eventUrl,
+            "price": "0",
+            "priceCurrency": "MXN",
+            "availability": "https://schema.org/InStock",
+            "validFrom": startDateTime
+          }
         }
       };
     })

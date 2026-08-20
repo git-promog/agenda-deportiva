@@ -477,6 +477,28 @@ Estado: **primera pasada de Rich Results Test completada sobre el preview; error
 - Search Console: validación pendiente (requiere propiedad del dominio y acceso; puede requerir la URL de producción).
 - No cerrar el plan ni desplegar a producción con la protección desactivada.
 
+## Continuación del ciclo de staging — 19/08/2026
+
+Estado: **ciclo de staging activo en la rama `staging`; preview Ready; validación externa Rich Results superada sin errores; pendientes manuales del cierre sin ejecutar**.
+
+Registro de esta sesión:
+
+- Confirmado que `staging` está sincronizada con `origin/staging` (`HEAD` = `origin/staging` = `2a4a1e2`), working tree limpio al inicio.
+- Re-verificado el preview `agenda-deportiva-git-staging-rauls-projects-5e98afa6.vercel.app`: HTTP 200 en `/`, `/mundial-2026`, `/admin/login`, `/sitemap.xml` y `/robots.txt`. La Deployment Protection sigue desactivada (el preview responde sin SSO), tal como se dejó para la validación externa.
+- **Item C avanzado:** se agregó `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` a `agenda-web/.env.example` (era la única variable cargada en el preview que no estaba documentada en el ejemplo; se usa en `src/app/layout.tsx`). El archivo ya estaba versionado desde el baseline; este cambio completa el inventario de variables documentadas. Sin valores reales.
+- Validaciones al cierre: `npm run test` 33/33, `npx tsc --noEmit` 0 errores, `npm run lint` 0/0, `git diff --check` limpio.
+
+Pendientes manuales que permanecen (ninguno puede ejecutarse desde esta sesión por requerir acceso a la consola del proveedor):
+
+1. **Reactivar Deployment Protection** (paso 7 de la sección Vercel): volver a `Settings → Deployment Protection → Vercel Authentication` y activar (o limitar a usuarios del equipo). Registrar aquí fecha/hora. Obligatorio antes de cerrar el plan o desplegar a producción.
+2. **Search Console:** validar la propiedad (puede requerir la URL de producción y el dominio).
+3. **Item A — rotación de credenciales** (sección Pendientes manuales).
+4. **Item B — RLS:** requiere backup de Supabase confirmado y documentado antes de ejecutar el SQL.
+5. **Item C — `.env.example`:** completado en esta sesión (variable faltante documentada); no se versionan valores reales.
+6. **Dominio de staging:** sigue vigente la recomendación de conservar la URL `.vercel.app` por defecto; si se decide un dominio dedicado, documentarlo aquí antes de cualquier SQL/RLS.
+
+No se tocó `main`; la reversión continúa disponible en la sección de contingencia (`git checkout main && git branch -D staging`).
+
 ## Regla de no deploy
 
 No publicar los cambios locales mientras falte cualquiera de estos puntos:
@@ -617,7 +639,7 @@ El build se valida después de cerrar cualquier proceso `next build` previo. No 
 ## Prompt de continuidad para la siguiente sesión
 
 ```text
-Continuamos GuíaSports únicamente en local. No hagas deploy, staging, sincronizaciones ni SQL en Supabase.
+Continuamos GuíaSports en la rama staging del ciclo de staging/validación externa. No tocar main; no hacer deploy a producción, ni SQL/RLS en Supabase sin backup confirmado y documentado.
 
 Lee primero:
 - PLAN-REMEDIACION-UX-SEGURIDAD-SEO-CALIDAD.md
@@ -627,24 +649,28 @@ Lee primero:
 Estado heredado:
 - Fases 0 y 1 implementadas; Fase 2 validada.
 - Fase 3: implementación cerrada administrativamente en local.
-- Fase 3.1 completada en local el 18/08/2026: recorrido de Tab y VoiceOver validados manualmente por el usuario; `npm run build` concluyente con éxito (salida en `/tmp/guidasports-build-20260818.log`); `next dev` reiniciado (log `/tmp/guidasports-dev-20260818.log`). Se agregó `ADMIN_SESSION_SECRET` a `agenda-web/.env.local` (incidencia local de login resuelta; no se tocó código fuente).
-- Fase 4 en progreso local: identidad estable y sincronización segura; persistencia local y sincronización entre pestañas de favoritos operativas, sin sincronización remota ni cambios en Supabase.
-- Fase 6 — SEO histórico del Mundial: intervención local completada el 14/08/2026 (Hub + 16 sedes + 104 partidos, EventCompleted, FAQ histórica, canonical/OG, sitemap 121 URLs, señales de archivo).
-- QA local de schemas y FAQ de noticias (14/08/2026): H1–H6 remediados en local (mundial-2026/page.tsx, partido/[slug]/page.tsx, WCMatchModal.tsx, noticias/[slug]/page.tsx). H7–H9 quedan como observaciones sin acción requerida.
-- La remediación local del paquete SEO histórico está cerrada. Queda pendiente la validación externa (Rich Results Test, Search Console) que requiere staging autorizado.
-- npx tsc --noEmit, npm run lint y git diff --check pasan al cierre de cada sesión.
+- Fase 3.1 completada en local el 18/08/2026: recorrido de Tab y VoiceOver validados manualmente; `npm run build` concluyente con éxito (salida en `/tmp/guidasports-build-20260818.log`); `next dev` reiniciado. Se agregó `ADMIN_SESSION_SECRET` a `agenda-web/.env.local` (incidencia local de login resuelta; no se tocó código fuente).
+- Fase 4 en progreso local: identidad estable y sincronización segura; favoritos locales operativos, sin sincronización remota ni cambios en Supabase.
+- Fase 6 — SEO histórico del Mundial: intervención local completada el 14/08/2026 (Hub + 16 sedes + 104 partidos, EventCompleted, FAQ histórica, canonical/OG, sitemap 121 URLs, señales de archivo). H1–H6 remediados; H7–H9 quedan como observaciones sin acción requerida.
+- Pruebas críticas automatizadas: Vitest implementado en `staging` (4 archivos, 33 tests, commits `9a3a07f`, `6681cf3`).
+- Ciclo de staging: rama `staging` pusheada (`2a4a1e2` HEAD/origin), preview Ready en `agenda-deportiva-git-staging-rauls-projects-5e98afa6.vercel.app`, env vars del Preview cargadas, HTTP 200 en `/`, `/mundial-2026`, `/admin/login`, `/sitemap.xml` y `/robots.txt`. Rich Results Test re-corrido por el usuario en 5 páginas sin errores (commits `dbf080e` schemas Hub/partido, `96c2373` ItemList home). `agenda-web/vercel.json` draft (framework nextjs, buildCommand, installCommand).
+- Baseline y contingencia: tag `baseline-pre-staging` (f0c1b5b), backup `.env.local` en `/tmp/backup-env-20260818/`, sección de contingencia en el plan.
+- Item C avanzado el 19/08/2026: `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` agregada a `agenda-web/.env.example`.
+- IMPORTANTE: la Deployment Protection de Vercel está DESACTIVADA temporalmente para la validación externa. El paso 7 de la sección Vercel del plan obliga a reactivarla al terminar; registrar fecha/hora. No cerrar el plan ni desplegar a producción con la protección desactivada.
+- npx tsc --noEmit, npm run lint, git diff --check y npm run test pasan al cierre de cada sesión.
 
 Tarea:
-1. Fase 3.1 está cerrada; el siguiente paso natural es esperar autorización para el ciclo de staging/validación externa. No repetir `npm run build` sin orden explícita.
-2. Si hay una tarea nueva, confirmar su alcance con el usuario antes de tocar código.
-3. Mantener la persistencia y sincronización local de favoritos sin introducir sincronización remota ni cambios en Supabase.
-4. No modificar contenido histórico del Hub, sitemap, robots, scripts de sincronización ni datos fuente auto-generados salvo tarea explícita.
-5. Actualizar el plan con evidencias y pendientes, manteniendo visibles los pendientes del cierre del plan (staging, QA, release).
+1. Continuar el ciclo de staging/validación externa en la rama staging. Los pendientes manuales (reactivar Deployment Protection, Search Console, rotación de credenciales A, RLS B, dominio de staging) requieren consola del proveedor y no se ejecutan desde una sesión de código.
+2. Si hay una tarea nueva de código, confirmar su alcance con el usuario antes de tocar archivos.
+3. No modificar contenido histórico del Hub, sitemap, robots, scripts de sincronización ni datos fuente auto-generados salvo tarea explícita.
+4. Actualizar el plan con evidencias y pendientes, manteniendo visibles los pendientes del cierre del plan (staging, QA, release).
+5. No leer `.env`, `.env.local`, `.next` ni `node_modules`.
 
 Ejecuta al final:
 - npx tsc --noEmit
 - npm run lint
 - git diff --check
+- npm run test
 
-Entrega un handoff con estado actual, archivos modificados, validaciones, errores, pendientes, riesgos o decisiones, siguiente sesión recomendada y prompt de continuidad para siguiente paso.. No leas `.env`, `.env.local`, `.next` ni `node_modules`.
+Entrega un handoff con estado actual, archivos modificados, validaciones, errores, pendientes, riesgos o decisiones, siguiente sesión recomendada y prompt de continuidad para siguiente paso.
 ```

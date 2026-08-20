@@ -424,6 +424,59 @@ Validaciones:
 
 Pendientes: los escenarios validados manualmente en Fase 4 (JSON inválido, `newValue === null`) quedaron formalizados como pruebas de regresión automatizadas. Queda el resto del prerrequisito de staging (backup Supabase, rotación de credenciales, RLS, staging aprobado) y la validación externa (Rich Results Test, Search Console).
 
+## Definición del entorno de staging en Vercel — 18/08/2026
+
+Estado: **proveedor confirmado (Vercel); entorno Preview operativo; validación externa de Rich Results en curso y mayormente superada**. La rama `staging` ya fue pusheada a GitHub (`git push -u origin staging`), Vercel generó el preview y quedó **Ready** en `agenda-deportiva-git-staging-rauls-projects-5e98afa6.vercel.app`. Se cargaron las env vars en el entorno Preview y se hizo redeploy. El preview responde `302` hacia el SSO de Vercel mientras está activa la Deployment Protection, por lo que, para permitir la validación externa (Rich Results Test/Search Console), se desactivó temporalmente la protección (ver paso 7 de reversión obligatoria).
+
+Aclaración: "definir el proveedor de staging" no implicaba elegir un proveedor nuevo. El proyecto ya usa Vercel para producción (dominio particular conectado). El trabajo de staging consiste en **aislar un entorno Preview dentro del mismo Vercel**, sin tocar el dominio ni la rama de producción.
+
+### `agenda-web/vercel.json` (draft, en rama `staging`)
+
+Creado con configuración mínima: `framework: "nextjs"`, `buildCommand: "next build"` e `installCommand: "npm ci"`. Next.js se autodetecta en Vercel; este archivo fija explícitamente el comportamiento y documenta la intención. No afecta al build local ni a otras plataformas.
+
+### Pasos de configuración del entorno Preview en Vercel (manuales, pendientes de ejecución)
+
+1. En Vercel abrir el proyecto (el que ya está conectado al repo `git-promog/agenda-deportiva`).
+2. Confirmar que **Production Branch es `main`**. Si no, cambiarla a `main` para que `staging` nunca pise producción.
+3. Conectar/confirmar la rama `staging` como rama de Preview: cada push a `staging` generará un deployment en una URL propia (`<proyecto>-git-staging-<hash>.vercel.app`), sin usar el dominio personalizado. **Ejecutado** el 18/08/2026 (`git push -u origin staging`; preview Ready).
+4. Cargar las variables de entorno en el entorno **Preview** (o Production, según se rotará en cada fase):
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `ADMIN_PASSWORD`
+   - `ADMIN_API_SECRET`
+   - `ADMIN_SESSION_SECRET`
+   - `GEMINI_API_KEY`
+   - `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION`
+   Nunca pegar valores en Git. **Ejecutado** el 18/08/2026 (env vars del Preview cargadas y redeploy realizado).
+5. Hacer el primer push de `staging` a GitHub para disparar el preview, verificar HTTP 200 en `/`, `/mundial-2026` y `/admin/login`, y ejecutar el QA funcional (Bloque 5 del handoff). **Ejecutado** el 18/08/2026: HTTP 200 en `/`, `/mundial-2026`, `/admin/login`, `/sitemap.xml` y `/robots.txt`; login del panel admin probado por el usuario sin problemas.
+6. Definir el dominio del preview: opción recomendada es dejar la URL `.vercel.app` por defecto. Si se quiere un dominio de staging dedicado, decidirlo antes de cualquier SQL/RLS y documentarlo aquí.
+7. **Reversión obligatoria de la exposición pública (riesgo de seguridad):** para permitir la validación externa se desactivó temporalmente `Settings → Deployment Protection → Vercel Authentication` en el proyecto. Esto deja el preview (y cualquier futura URL de preview) accesible públicamente sin autenticación. **Obligatorio revertir al terminar la validación externa:** volver a `Settings → Deployment Protection → Vercel Authentication` y reactivar la protección (o limitarla a los usuarios autorizados del equipo). NO cerrar el plan ni hacer deploy a producción con esta protección desactivada. Registrar aquí la fecha/hora de la reactivación.
+
+Límites: este paso es de configuración, no autoriza deploy a producción, SQL, sincronizaciones ni rotación de credenciales.
+
+## Validación externa Rich Results en staging — 18/08/2026
+
+Estado: **primera pasada de Rich Results Test completada sobre el preview; errores críticos de eventos remediados y revalidados sin errores**.
+
+### Hallazgos y decisiones
+
+1. **`noindex` en previews (esperado, no defecto):** Vercel añade `X-Robots-Tag: noindex` por defecto a los previews `.vercel.app`; `www.guiasports.com` (producción) no lo tiene. Rich Results Test sobre la URL de preview siempre reporta ese error de indexación. No es un problema del sitio; la validación real de indexación se hace sobre producción tras el release.
+2. **Hub `/mundial-2026` — eventos inválidos:** los `SportsEvent` del Hub (evento agregado + 30 de partido) carecían de `eventAttendanceMode` y `offers` (exigidos por Google para el rich result de Event); el evento agregado también carecía de `url`. **Remediado** en commit `dbf080e`: se agregó `eventAttendanceMode: OfflineEventAttendanceMode`, `offers` (con `url`, `price: 0`, `priceCurrency`, `availability: SoldOut`, `validFrom`/`validThrough`) y `url` al evento agregado.
+3. **Home `/` — `ItemList` incompleto:** los hasta 50 `SportsEvent` del `ItemList` del home carecían de `location` (crítico) y de `endDate`, `offers`, `organizer`, `performer` (opcionales). **Remediado** en commit `96c2373` replicando el patrón del detalle `/evento/[slug]`: `location` (`VirtualLocation`), `endDate` (start + 2h), `eventAttendanceMode`, `offers`, `organizer`, `performer`, `url`. Nota: `image` no se agregó porque sólo existe el logo SVG (no soportado por Google en datos estructurados, hallazgo H3); es opcional.
+
+### Revalidación
+
+- Usuario re-corrió Rich Results Test sobre el preview en las 5 páginas solicitadas (home, Hub, una sede, un detalle de partido y una noticia): **ya no aparecen errores**.
+- Validaciones locales tras los cambios: `npm run test` 33/33, `npx tsc --noEmit` 0 errores, `npm run lint` 0/0, `git diff --check` limpio.
+- Commits en `staging`: `dbf080e` (schema Hub/partido) y `96c2373` (schema home); ambos pusheados y redeployados.
+
+### Pendientes
+
+- Registrar aquí (paso 7 de Vercel) la fecha/hora de **reactivación de la Deployment Protection** tras terminar la validación externa.
+- Search Console: validación pendiente (requiere propiedad del dominio y acceso; puede requerir la URL de producción).
+- No cerrar el plan ni desplegar a producción con la protección desactivada.
+
 ## Regla de no deploy
 
 No publicar los cambios locales mientras falte cualquiera de estos puntos:

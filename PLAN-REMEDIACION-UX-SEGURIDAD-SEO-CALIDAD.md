@@ -491,7 +491,7 @@ Registro de esta sesión:
 Pendientes manuales que permanecen (ninguno puede ejecutarse desde esta sesión por requerir acceso a la consola del proveedor):
 
 1. **Reactivar Deployment Protection** (paso 7 de la sección Vercel): volver a `Settings → Deployment Protection → Vercel Authentication` y activar (o limitar a usuarios del equipo). Registrar aquí fecha/hora. Obligatorio antes de cerrar el plan o desplegar a producción.
-2. **Search Console:** validar la propiedad (puede requerir la URL de producción y el dominio).
+2. **Search Console:** en curso — se eligió verificación por DNS. El usuario agregó el registro TXT `google-site-verification=BWGHM0bI1nfjhdFBW2LCetaahVbUTEQgrQimxgyXDvA` en el apex `guiasports.com` (DNS de Vercel, `ns1/ns2.vercel-dns.com`); confirmado publicado con `dig`. Verificación por tipo **Dominio** (`guiasports.com`, sin `www`), que cubre apex y `www`. Nota: el valor cargado como `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` en el Preview quedó en formato TXT (con prefijo `google-site-verification=`), no válido como meta tag; irrelevante para la vía DNS, pero corregir si algún día se usa el método de meta tag.
 3. **Item A — rotación de credenciales** (sección Pendientes manuales).
 4. **Item B — RLS:** requiere backup de Supabase confirmado y documentado antes de ejecutar el SQL.
 5. **Item C — `.env.example`:** completado en esta sesión (variable faltante documentada); no se versionan valores reales.

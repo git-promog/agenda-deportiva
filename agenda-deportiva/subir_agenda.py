@@ -181,10 +181,15 @@ def actualizar_base_de_datos():
         eventos_en_scraper = {f"{ev['evento']}||{ev['fecha']}||{ev['competicion']}" for ev in eventos_finales}
         preservados_sin_scraper = sum(1 for key in eventos_existentes if key not in eventos_en_scraper)
 
-        # UPSERT en lotes: on_conflict='id' actualiza lo existente e inserta lo nuevo
-        datos_subir = datos_insertar + datos_actualizar
-        for i in range(0, len(datos_subir), 100):
-            supabase.table("eventos").upsert(datos_subir[i:i+100], on_conflict="id").execute()
+        # 1. Insertar filas nuevas (sin 'id', para que Postgres genere la secuencia automática)
+        if datos_insertar:
+            for i in range(0, len(datos_insertar), 100):
+                supabase.table("eventos").insert(datos_insertar[i:i+100]).execute()
+
+        # 2. Actualizar filas existentes (con 'id', actualiza en sitio preservando IDs y URLs)
+        if datos_actualizar:
+            for i in range(0, len(datos_actualizar), 100):
+                supabase.table("eventos").upsert(datos_actualizar[i:i+100], on_conflict="id").execute()
 
         print(f"✅ Sincronización completada: {len(datos_insertar)} insertados, {len(datos_actualizar)} actualizados, {preservados_sin_scraper} históricos preservados, {untouched_manuales} manuales intactos.")
 
@@ -205,6 +210,7 @@ def actualizar_base_de_datos():
 
     except Exception as e:
         print(f"❌ Error general: {e}")
+        raise e
 
 if __name__ == "__main__":
     actualizar_base_de_datos()

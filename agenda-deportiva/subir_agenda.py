@@ -138,6 +138,22 @@ def actualizar_base_de_datos():
                     eventos_para_ia[idx]['destacado'] = True
                     print(f"      ✨ IA destacó: {eventos_para_ia[idx]['evento']}")
 
+        # Deduplicar eventos raspados por clave compuesta combinando canales
+        eventos_dedup = {}
+        for ev in eventos_finales:
+            key = f"{ev['evento']}||{ev['fecha']}||{ev['competicion']}"
+            if key in eventos_dedup:
+                c1 = eventos_dedup[key].get('canales', '') or ''
+                c2 = ev.get('canales', '') or ''
+                canales_combinados = ", ".join(list(dict.fromkeys(filter(None, [c.strip() for c in (c1 + "," + c2).split(",")]))))
+                eventos_dedup[key]['canales'] = canales_combinados
+                if ev.get('destacado'):
+                    eventos_dedup[key]['destacado'] = True
+            else:
+                eventos_dedup[key] = ev
+
+        eventos_finales = list(eventos_dedup.values())
+
         # 3. Sincronizar con Supabase (UPSERT no destructivo)
         print(f"3. Sincronizando {len(eventos_finales)} eventos con la DB...")
 
@@ -150,7 +166,7 @@ def actualizar_base_de_datos():
         # - Clave nueva            -> INSERT (solo se agregan eventos nuevos)
         # - Con ajuste manual      -> se respeta tal cual, no se sobrescribe
         datos_actualizar = []  # filas con 'id': upsert on_conflict='id' las actualiza en sitio
-        datos_insertar = []    # filas sin 'id': upsert on_conflict='id' las inserta como nuevas
+        datos_insertar = []    # filas sin 'id': insert las inserta como nuevas
         untouched_manuales = 0
 
         for ev in eventos_finales:
@@ -175,6 +191,12 @@ def actualizar_base_de_datos():
                 datos_actualizar.append(filtrado)
             else:
                 datos_insertar.append(filtrado)
+
+        # Asegurar unicidad estricta por 'id' en datos_actualizar para evitar error 21000 de Postgres
+        dict_actualizar = {}
+        for d in datos_actualizar:
+            dict_actualizar[d['id']] = d
+        datos_actualizar = list(dict_actualizar.values())
 
         # Eventos en DB que NO vienen del scraper (histórico vigente o creados a mano):
         # se preservan intactos. El UPSERT nunca borra filas.

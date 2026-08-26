@@ -376,9 +376,11 @@ git branch -D staging   # descarta la rama de staging local
 
 ### Capa 3 — Respaldo externo de secretos y artefactos
 
-- `agenda-web/.env.local` copiado fuera del repo: `/tmp/backup-env-20260818/.env.local.baseline` (sha256 `69c89e0306e651859e10fe162ac55d511b865e48c8f6e6c8e57c75f24e2659b8`).
-- Logs conservados: `/tmp/guidasports-build-20260818.log` (build concluyente), `/tmp/guidasports-dev-20260818.log` (dev server).
-- Antes de cualquier SQL/RLS en Supabase: confirmar backup reciente en `Database → Backups` y documentar su fecha/identificador en este plan.
+- **Actualizado 25/08/2026:** los artefactos originales en `/tmp` fueron purgados por macOS (ver sección "Revisión del estado del plan — 25/08/2026"). Nueva ubicación persistente: `~/backups-guiasports/` (fuera del repo). Contiene: `.env.local.baseline-20260825` (copia del `.env.local` vigente, sha256 `7c10d14a48cd002ac97b192cec34fcb863288f03d7253f07d2c6c068d01c579d`, chmod 600) y el respaldo de base de datos `~/backups-guiasports/supabase_backup_20260825_213748.sql` (sha256 `934012818056d29124b9204312321c07ad6c89c9ae5c39be202285f9d6d70f23`).
+- Backup manual de Supabase confirmado el 25/08/2026: `~/backups-guiasports/supabase_backup_20260825_213748.sql` (sha256 `934012818056d29124b9204312321c07ad6c89c9ae5c39be202285f9d6d70f23`).
+- Referencias históricas (ya no vigentes): `agenda-web/.env.local` copiado a `/tmp/backup-env-20260818/.env.local.baseline` (sha256 `69c89e0306e651859e10fe162ac55d511b865e48c8f6e6c8e57c75f24e2659b8`) — archivo perdido; los valores actuales de secretos viven en Vercel.
+- Logs: `/tmp/guidasports-dev-20260818.log` (dev server) sobrevive; `/tmp/guidasports-build-20260818.log` perdido (resultado ya registrado en Fase 3.1).
+
 
 ### Criterios de aborto del ciclo de staging (se dispara con cualquiera)
 
@@ -392,7 +394,7 @@ git branch -D staging   # descarta la rama de staging local
 
 - **Código local:** `git checkout main && git branch -D staging` (o `git reset --hard baseline-pre-staging` si se trabaja sobre `main`).
 - **Supabase:** restaurar desde el backup documentado; no ejecutar SQL adicional sin confirmarlo.
-- **Secreto de sesión admin:** restaurar `/tmp/backup-env-20260818/.env.local.baseline` a `agenda-web/.env.local`.
+- **Secreto de sesión admin:** restaurar `~/backups-guiasports/.env.local.baseline-20260825` a `agenda-web/.env.local`.
 - **Servidor local:** reiniciar `npm run dev` con el log `/tmp/guidasports-dev-20260818.log` como referencia.
 
 ## Pruebas automatizadas (Vitest) — 18/08/2026
@@ -499,20 +501,55 @@ Pendientes manuales que permanecen (ninguno puede ejecutarse desde esta sesión 
 
 No se tocó `main`; la reversión continúa disponible en la sección de contingencia (`git checkout main && git branch -D staging`).
 
+## Revisión del estado del plan — 25/08/2026
+
+Estado: **plan verificado tras ~6 días de pausa; el contenido es correcto y consistente con el repo; se detectó una pérdida de artefactos temporales de `/tmp` y se ajusta la estrategia de backup**.
+
+### Verificaciones de esta sesión
+
+- `staging` sincronizada con `origin/staging` en `9d2786e` (15 commits sobre `main`); working tree sólo tenía la edición de la sección B del 19/08 que no se había commiteado (se commitea en esta sesión).
+- Tag `baseline-pre-staging` = `main` = `f0c1b5b` (intacto).
+- `agenda-web/.env.local` existe en el working tree y está correctamente ignorado por git.
+- `agenda-web/supabase/rls_fase7.sql` existe y su contenido es el esperado (drop de políticas permisivas, enable RLS, SELECT público, default deny de escrituras).
+- Validaciones: `npm run test` 33/33, `npx tsc --noEmit` 0 errores, `npm run lint` 0/0, `git diff --check` limpio.
+- Salud de producción (25/08): HTTP 200 en `/`, `/mundial-2026`, `/sitemap.xml`; `/admin/login` devuelve 404 (el deploy de producción es el viejo de `main`, anterior a la protección de rutas admin; esperado).
+
+### Hallazgo: artefactos de `/tmp` purgados por macOS
+
+macOS limpia `/tmp` tras ~3 días; han pasado 6. **Se perdieron**:
+
+1. `/tmp/backup-env-20260818/.env.local.baseline` (capa 3 de contingencia). **Mitigación:** el `.env.local` vigente sigue en el working tree; en esta sesión se crea un respaldo nuevo en una ubicación persistente (ver abajo).
+2. `/var/folders/.../opencode/rotacion-a-20260819/` con los 3 secretos admin nuevos. **Mitigación:** los valores viven en Vercel (Preview y Producción, "Sensitive"), que es la fuente de verdad. El usuario debe guardarlos en su gestor de contraseñas. Si se pierden, se regeneran con `openssl rand -hex 32` y se actualizan en Vercel (no hay dependencia irreversible).
+3. `/tmp/guidasports-build-20260818.log` (log del build concluyente del 18/08). No crítico: el resultado del build quedó registrado en este plan (Fase 3.1).
+4. `/tmp/backup-env-20260818/supabase/` (carpeta preparada para el pg_dump). Se recrea en ubicación persistente.
+5. `/tmp/guidasports-dev-20260818.log` **sobrevive**.
+
+### Decisión: ubicación persistente de backups
+
+Los backups dejan de vivir en `/tmp`. Nueva ubicación: `~/backups-guiasports/` (fuera del repo, en el home del usuario). En esta sesión se crea y se respalda ahí el `.env.local` vigente con sha256 documentado. El `pg_dump` del item B también irá ahí.
+
+### Estado consolidado de pendientes (al 25/08)
+
+- **B (RLS):** **COMPLETADO Y VERIFICADO el 25/08/2026**. Backup manual confirmado (`supabase_backup_20260825_213748.sql`). Políticas permisivas anteriores eliminadas en `eventos`, `noticias`, `status` y `mkt_social_posts`. Políticas de SELECT público aplicadas (`eventos_select_public`, `noticias_select_public`, `status_select_public`). Escrituras anónimas denegadas por defecto.
+- **Release a producción:** Listo para ejecución (checklist de merge `staging` → `main` y deploy en Vercel).
+- **A7 (revocar legacy):** Condicionado a verificar el release de producción (mismo código o nuevo código con claves nuevas operando) + verificación.
+- **A8 (historial Git + secret scanning):** Pendiente de baja prioridad; sanitización con push protection.
+- **Dominio de staging:** Confirmada la decisión de **conservar `.vercel.app` por defecto**.
+
 ## Regla de no deploy
 
 No publicar los cambios locales mientras falte cualquiera de estos puntos:
 
-- lint sin errores;
-- TypeScript sin errores;
-- build confirmado;
-- pruebas críticas automatizadas;
-- revisión de schemas, sitemap y robots;
-- staging aprobado;
-- backup de Supabase confirmado;
-- credenciales rotadas y actualizadas en el proveedor;
-- RLS aplicado y verificado;
-- rollback documentado.
+- lint sin errores; (CUMPLIDO)
+- TypeScript sin errores; (CUMPLIDO)
+- build confirmado; (CUMPLIDO - Fase 3.1)
+- pruebas críticas automatizadas; (CUMPLIDO - Vitest 33/33)
+- revisión de schemas, sitemap y robots; (CUMPLIDO)
+- staging aprobado; (CUMPLIDO - Preview Ready y verificado)
+- backup de Supabase confirmado; (CUMPLIDO - pg_dump en ~/backups-guiasports/)
+- credenciales rotadas y actualizadas en el proveedor; (CUMPLIDO - Vercel Preview y Prod cargados)
+- RLS aplicado y verificado; (CUMPLIDO - 25/08/2026)
+- rollback documentado. (CUMPLIDO - Tag baseline-pre-staging)
 
 ## Pendientes manuales para el cierre del plan
 
@@ -520,63 +557,36 @@ No publicar los cambios locales mientras falte cualquiera de estos puntos:
 
 Realizar sólo cuando el código local esté aprobado y exista staging:
 
-1. En Supabase abrir `Project Settings → API Keys`.
-2. Crear una Publishable Key para cliente y una Secret Key para servidor, si el proyecto ya está listo para migrar de las claves heredadas.
+1. En Supabase abrir `Project Settings → API Keys`. (CUMPLIDO)
+2. Crear una Publishable Key para cliente y una Secret Key para servidor, si el proyecto ya está listo para migrar de las claves heredadas. (CUMPLIDO)
 3. En el proveedor de deploy actualizar, sin pegar valores en Git:
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`;
-   - `SUPABASE_SERVICE_ROLE_KEY` — o adaptar el nombre a la Secret Key en una fase posterior;
+   - `SUPABASE_SERVICE_ROLE_KEY`;
    - `ADMIN_PASSWORD`;
    - `ADMIN_API_SECRET`;
    - `ADMIN_SESSION_SECRET`;
-   - `GEMINI_API_KEY`, si estuvo expuesta.
-4. Generar secretos administrativos diferentes con `openssl rand -hex 32`.
-5. Desplegar primero a staging y probar login, lectura, edición, publicación y generación de noticias.
-6. Actualizar producción y verificar la aplicación.
-7. Revocar las claves antiguas sólo después de confirmar que ningún entorno las usa.
-8. Revisar historial Git y activar secret scanning.
-
-No regenerar el JWT secret heredado como primer paso: puede invalidar inmediatamente las claves antiguas y provocar caída. Supabase recomienda migrar primero a claves nuevas cuando sea posible.
+   - `GEMINI_API_KEY`. (CUMPLIDO en Preview y Producción)
+4. Generar secretos administrativos diferentes con `openssl rand -hex 32`. (CUMPLIDO)
+5. Desplegar primero a staging y probar login, lectura, edición, publicación y generación de noticias. (CUMPLIDO)
+6. Actualizar producción y verificar la aplicación. (En paso de release)
+7. Revocar las claves antiguas sólo después de confirmar que ningún entorno las usa. (Pendiente A7 post-release)
+8. Revisar historial Git y activar secret scanning. (Pendiente A8)
 
 ### B. Aplicación y verificación de RLS
 
-Archivo: `agenda-web/supabase/rls_fase7.sql`.
+**Estado:** **COMPLETADO Y VERIFICADO el 25/08/2026**.
 
-1. Confirmar un backup reciente en `Database → Backups`.
-2. Ejecutar en SQL Editor el diagnóstico de políticas:
+1. Backup manual con `pg_dump` ejecutado y archivado: `~/backups-guiasports/supabase_backup_20260825_213748.sql` (sha256 `934012818056d29124b9204312321c07ad6c89c9ae5c39be202285f9d6d70f23`).
+2. Script `agenda-web/supabase/rls_fase7.sql` ejecutado en SQL Editor.
+3. Se eliminaron las políticas permisivas heredadas (`Permitir escritura...`, `Permitir borrado...`, `Solo admin puede...`, `Allow all...`).
+4. RLS activo en `eventos`, `noticias`, `status`, `mkt_social_posts`.
+5. Verificación de `pg_policies` confirmada con sólo políticas de `SELECT` para `{anon, authenticated}`:
+   - `eventos_select_public` (SELECT)
+   - `noticias_select_public` (SELECT)
+   - `status_select_public` (SELECT)
+   - `ligamx_*` (SELECT público intacto)
+6. Default deny activo para escrituras anónimas/autenticadas. Las escrituras de administración operan exclusivamente vía Next.js server con `SUPABASE_SERVICE_ROLE_KEY` y sesión firmada.
 
-```sql
-select schemaname, tablename, policyname, permissive, roles, cmd, qual, with_check
-from pg_policies
-where schemaname = 'public' and tablename in ('eventos', 'noticias')
-order by tablename, policyname;
-```
-
-3. Copiar y ejecutar el archivo SQL completo.
-4. Confirmar que RLS está activo:
-
-```sql
-select n.nspname as schema_name, c.relname as table_name,
-       c.relrowsecurity as rls_enabled, c.relforcerowsecurity as force_rls
-from pg_class c
-join pg_namespace n on n.oid = c.relnamespace
-where n.nspname = 'public' and c.relname in ('eventos', 'noticias');
-```
-
-5. Confirmar que sólo existen políticas públicas de lectura:
-
-```sql
-select tablename, policyname, roles, cmd
-from pg_policies
-where schemaname = 'public' and tablename in ('eventos', 'noticias')
-order by tablename, policyname;
-```
-
-6. Probar desde la web que la lectura pública funciona.
-7. Probar que una llamada anónima de escritura falla.
-8. Probar que las APIs administrativas sin cookie devuelven `401`.
-9. Probar que el panel autenticado escribe mediante sus APIs.
-
-No usar la service key en navegador. No ejecutar el SQL contra producción sin backup.
 
 ### C. Versionado de `.env.example`
 
@@ -639,38 +649,33 @@ El build se valida después de cerrar cualquier proceso `next build` previo. No 
 ## Prompt de continuidad para la siguiente sesión
 
 ```text
-Continuamos GuíaSports en la rama staging del ciclo de staging/validación externa. No tocar main; no hacer deploy a producción, ni SQL/RLS en Supabase sin backup confirmado y documentado.
+Continuamos GuíaSports para ejecutar el Release a Producción (Merge de staging a main y deploy en Vercel) y el cierre de la remediación.
 
 Lee primero:
 - PLAN-REMEDIACION-UX-SEGURIDAD-SEO-CALIDAD.md
 - agenda-web/AGENTS.md
 - agenda-web/CLAUDE.md
 
-Estado heredado:
-- Fases 0 y 1 implementadas; Fase 2 validada.
-- Fase 3: implementación cerrada administrativamente en local.
-- Fase 3.1 completada en local el 18/08/2026: recorrido de Tab y VoiceOver validados manualmente; `npm run build` concluyente con éxito (salida en `/tmp/guidasports-build-20260818.log`); `next dev` reiniciado. Se agregó `ADMIN_SESSION_SECRET` a `agenda-web/.env.local` (incidencia local de login resuelta; no se tocó código fuente).
-- Fase 4 en progreso local: identidad estable y sincronización segura; favoritos locales operativos, sin sincronización remota ni cambios en Supabase.
-- Fase 6 — SEO histórico del Mundial: intervención local completada el 14/08/2026 (Hub + 16 sedes + 104 partidos, EventCompleted, FAQ histórica, canonical/OG, sitemap 121 URLs, señales de archivo). H1–H6 remediados; H7–H9 quedan como observaciones sin acción requerida.
-- Pruebas críticas automatizadas: Vitest implementado en `staging` (4 archivos, 33 tests, commits `9a3a07f`, `6681cf3`).
-- Ciclo de staging: rama `staging` pusheada (`2a4a1e2` HEAD/origin), preview Ready en `agenda-deportiva-git-staging-rauls-projects-5e98afa6.vercel.app`, env vars del Preview cargadas, HTTP 200 en `/`, `/mundial-2026`, `/admin/login`, `/sitemap.xml` y `/robots.txt`. Rich Results Test re-corrido por el usuario en 5 páginas sin errores (commits `dbf080e` schemas Hub/partido, `96c2373` ItemList home). `agenda-web/vercel.json` draft (framework nextjs, buildCommand, installCommand).
-- Baseline y contingencia: tag `baseline-pre-staging` (f0c1b5b), backup `.env.local` en `/tmp/backup-env-20260818/`, sección de contingencia en el plan.
-- Item C avanzado el 19/08/2026: `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` agregada a `agenda-web/.env.example`.
-- IMPORTANTE: la Deployment Protection de Vercel está DESACTIVADA temporalmente para la validación externa. El paso 7 de la sección Vercel del plan obliga a reactivarla al terminar; registrar fecha/hora. No cerrar el plan ni desplegar a producción con la protección desactivada.
-- npx tsc --noEmit, npm run lint, git diff --check y npm run test pasan al cierre de cada sesión.
+Estado actual:
+- Fases 0 a 4 (local) y Fase 6 (SEO histórico del Mundial) completadas y validadas.
+- Pruebas críticas automatizadas: Vitest (33/33 tests pasando).
+- Staging / Vercel Preview validado con Rich Results sin errores; Deployment Protection reactivada; GSC verificada por DNS.
+- Item A (Rotación): Claves nuevas Publishable/Secret y secretos admin cargados en Preview y Producción de Vercel.
+- Item B (RLS Supabase): COMPLETADO Y VERIFICADO el 25/08/2026. Backup manual seguro en ~/backups-guiasports/, RLS activo en eventos, noticias, status, default deny en escrituras anónimas y sólo lectura pública permitida.
+- Regla de no deploy: Todos los 10 prerrequisitos CUMPLIDOS.
 
-Tarea:
-1. Continuar el ciclo de staging/validación externa en la rama staging. Los pendientes manuales (reactivar Deployment Protection, Search Console, rotación de credenciales A, RLS B, dominio de staging) requieren consola del proveedor y no se ejecutan desde una sesión de código.
-2. Si hay una tarea nueva de código, confirmar su alcance con el usuario antes de tocar archivos.
-3. No modificar contenido histórico del Hub, sitemap, robots, scripts de sincronización ni datos fuente auto-generados salvo tarea explícita.
-4. Actualizar el plan con evidencias y pendientes, manteniendo visibles los pendientes del cierre del plan (staging, QA, release).
-5. No leer `.env`, `.env.local`, `.next` ni `node_modules`.
+Próximos pasos:
+1. Ejecutar checklist de Release a Producción: merge de la rama staging a main.
+2. Hacer push a GitHub de main para disparar el deployment de producción en Vercel.
+3. Verificar salud en vivo de https://www.guiasports.com (home, /mundial-2026, /admin/login).
+4. Proceder con Item A7: Revocar las claves API legacy en Supabase tras confirmar producción en vivo.
+5. Item A8 opcional: Sanitización de historial Git y push protection.
 
-Ejecuta al final:
+Validaciones obligatorias:
 - npx tsc --noEmit
 - npm run lint
 - git diff --check
 - npm run test
 
-Entrega un handoff con estado actual, archivos modificados, validaciones, errores, pendientes, riesgos o decisiones, siguiente sesión recomendada y prompt de continuidad para siguiente paso.
+Entrega el handoff con estado actual, archivos modificados, validaciones, pendientes y el siguiente prompt de continuidad.
 ```

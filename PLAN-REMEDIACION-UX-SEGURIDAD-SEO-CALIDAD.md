@@ -662,6 +662,40 @@ Criterios de aceptación:
 
 Esta actividad debe ejecutarse en una sesión exclusiva. No mezclarla con cambios visuales, SEO ni refactorizaciones.
 
+### Preparación local de A8 — respaldo, auditoría y recuperación (26/08/2026)
+
+Estado: **preparación completada; remediación histórica pendiente de autorización**.
+
+Respaldo creado antes de cualquier operación de A8:
+
+- Commit de referencia: `e52e123e4d51df108ee7f4a79899043258c15202` (`docs: cerrar QA de hidratacion React`).
+- Bundle completo de todas las referencias: `/private/tmp/guidasports-a8-backup.ij9lI9/guidasports-all-refs.bundle` (30 MB).
+- Archivo del árbol de trabajo: `/private/tmp/guidasports-a8-backup.ij9lI9/guidasports-working-tree.tar.gz` (116 MB); excluye únicamente `agenda-web/node_modules` y `agenda-web/.next`, que son regenerables.
+- `git bundle verify` confirmó que el bundle contiene la historia completa. SHA-256: `1189653aac411a607467b9c533fe34172dc766cc860d3a1609c8d898b7eb290c` (bundle) y `b68596d048a71988f4fd73f4c4deb1646a335637c5d7fd263891a469407f3c56` (árbol).
+
+Auditoría histórica sin exposición de valores:
+
+- Se escanearon 757 commits alcanzables, 20 commits inalcanzables y 126 blobs inalcanzables con patrones redactados para JWT, claves privadas, tokens conocidos, URLs con credenciales y asignaciones de secretos.
+- No hubo coincidencias de alta confianza en commits alcanzables ni inalcanzables.
+- Cuatro blobs inalcanzables activaron patrones potencialmente sensibles: uno con forma JWT y asignaciones de secretos, y tres con prefijos de token. No tienen una referencia activa identificada; sus valores no se leyeron ni se muestran.
+- La revisión de nombres de archivos sólo encontró `agenda-web/.env.example` bajo control de versiones; los archivos `.env.local` están ignorados. El contenido de `.env.example` usa placeholders.
+- `git fsck --full --no-reflogs --unreachable` reportó objetos inalcanzables. No se ejecutará limpieza automática ni se eliminarán objetos sin autorización expresa y un respaldo durable adicional.
+
+Procedimiento de recuperación documentado:
+
+1. Verificar los dos SHA-256 antes de usar el respaldo.
+2. Restaurar la historia en un directorio nuevo desde el bundle, sin sobrescribir el repositorio original.
+3. Extraer el árbol de trabajo en un directorio separado y conservar los permisos locales de los secretos fuera de Git.
+4. Comparar el commit restaurado con `e52e123e4d51df108ee7f4a79899043258c15202` y validar la salud local antes de cualquier operación remota.
+
+Preparación de GitHub Secret Scanning y Push Protection:
+
+- No se activaron cambios remotos en esta sesión.
+- La activación pendiente debe hacerse en GitHub, en **Settings → Code security and analysis**, habilitando **Secret scanning** y **Push protection**; después debe ejecutarse un escaneo histórico y registrar su resultado.
+- La revocación de credenciales antiguas, limpieza de objetos/historial y cualquier `force push` requieren una sesión separada, respaldo durable y autorización explícita.
+
+Riesgo pendiente: los cuatro blobs inalcanzables requieren clasificación controlada antes de poder declarar A8 cerrado. No se debe interpretar el resultado limpio de las referencias activas como certificación de ausencia total en el objeto Git local.
+
 ### Prioridad P1 — Canonical del índice de noticias
 
 Archivo objetivo: `agenda-web/src/app/noticias/page.tsx`.

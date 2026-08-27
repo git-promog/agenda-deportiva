@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 import { Radio, Tv, Clock, CalendarDays, ChevronLeft } from 'lucide-react';
 import Header from '@/components/Header';
+import { deduplicateEventos } from '@/lib/eventUrls';
 import { getTodayMexicoString, isEventLive } from '@/lib/mexicoTime';
 import type { Evento } from '@/types';
 
@@ -44,7 +45,7 @@ export default async function EnVivo() {
     .order('fecha', { ascending: true })
     .order('hora', { ascending: true });
 
-  const eventosAgenda = (eventos ?? []) as Evento[];
+  const eventosAgenda = deduplicateEventos((eventos ?? []) as Evento[]);
   const eventosEnVivo = eventosAgenda.filter(e => isEventLive(e.fecha, e.hora));
 
   const eventosProximos = eventosAgenda

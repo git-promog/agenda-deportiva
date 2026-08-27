@@ -3,6 +3,7 @@ import Link from 'next/link';
 import NextImage from 'next/image';
 import { Metadata } from 'next';
 import { Calendar } from 'lucide-react';
+import { deduplicateEventos } from '@/lib/eventUrls';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import EventListWithModal from '@/components/EventListWithModal';
 import { getTodayMexicoString } from '@/lib/mexicoTime';
@@ -55,7 +56,7 @@ export default async function FutbolHub() {
     supabase.from('noticias').select('*').order('created_at', { ascending: false }).limit(6),
   ]);
 
-  const proximos: Evento[] = (eventos || []).filter((evento: Evento) => evento.fecha >= hoyStr);
+  const proximos: Evento[] = deduplicateEventos((eventos || []).filter((evento: Evento) => evento.fecha >= hoyStr));
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",

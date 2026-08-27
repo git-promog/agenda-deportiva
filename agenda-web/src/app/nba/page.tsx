@@ -5,6 +5,7 @@ import { Metadata } from 'next';
 import { Calendar, Tv, Clock } from 'lucide-react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { getTodayMexicoString, isEventLive } from '@/lib/mexicoTime';
+import { deduplicateEventos } from '@/lib/eventUrls';
 import type { Evento, Noticia } from '@/types';
 
 export const revalidate = 60;
@@ -46,7 +47,7 @@ export default async function NbaHub() {
     supabase.from('noticias').select('*').order('created_at', { ascending: false }).limit(6),
   ]);
 
-  const eventosBasket = (eventos ?? []) as Evento[];
+  const eventosBasket = deduplicateEventos((eventos ?? []) as Evento[]);
   const noticiasNBA = (noticias ?? []) as HubNoticia[];
   const enVivo = eventosBasket.filter(e => isEventLive(e.fecha, e.hora));
   const proximos = eventosBasket.filter(e => e.fecha >= hoyStr);

@@ -39,3 +39,23 @@ export function buildEventPath(evento: EventUrlSource) {
 export function buildEventUrl(evento: EventUrlSource) {
   return `${SITE_URL}${buildEventPath(evento)}`;
 }
+
+export function deduplicateEventos<T extends { evento?: string | null; fecha?: string | null; competicion?: string | null; ajuste_manual?: boolean | null }>(items: T[]): T[] {
+  const map = new Map<string, T>();
+  for (const item of items) {
+    const e = (item.evento || '').trim().toLowerCase();
+    const f = (item.fecha || '').trim();
+    const c = (item.competicion || '').trim().toLowerCase();
+    const key = `${e}||${f}||${c}`;
+    const fallbackKey = `${e}||${f}`;
+
+    if (!map.has(key) && !map.has(fallbackKey)) {
+      map.set(key, item);
+      map.set(fallbackKey, item);
+    } else if (item.ajuste_manual) {
+      map.set(key, item);
+      map.set(fallbackKey, item);
+    }
+  }
+  return Array.from(new Set(map.values()));
+}

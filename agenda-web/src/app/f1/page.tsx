@@ -5,19 +5,20 @@ import { Metadata } from 'next';
 import { Calendar, Tv, Clock } from 'lucide-react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { getTodayMexicoString, isEventLive } from '@/lib/mexicoTime';
+import { deduplicateEventos } from '@/lib/eventUrls';
 import type { Evento, Noticia } from '@/types';
 
-export const revalidate = 300;
+export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Fórmula 1 en Vivo | Dónde Ver Carreras Hoy en México | GuíaSports",
-  description: "Horarios y canales de TV para ver Fórmula 1 en vivo en México. Dónde ver carreras hoy.",
+  title: "Fórmula 1 en Vivo | Horarios y Dónde Ver GP Hoy en México | GuíaSports",
+  description: "Dónde ver la F1 en vivo hoy en México. Horarios, carreras, prácticas y clasificaciones de Fórmula 1.",
   alternates: {
     canonical: "https://www.guiasports.com/f1",
   },
   openGraph: {
-    title: "Fórmula 1 en Vivo | Dónde Ver Carreras Hoy en México",
-    description: "Horarios y canales de TV para ver Fórmula 1 en vivo en México.",
+    title: "Fórmula 1 en Vivo | GuíaSports México",
+    description: "Horarios y canales para ver la F1 en vivo en México.",
     type: "website",
     locale: "es_MX",
     url: "https://www.guiasports.com/f1",
@@ -46,7 +47,7 @@ export default async function F1Hub() {
     supabase.from('noticias').select('*').order('created_at', { ascending: false }).limit(6),
   ]);
 
-  const eventosF1 = (eventos ?? []) as Evento[];
+  const eventosF1 = deduplicateEventos((eventos ?? []) as Evento[]);
   const noticiasF1 = (noticias ?? []) as HubNoticia[];
   const enVivo = eventosF1.filter(e => isEventLive(e.fecha, e.hora));
   const proximos = eventosF1.filter(e => e.fecha >= hoyStr);

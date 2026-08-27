@@ -5,19 +5,20 @@ import { Metadata } from 'next';
 import { Calendar, Tv, Clock } from 'lucide-react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { getTodayMexicoString, isEventLive } from '@/lib/mexicoTime';
+import { deduplicateEventos } from '@/lib/eventUrls';
 import type { Evento, Noticia } from '@/types';
 
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "MLB en Vivo | Dónde Ver Béisbol Hoy en México | GuíaSports",
-  description: "Dónde ver la MLB en vivo hoy en México. Horarios, canales de TV y streaming para todos los partidos de béisbol.",
+  title: "MLB en Vivo | Horarios y Dónde Ver Béisbol Hoy en México | GuíaSports",
+  description: "Dónde ver la MLB en vivo hoy en México. Horarios, canales de TV y streaming de Grandes Ligas.",
   alternates: {
     canonical: "https://www.guiasports.com/mlb",
   },
   openGraph: {
     title: "MLB en Vivo | GuíaSports México",
-    description: "Horarios y canales para ver béisbol de la MLB en vivo en México.",
+    description: "Horarios y canales para ver la MLB en vivo en México.",
     type: "website",
     locale: "es_MX",
     url: "https://www.guiasports.com/mlb",
@@ -46,7 +47,7 @@ export default async function MlbHub() {
     supabase.from('noticias').select('*').order('created_at', { ascending: false }).limit(6),
   ]);
 
-  const eventosBeisbol = (eventos ?? []) as Evento[];
+  const eventosBeisbol = deduplicateEventos((eventos ?? []) as Evento[]);
   const noticiasMLB = (noticias ?? []) as HubNoticia[];
   const enVivo = eventosBeisbol.filter(e => isEventLive(e.fecha, e.hora));
   const proximos = eventosBeisbol.filter(e => e.fecha >= hoyStr);

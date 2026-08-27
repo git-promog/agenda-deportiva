@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import HomeClient from '@/components/HomeClient';
 import { Metadata } from 'next';
 import { getTodayMexicoString, getDateRangeMexico } from '@/lib/mexicoTime';
-import { buildEventUrl } from '@/lib/eventUrls';
+import { buildEventUrl, deduplicateEventos } from '@/lib/eventUrls';
 
 // ISR every 5 minutes (300 seconds) to balance freshness with performance
 export const revalidate = 300; 
@@ -74,7 +74,7 @@ export default async function Home() {
       .maybeSingle();
 
     if (evData) {
-      eventos = evData.map((e) => ({
+      const mapped = evData.map((e) => ({
         ...e,
         id: String(e.id),
         fecha: e.fecha || "",
@@ -84,6 +84,7 @@ export default async function Home() {
         deporte: e.deporte || "Otros",
         canales: e.canales || "Por confirmar",
       }));
+      eventos = deduplicateEventos(mapped);
     }
     if (notData) noticias = notData;
     if (stData) ultimaAct = stData.valor;

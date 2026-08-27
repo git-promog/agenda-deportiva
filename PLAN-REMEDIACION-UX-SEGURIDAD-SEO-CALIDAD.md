@@ -11,14 +11,14 @@ Este documento conserva el estado operativo del plan y evita depender del histor
 - Fase 4 — identidad estable y sincronización segura: bloque local completado; la sincronización remota de favoritos queda fuera de este ciclo por decisión documentada.
 - `npx tsc --noEmit`: 0 errores.
 - `npm run lint`: 0 errores y 0 advertencias.
-- `npm run test`: 33/33 pruebas pasando.
+- `npm run test`: 38/38 pruebas pasando.
 - `npm run build`: completado con éxito sobre el estado actual de `main`, generando 173 páginas.
 - `git diff --check`: limpio.
 - Fase 6 — SEO y contenido histórico del Mundial: completada y validada en local y staging.
 - Staging/Vercel Preview, Rich Results, Deployment Protection y Search Console: verificados.
 - RLS y backup de Supabase: completados y verificados el 25/08/2026.
 - Producción: `main` está sincronizada con `origin/main`; home, rutas SEO, login admin, sitemap, robots, headers y APIs protegidas fueron verificados el 26/08/2026.
-- Pendientes reales: script `agenda-web/test_news.js`, cobertura de relevancia de búsqueda, seguimiento del error de hidratación no reproducible y A8 de seguridad histórica.
+- Pendientes reales: seguimiento del error de hidratación no reproducible y A8 de seguridad histórica.
 
 ## Orden de fases
 
@@ -710,6 +710,15 @@ Criterios de aceptación:
 - Las operaciones administrativas pasan por APIs protegidas.
 - Las pruebas automatizadas continúan pasando.
 
+### Resultado — Scripts de prueba sin escrituras accidentales (26/08/2026)
+
+Estado: **completado localmente**.
+
+- `agenda-web/test_news.js` dejó de insertar una noticia de prueba y ahora ejecuta únicamente un `SELECT` de lectura limitada; además falla de forma explícita si faltan las variables de entorno necesarias.
+- La revisión de scripts confirmó que `agenda-web/test_supabase.py` realiza sólo una lectura `GET` y que `agenda-web/test_gemini.py` llama a la API local de generación, sin escritura directa a Supabase.
+- Los scripts operativos de sincronización conservan sus operaciones de escritura y no se modificaron por quedar fuera del alcance de este bloque.
+- `node --check test_news.js` pasó y no quedan llamadas `.insert()`, `.update()` ni `.delete()` en ese script.
+
 ### Prioridad P2 — Relevancia y regresión de búsqueda
 
 Archivo objetivo: `agenda-web/src/lib/eventSearch.ts`.
@@ -730,6 +739,15 @@ Criterios de aceptación:
 - TV abierta devuelve eventos con canales abiertos.
 - América coloca al Club América primero sin llenar la lista de resultados irrelevantes.
 - Los criterios de ranking quedan documentados y probados.
+
+### Resultado — Relevancia y regresión de búsqueda (26/08/2026)
+
+Estado: **completado localmente**.
+
+- Se añadió `agenda-web/src/lib/eventSearch.test.ts` con regresiones para `Apple TV`, `TV abierta`, `América`, `Chivas` y `Liga MX`.
+- Se corrigió la coincidencia accidental de `america` dentro de la palabra `american`, evitando que “Central American Cup” aparezca como resultado irrelevante.
+- La búsqueda de `América` conserva la prioridad del Club América y las consultas de canales, alias y competición mantienen su comportamiento esperado.
+- La cobertura pasó de 33 a 38 pruebas automatizadas.
 
 ### Prioridad P2 — Incidencia de hidratación React
 
@@ -810,7 +828,7 @@ La fase se considera cerrada cuando el canonical esté corregido, los scripts de
 ## Prompt de continuidad para la siguiente sesión
 
 ```text
-Continuamos GuíaSports con la Fase de cierre pre-diseño visual. El objetivo de esta sesión es completar únicamente el bloque de scripts de prueba y regresión de búsqueda.
+Continuamos GuíaSports con la Fase de cierre pre-diseño visual. El objetivo de esta sesión es completar únicamente el bloque de QA de hidratación React.
 
 Lee primero:
 - PLAN-REMEDIACION-UX-SEGURIDAD-SEO-CALIDAD.md
@@ -821,23 +839,24 @@ Estado actual:
 - `main` está sincronizada con `origin/main` y producción está operativa.
 - Fases 0–4, 3.1 y 6 están completadas y documentadas.
 - Staging/Vercel Preview, Rich Results, Deployment Protection, Search Console, backup y RLS fueron verificados.
-- Validaciones base actuales: Vitest 33/33, TypeScript 0 errores, ESLint 0/0, build exitoso y `git diff --check` limpio.
+- Validaciones base actuales: Vitest 38/38, TypeScript 0 errores, ESLint 0/0, build exitoso y `git diff --check` limpio.
 - Canonical de `/noticias` y tratamiento de `/noticias?pagina=N`: completados y documentados localmente; no se hizo deploy.
-- Pendientes generales: script `agenda-web/test_news.js`, pruebas de búsqueda, incidencia React no reproducible y A8 de seguridad histórica.
+- Scripts de prueba y regresiones de búsqueda: completados y documentados localmente; no se hizo deploy.
+- Pendientes generales: incidencia React no reproducible y A8 de seguridad histórica.
 
 Alcance obligatorio de esta sesión:
-1. Revisar `agenda-web/test_news.js` y los scripts auxiliares relacionados.
-2. Eliminar cualquier escritura accidental contra Supabase o sustituirla por una prueba de sólo lectura/mocks.
-3. Revisar `agenda-web/src/lib/eventSearch.ts` y sus pruebas.
-4. Añadir regresiones para `Apple TV`, `TV abierta`, `América`, `Chivas` y `Liga MX`, cuidando la coincidencia accidental de `América` en `Central American Cup`.
-5. Ejecutar las validaciones locales.
-6. Si el cambio es correcto, dejarlo en un commit separado y reportar el hash.
+1. Repetir cargas limpias de home, noticias, Mundial y detalle de evento.
+2. Probar navegación rápida entre rutas críticas.
+3. Revisar la consola del navegador después de cada carga.
+4. Si el error React reaparece, aislar el componente responsable y corregir sólo la diferencia servidor/cliente reproducible.
+5. Si no reaparece, documentarlo como incidencia no reproducible y dejar vigilancia para el rediseño.
+6. Ejecutar las validaciones locales y, si hay cambios, dejarlos en un commit separado.
 
 Restricciones:
 - No tocar Supabase, scripts de sincronización, credenciales, RLS ni el historial Git.
 - No hacer deploy sin autorización explícita.
 - No iniciar todavía el rediseño visual.
-- Si detectas una operación de escritura cuya intención no sea inequívoca, detén esa parte y reporta la alternativa segura.
+- Si el error no es reproducible, no hagas refactorizaciones preventivas; documenta la evidencia y conserva el alcance.
 
 Validaciones obligatorias:
 - npm run test

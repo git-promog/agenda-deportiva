@@ -36,6 +36,10 @@ const ALIAS_MAP: Record<string, string[]> = {
 export function searchEvents(eventos: Evento[], query: string): Evento[] {
   const cleanQuery = normalizeSearchText(query);
   if (!cleanQuery) return eventos;
+  const isAmericaQuery = cleanQuery === 'america';
+
+  const isAmericanFalsePositive = (value: string) =>
+    isAmericaQuery && /\bamerican\b/.test(value);
 
   // Evaluar si la búsqueda pide "TV Abierta"
   const isTvAbiertaQuery =
@@ -89,7 +93,7 @@ export function searchEvents(eventos: Evento[], query: string): Evento[] {
     }
 
     // 4. Coincidencia en Titulo de Evento / Equipos
-    if (titleNorm.includes(cleanQuery)) {
+    if (titleNorm.includes(cleanQuery) && !isAmericanFalsePositive(titleNorm)) {
       if (titleNorm === cleanQuery) score += 100;
       else if (titleNorm.startsWith(cleanQuery)) score += 80;
       else score += 50;
@@ -100,7 +104,8 @@ export function searchEvents(eventos: Evento[], query: string): Evento[] {
     }
 
     // 5. Coincidencia en Competición / Liga
-    if (compNorm.includes(cleanQuery) || leagueNorm.includes(cleanQuery)) {
+    const competitionMatches = compNorm.includes(cleanQuery) || leagueNorm.includes(cleanQuery);
+    if (competitionMatches && !isAmericanFalsePositive(compNorm) && !isAmericanFalsePositive(leagueNorm)) {
       if (compNorm === cleanQuery) score += 70;
       else score += 40;
     }

@@ -18,7 +18,7 @@ Este documento conserva el estado operativo del plan y evita depender del histor
 - Staging/Vercel Preview, Rich Results, Deployment Protection y Search Console: verificados.
 - RLS y backup de Supabase: completados y verificados el 25/08/2026.
 - Producción: `main` está sincronizada con `origin/main`; home, rutas SEO, login admin, sitemap, robots, headers y APIs protegidas fueron verificados el 26/08/2026.
-- Pendientes reales: seguimiento del error de hidratación no reproducible y A8 de seguridad histórica.
+- Pendientes reales: A8 de seguridad histórica.
 
 ## Orden de fases
 
@@ -763,6 +763,16 @@ Criterios de aceptación:
 - No aparecen diferencias visibles entre HTML inicial y contenido hidratado.
 - El resultado de la prueba queda registrado en este plan.
 
+### Resultado — QA de hidratación React (26/08/2026)
+
+Estado: **completado localmente; incidencia no reproducible**.
+
+- Se realizaron cargas limpias de `/`, `/noticias`, `/mundial-2026` y `/evento/vietnam-vs-tailandia-asean-cup-2026-08-26--488017`.
+- Las cuatro rutas terminaron con contenido visible y no emitieron errores de consola ni mensajes de hidratación fallida.
+- La navegación rápida home → noticias → home → Mundial → detalle concluyó correctamente y el detalle mantuvo su encabezado esperado.
+- Se observaron únicamente advertencias no bloqueantes: recomendaciones de `next/image` sobre LCP/dimensiones, aviso de `scroll-behavior: smooth` durante transiciones y múltiples instancias de GoTrueClient en el mismo contexto. Ninguna corresponde a un error de hidratación reproducible.
+- No se modificó código fuente, Supabase ni configuración; no se hizo deploy. Las advertencias quedan para seguimiento durante el rediseño, sin refactor preventivo en esta fase.
+
 ### Validación local de cada bloque
 
 Ejecutar después de cada bloque de cambios:
@@ -793,9 +803,9 @@ Confirmar también headers de seguridad, rechazo 401 de las APIs administrativas
 
 ### Orden optimizado de sesiones
 
-1. **Documentación y canonical:** plan definitivo + índice de noticias.
-2. **Scripts y búsqueda:** script de prueba, motor de búsqueda y tests asociados.
-3. **QA de hidratación:** diagnóstico sin cambios iniciales; corregir sólo si se reproduce.
+1. **Documentación y canonical:** completado localmente.
+2. **Scripts y búsqueda:** completado localmente.
+3. **QA de hidratación:** completado localmente; incidencia no reproducible.
 4. **Seguridad A8:** sesión exclusiva para respaldo, historial Git, revocación y GitHub. Requiere autorización antes del `force push`.
 5. **Verificación final:** validaciones locales, smoke test de producción y actualización del estado del plan.
 
@@ -828,7 +838,7 @@ La fase se considera cerrada cuando el canonical esté corregido, los scripts de
 ## Prompt de continuidad para la siguiente sesión
 
 ```text
-Continuamos GuíaSports con la Fase de cierre pre-diseño visual. El objetivo de esta sesión es completar únicamente el bloque de QA de hidratación React.
+Continuamos GuíaSports con la Fase de cierre pre-diseño visual. El objetivo de esta sesión es completar únicamente el bloque A8 de seguridad histórica.
 
 Lee primero:
 - PLAN-REMEDIACION-UX-SEGURIDAD-SEO-CALIDAD.md
@@ -841,22 +851,21 @@ Estado actual:
 - Staging/Vercel Preview, Rich Results, Deployment Protection, Search Console, backup y RLS fueron verificados.
 - Validaciones base actuales: Vitest 38/38, TypeScript 0 errores, ESLint 0/0, build exitoso y `git diff --check` limpio.
 - Canonical de `/noticias` y tratamiento de `/noticias?pagina=N`: completados y documentados localmente; no se hizo deploy.
-- Scripts de prueba y regresiones de búsqueda: completados y documentados localmente; no se hizo deploy.
-- Pendientes generales: incidencia React no reproducible y A8 de seguridad histórica.
+- Scripts de prueba, regresiones de búsqueda y QA de hidratación: completados y documentados localmente; no se hizo deploy.
+- Pendientes generales: A8 de seguridad histórica.
 
 Alcance obligatorio de esta sesión:
-1. Repetir cargas limpias de home, noticias, Mundial y detalle de evento.
-2. Probar navegación rápida entre rutas críticas.
-3. Revisar la consola del navegador después de cada carga.
-4. Si el error React reaparece, aislar el componente responsable y corregir sólo la diferencia servidor/cliente reproducible.
-5. Si no reaparece, documentarlo como incidencia no reproducible y dejar vigilancia para el rediseño.
-6. Ejecutar las validaciones locales y, si hay cambios, dejarlos en un commit separado.
+1. Crear un respaldo completo del repositorio y registrar el commit actual.
+2. Identificar secretos, JWT y valores heredados del historial sin mostrar valores en reportes.
+3. Confirmar consumidores de claves antiguas y preparar su revocación sólo después de verificar el release.
+4. Documentar el procedimiento de recuperación y activar secret scanning/push protection.
+5. No limpiar historial ni hacer `force push` sin autorización explícita.
 
 Restricciones:
-- No tocar Supabase, scripts de sincronización, credenciales, RLS ni el historial Git.
+- No tocar Supabase, scripts de sincronización ni RLS.
 - No hacer deploy sin autorización explícita.
 - No iniciar todavía el rediseño visual.
-- Si el error no es reproducible, no hagas refactorizaciones preventivas; documenta la evidencia y conserva el alcance.
+- No revocar credenciales, limpiar historial ni hacer `force push` sin respaldo y autorización explícita.
 
 Validaciones obligatorias:
 - npm run test

@@ -665,7 +665,7 @@ Esta actividad debe ejecutarse en una sesión exclusiva. No mezclarla con cambio
 
 ### Preparación local de A8 — respaldo, auditoría y recuperación (26/08/2026)
 
-Estado: **preparación completada; remediación histórica pendiente de autorización**.
+Estado: **respaldo y clasificación controlada completados parcialmente; un artefacto potencialmente sensible requiere decisión externa**.
 
 Respaldo creado antes de cualquier operación de A8:
 
@@ -697,6 +697,35 @@ Preparación de GitHub Secret Scanning y Push Protection:
 
 Riesgo pendiente: los cuatro blobs inalcanzables requieren clasificación controlada antes de poder declarar A8 cerrado. No se debe interpretar el resultado limpio de las referencias activas como certificación de ausencia total en el objeto Git local.
 
+### Resultado de clasificación controlada de A8 (27/08/2026)
+
+La copia durable del respaldo quedó fuera del repositorio en `/Users/iturralde/pgweb/guidasports-a8-backup-20260827/`. Se verificaron los SHA-256 registrados y se probó la recuperación en un directorio temporal aislado:
+
+- El bundle original restauró el commit `e52e123e4d51df108ee7f4a79899043258c15202`.
+- El archivo del árbol se extrajo correctamente y conservó el almacén `.git` necesario para revisar objetos inalcanzables.
+- El bundle actualizado al `HEAD` `bd7c80460d6713cc2eaedf0dd2c571f36c297e7f` también se clonó correctamente.
+- Bundle actualizado: `/Users/iturralde/pgweb/guidasports-a8-backup-20260827/guidasports-current-all-refs.bundle`, SHA-256 `4ef855d4b361e85c303d3f0bee12e23f68464e42fe50d1fc289644dda09ff336`.
+- Árbol actualizado: `/Users/iturralde/pgweb/guidasports-a8-backup-20260827/guidasports-current-working-tree.tar.gz`, SHA-256 `0da7e674aa1def75df9ae4c9089984c9bbdd9dd7898af019d47a8517fa366780`.
+
+Clasificación sin mostrar ni copiar valores:
+
+- `1b6cd8b3e14440bd41ea1cc791db2575bd4c66aa` (843 bytes) corresponde a un workflow de GitHub Actions y sólo mostró referencias a secretos; no mostró JWT, clave privada ni asignación literal de secreto. Clasificación provisional: referencia de workflow/falso positivo.
+- `a3fd3bd0555cf0a7d79d6ea5dd4eb1d05eaf208f` (1,158 bytes) corresponde a `sync_ligamx.yml`; no mostró JWT, clave privada ni asignación literal de secreto. Clasificación provisional: artefacto de workflow sin secreto literal.
+- `cdcd0962a1651dfcbdd2f4cc309803f4e54e659a` (1,527 bytes) corresponde a variantes históricas de `scraper_auto.yml`; sólo mostró referencias a secretos y no mostró valores literales, JWT ni claves privadas. Clasificación provisional: referencia de workflow/falso positivo.
+- `1fc503e21eb2a851fcbdbd1d89cc01ea5cb9665a` (131,013 bytes, 621 líneas) corresponde a `chat-nemotron-extract.txt`, un artefacto generado inalcanzable. Activó dos formas JWT y una asignación literal con señal de secreto fuera de una referencia explícita. No puede certificarse como falso positivo sin revisión de seguridad externa; queda clasificado como **potencial secreto histórico no resuelto**.
+
+Los cuatro blobs no aparecen en las referencias activas. No se revocaron credenciales ni se eliminó, compactó o reescribió ningún objeto. Secret Scanning y Push Protection tampoco se activaron porque requieren cambio remoto y autorización explícita.
+
+Decisión pendiente: un responsable autorizado debe determinar, mediante revisión offline y sin divulgar valores, si el blob `1fc503e21eb2a851fcbdbd1d89cc01ea5cb9665a` contiene una credencial real, un ejemplo documentado o una extracción de conversación que deba tratarse como secreto. Hasta esa decisión no se debe declarar A8 cerrado ni ejecutar limpieza de historial.
+
+Validaciones locales de esta sesión:
+
+- `npm run test`: 38/38 pruebas correctas.
+- `npx tsc --noEmit`: 0 errores.
+- `npm run lint`: 0 errores y 0 advertencias.
+- `npm run build`: no concluyó tras aproximadamente 90 segundos, detenido normalmente en `Creating an optimized production build ...` con `Ctrl-C` (salida 130). No se usó `kill -9` ni se eliminaron `.next`, locks o archivos fuente.
+- `git diff --check`: limpio antes de registrar esta actualización.
+
 ### Estado de cierre de la fase (26/08/2026)
 
 La Fase de cierre pre-diseño visual **todavía no está cerrada**. Los bloques funcionales y de QA ya están completados localmente; A8 sólo tiene terminada la preparación documental y de respaldo.
@@ -710,12 +739,11 @@ Avances registrados:
 
 Pasos que mantienen abierta la fase:
 
-1. Clasificar en una copia restaurada y desechable los cuatro blobs inalcanzables que activaron patrones potencialmente sensibles.
-2. Trasladar el respaldo de `/private/tmp` a almacenamiento durable y verificar una restauración antes de cualquier operación destructiva.
-3. Activar Secret scanning y Push protection en GitHub y registrar el resultado del escaneo histórico.
-4. Confirmar, en una sesión autorizada, el estado de las credenciales nuevas y los consumidores de las legacy; revocar sólo cuando producción haya sido verificada con las nuevas.
-5. Decidir explícitamente si procede la limpieza de historial. Si procede, ejecutar la reescritura y el `force push` únicamente con autorización expresa, respaldo durable y coordinación de todos los clones.
-6. Repetir las validaciones locales y actualizar este plan con la decisión final de A8.
+1. Obtener la decisión de seguridad sobre `1fc503e21eb2a851fcbdbd1d89cc01ea5cb9665a` sin exponer su contenido.
+2. Activar Secret scanning y Push protection en GitHub y registrar el resultado del escaneo histórico, sólo con autorización para el cambio remoto.
+3. Confirmar, en una sesión autorizada, el estado de las credenciales nuevas y los consumidores de las legacy; revocar sólo cuando producción haya sido verificada con las nuevas.
+4. Decidir explícitamente si procede la limpieza de historial. Si procede, ejecutar la reescritura y el `force push` únicamente con autorización expresa, respaldo durable y coordinación de todos los clones.
+5. Repetir las validaciones locales y actualizar este plan con la decisión final de A8.
 
 No se han revocado credenciales, limpiado el historial, eliminado objetos Git, hecho `force push`, tocado Supabase ni realizado deploy.
 
@@ -910,16 +938,16 @@ Estado actual:
 - Validaciones base actuales: Vitest 38/38, TypeScript 0 errores, ESLint 0/0, build exitoso y `git diff --check` limpio.
 - Canonical de `/noticias` y tratamiento de `/noticias?pagina=N`: completados y documentados localmente; no se hizo deploy.
 - Scripts de prueba, regresiones de búsqueda y QA de hidratación: completados y documentados localmente; no se hizo deploy.
-- Commits de referencia: `4584f83` (canonical), `97afc57` (scripts/búsqueda), `e52e123` (QA hidratación) y `0c50a30` (preparación A8).
-- A8 preparado localmente: bundle `/private/tmp/guidasports-a8-backup.ij9lI9/guidasports-all-refs.bundle` y archivo del árbol `/private/tmp/guidasports-a8-backup.ij9lI9/guidasports-working-tree.tar.gz`; sus SHA-256 están registrados en este plan.
-- La auditoría local no encontró coincidencias de alta confianza en 757 commits alcanzables ni 20 inalcanzables, pero cuatro blobs inalcanzables activaron patrones potencialmente sensibles. No mostrar ni copiar valores.
-- Pendientes generales: clasificación de esos cuatro blobs, respaldo durable, activación y resultado de Secret scanning/Push protection, y decisión autorizada sobre revocación y reescritura.
+- Commits de referencia: `4584f83` (canonical), `97afc57` (scripts/búsqueda), `e52e123` (QA hidratación), `0c50a30` (preparación A8) y `bd7c804` (handoff A8).
+- A8 tiene respaldo durable y restauración de prueba completada; las rutas y SHA-256 de los respaldos actuales están registrados en la sección de clasificación controlada.
+- La auditoría local no encontró coincidencias de alta confianza en 757 commits alcanzables ni 20 inalcanzables. Tres blobs inalcanzables se clasificaron provisionalmente como workflows sin secretos literales; un artefacto generado con señales JWT/asignación de secreto sigue sin resolver. No mostrar ni copiar valores.
+- Pendientes generales: decisión autorizada sobre el artefacto no resuelto, activación y resultado de Secret scanning/Push protection, y decisión posterior sobre revocación y reescritura.
 
 Alcance obligatorio de esta sesión:
-1. Verificar el respaldo existente y, antes de cualquier operación destructiva, trasladarlo a almacenamiento durable con una restauración de prueba.
-2. Trabajar en una copia restaurada y desechable para clasificar los cuatro blobs inalcanzables, sin exponer valores ni modificar el repositorio original.
-3. Preparar y, sólo con autorización para cambios externos, activar Secret scanning y Push protection en GitHub; registrar el resultado del escaneo histórico.
-4. Documentar si los blobs son falsos positivos, artefactos generados o secretos reales, y dejar explícita la decisión siguiente.
+1. Resolver, mediante un responsable autorizado y revisión offline sin divulgar valores, la clasificación del blob `1fc503e21eb2a851fcbdbd1d89cc01ea5cb9665a`.
+2. Si se confirma una credencial real, detenerse antes de revocar o limpiar y solicitar autorización específica para el siguiente paso.
+3. Si se confirma un falso positivo o artefacto documentado, registrar la justificación y actualizar el criterio de cierre.
+4. Preparar y, sólo con autorización para cambios externos, activar Secret scanning y Push protection en GitHub; registrar el resultado del escaneo histórico.
 5. No revocar credenciales, limpiar historial, eliminar objetos ni hacer `force push` sin autorización explícita.
 
 Restricciones:

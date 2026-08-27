@@ -694,7 +694,7 @@ Preparación de GitHub Secret Scanning y Push Protection:
 - El usuario confirmó el 27/08/2026 que el escaneo histórico de GitHub ya estaba activo y mostró: **“No secrets found. Your repository doesn't have any unresolved secrets.”**
 - Ese resultado cubre las referencias e historial que GitHub escanea; no invalida por sí solo la existencia del blob inalcanzable local con el `service_role` confirmado.
 - Push Protection no pudo verificarse ni modificarse desde el navegador conectado a esta sesión porque abrió sin autenticación. Debe confirmarse en GitHub, en **Settings → Code security and analysis**.
-- La revocación de credenciales antiguas, limpieza de objetos/historial y cualquier `force push` requieren una sesión separada, respaldo durable y autorización explícita.
+- La revocación de credenciales antiguas, limpieza de objetos/historial y cualquier `force push` requieren respaldo durable y autorización explícita. La desactivación de la legacy `service_role` quedó confirmada por el usuario el 27/08/2026.
 
 Riesgo pendiente: los cuatro blobs inalcanzables requieren clasificación controlada antes de poder declarar A8 cerrado. No se debe interpretar el resultado limpio de las referencias activas como certificación de ausencia total en el objeto Git local.
 
@@ -715,11 +715,11 @@ Clasificación sin mostrar ni copiar valores:
 - `cdcd0962a1651dfcbdd2f4cc309803f4e54e659a` (1,527 bytes) corresponde a variantes históricas de `scraper_auto.yml`; sólo mostró referencias a secretos y no mostró valores literales, JWT ni claves privadas. Clasificación provisional: referencia de workflow/falso positivo.
 - `1fc503e21eb2a851fcbdbd1d89cc01ea5cb9665a` (131,013 bytes, 621 líneas) corresponde a `chat-nemotron-extract.txt`, un artefacto generado inalcanzable. La revisión offline identificó dos JWT parseables con roles `anon` y `service_role`, además de una asignación literal fuera de una referencia explícita. El rol `service_role` confirma una **credencial histórica real comprometida**; el artefacto no se clasifica como falso positivo.
 
-Los cuatro blobs no aparecen en las referencias activas. No se revocaron credenciales ni se eliminó, compactó o reescribió ningún objeto. Secret Scanning histórico figura activo y sin secretos no resueltos según la confirmación del usuario; Push Protection permanece sin verificar por falta de sesión autenticada en el navegador conectado.
+Los cuatro blobs no aparecen en las referencias activas. La legacy `service_role` fue desactivada por el usuario después de actualizar los consumidores y verificar el deployment. No se eliminó, compactó ni reescribió ningún objeto. Secret Scanning histórico figura activo y sin secretos no resueltos según la confirmación del usuario; Push Protection permanece sin verificar desde el navegador conectado a esta sesión.
 
 Decisión de seguridad: el blob `1fc503e21eb2a851fcbdbd1d89cc01ea5cb9665a` debe tratarse como una credencial histórica comprometida. La revocación/rotación requiere una sesión posterior con autorización específica para Supabase, que permanece fuera del alcance actual. Dado que el blob no está en referencias activas y GitHub no reporta secretos en el historial remoto, la recomendación provisional es **no reescribir el historial ni hacer `force push`**; sólo reconsiderarlo si aparece una alerta activa o evidencia de que el objeto llegó al remoto.
 
-Bloqueo externo de GitHub: para activar Secret Scanning y Push Protection, el usuario debe iniciar sesión en GitHub en el navegador y repetir la operación en **Settings → Code security and analysis**. La configuración no se considera activada mientras no exista confirmación visible en esa sección.
+Bloqueo externo de GitHub: el escaneo histórico está confirmado como activo y limpio, pero Push Protection debe confirmarse visualmente en **Settings → Code security and analysis** dentro de una sesión autenticada. La configuración no se considera activada mientras no exista esa confirmación.
 
 Validaciones locales de esta sesión:
 
@@ -734,11 +734,11 @@ Validaciones locales de esta sesión:
 - El escaneo histórico de GitHub quedó confirmado por el usuario como activo y sin secretos no resueltos.
 - Push Protection no quedó confirmado desde esta sesión; requiere verificación visible en la configuración autenticada del repositorio.
 - El build local concluyó correctamente con el estado actual del repositorio.
-- A8 **no se cierra todavía**: la credencial histórica `service_role` sigue pendiente de rotación/revocación en una sesión autorizada para Supabase. La recomendación provisional es no reescribir el historial ni hacer `force push` porque el objeto no está en referencias activas y GitHub no reporta secretos.
+- A8 **no se cierra todavía**: la credencial histórica `service_role` ya fue sustituida y la legacy fue desactivada según confirmación del usuario. Sólo falta confirmar Push Protection y registrar el estado final de las legacy; se mantiene la recomendación de no reescribir el historial ni hacer `force push` porque el objeto no está en referencias activas y GitHub no reporta secretos.
 
 ### Estado de cierre de la fase (26/08/2026)
 
-La Fase de cierre pre-diseño visual **todavía no está cerrada**. Los bloques funcionales y de QA ya están completados localmente; A8 ya tiene clasificación de seguridad, respaldo, recuperación, escaneo histórico y build concluyente, pero mantiene remediaciones externas pendientes.
+La Fase de cierre pre-diseño visual **todavía no está cerrada**. Los bloques funcionales y de QA ya están completados localmente; A8 ya tiene clasificación de seguridad, respaldo, recuperación, escaneo histórico, rotación de consumidores y build concluyente, pero mantiene pendiente la confirmación final de Push Protection.
 
 Avances registrados:
 
@@ -746,15 +746,16 @@ Avances registrados:
 - Scripts de prueba sin escrituras accidentales y regresiones de búsqueda: completados y documentados en `97afc57`.
 - QA de hidratación React: cargas limpias y navegación revisadas; incidencia no reproducible, documentado en `e52e123`.
 - A8: clasificación controlada y decisión de tratar el `service_role` histórico como credencial comprometida documentadas en `b1ddd2e` y esta actualización.
+- Producción fue desplegada y probada por el usuario con la nueva Secret key; la `service_role` legacy fue desactivada el 27/08/2026.
 
 Pasos que mantienen abierta la fase:
 
 1. Confirmar Push Protection en GitHub desde una sesión autenticada y registrar su estado; el escaneo histórico ya figura activo y sin secretos no resueltos.
-2. En una sesión separada y autorizada para Supabase, confirmar producción con las credenciales nuevas y revocar/rotar las credenciales históricas comprometidas.
+2. Confirmar en Supabase el estado final de las claves legacy; si se utilizó el control global, registrar que `anon` y `service_role` quedaron desactivadas.
 3. Mantener la recomendación provisional de no reescribir el historial ni hacer `force push`; reconsiderarla sólo si aparece evidencia de exposición remota y con autorización específica.
-4. Repetir las validaciones locales después de cualquier cambio y actualizar este plan con la decisión final de A8.
+4. Actualizar este plan con la decisión final de A8.
 
-No se han revocado credenciales, limpiado el historial, eliminado objetos Git, hecho `force push`, tocado Supabase ni realizado deploy.
+No se ha limpiado el historial, eliminado objetos Git ni hecho `force push`. El usuario realizó la rotación/desactivación de credenciales y el deployment; el agente no ejecutó cambios administrativos en Supabase.
 
 ### Prioridad P1 — Canonical del índice de noticias
 
@@ -900,7 +901,7 @@ Confirmar también headers de seguridad, rechazo 401 de las APIs administrativas
 1. **Documentación y canonical:** completado localmente.
 2. **Scripts y búsqueda:** completado localmente.
 3. **QA de hidratación:** completado localmente; incidencia no reproducible.
-4. **Seguridad A8:** clasificación, escaneo histórico y build completados; falta confirmar Push Protection, rotar/revocar la credencial comprometida y decidir sobre limpieza/`force push`.
+4. **Seguridad A8:** clasificación, escaneo histórico, rotación/desactivación de consumidores y build completados; falta confirmar Push Protection y el estado final de las legacy.
 5. **Verificación final:** validaciones locales, smoke test de producción con autorización y actualización del estado del plan.
 
 Cada sesión debe limitarse a un objetivo, un conjunto pequeño de archivos y una validación final. No ejecutar agentes en paralelo sobre la misma rama de trabajo.
@@ -932,7 +933,7 @@ La fase se considera cerrada cuando el canonical esté corregido, los scripts de
 ## Prompt de continuidad para la siguiente sesión
 
 ```text
-Continuamos GuíaSports con la Fase de cierre pre-diseño visual. El objetivo de esta sesión es completar únicamente la remediación externa pendiente de A8 tras confirmar una credencial histórica comprometida.
+Continuamos GuíaSports con la Fase de cierre pre-diseño visual. El objetivo de esta sesión es completar únicamente la verificación final de A8 y cerrar la documentación de seguridad.
 
 Lee primero:
 - PLAN-REMEDIACION-UX-SEGURIDAD-SEO-CALIDAD.md
@@ -952,11 +953,12 @@ Estado actual:
 - La auditoría local no encontró coincidencias de alta confianza en 757 commits alcanzables ni 20 inalcanzables. Tres blobs inalcanzables se clasificaron provisionalmente como workflows sin secretos literales; el cuarto contiene JWT con roles `anon` y `service_role`, por lo que se confirmó una credencial histórica comprometida. No mostrar ni copiar valores.
 - El usuario confirmó que GitHub tiene activo el escaneo histórico y muestra “No secrets found. Your repository doesn't have any unresolved secrets.” Push Protection aún debe confirmarse en la configuración autenticada.
 - El build local concluyó con éxito y generó 173/173 páginas.
-- Pendientes generales: confirmar Push Protection, rotar/revocar la credencial comprometida en una sesión autorizada para Supabase y conservar la recomendación de no reescribir salvo evidencia de exposición remota.
+- El usuario confirmó que Production funciona tras actualizar la Secret key y que la `service_role` legacy fue desactivada.
+- Pendientes generales: confirmar Push Protection y, si el control legacy fue global, registrar que también quedó desactivada `anon`; conservar la recomendación de no reescribir salvo evidencia de exposición remota.
 
 Alcance obligatorio de esta sesión:
-1. Confirmar Push Protection en GitHub y registrar su estado; no repetir el escaneo histórico salvo que GitHub lo solicite.
-2. En una sesión separada y autorizada para Supabase, confirmar producción con las credenciales nuevas y revocar/rotar la credencial histórica comprometida.
+1. Confirmar Push Protection en GitHub y registrar su estado; el escaneo histórico ya está activo y limpio.
+2. Confirmar en Supabase el estado final de `anon` y `service_role` legacy, sin exponer valores.
 3. Mantener la recomendación de no reescribir el historial ni hacer `force push`, salvo evidencia de exposición remota y autorización específica.
 4. No exponer valores ni mezclar esta sesión con deploy, rediseño visual, RLS o scripts de sincronización.
 

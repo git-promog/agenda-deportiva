@@ -1,3 +1,6 @@
+> **DOCUMENTO HISTÓRICO — NO OPERATIVO**
+>
+> Este Plan de Acción MASTER conserva las decisiones y el desglose original de fases. Algunas fechas, estados y pendientes fueron superados por el trabajo posterior. No utilizarlo como instrucción activa; la fuente operativa única es `PLAN-REMEDIACION-UX-SEGURIDAD-SEO-CALIDAD.md`.
 
 # Plan de Acción MASTER
 

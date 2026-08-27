@@ -1,26 +1,24 @@
 # Plan de remediación UX, seguridad, SEO y calidad
 
-Este documento conserva el estado operativo del plan y evita depender del historial de un chat. Todo el trabajo de las fases actuales se realiza **en local**. No se debe hacer deploy, ejecutar sincronizaciones ni aplicar SQL en producción hasta completar la fase de staging y la lista de aprobación final.
+Este documento conserva el estado operativo del plan y evita depender del historial de un chat. Las entradas fechadas mantienen el registro de decisiones tomadas en ese momento; cuando exista una diferencia, prevalece siempre este resumen y la fase activa más reciente. Las nuevas correcciones se realizarán primero en local y cualquier release posterior deberá pasar por la validación definida abajo.
 
 ## Estado de ejecución
 
-- Fases 0 y 1: implementadas localmente.
-- Fase 2 — lint y tipado: errores bloqueantes resueltos localmente.
-- Fase 3 — móvil y accesibilidad: implementación cerrada administrativamente en local; sus validaciones finales quedaron trasladadas a Fase 3.1.
+- Fases 0 y 1: implementadas y verificadas.
+- Fase 2 — lint y tipado: completada; errores y advertencias resueltos.
+- Fase 3 — móvil y accesibilidad: completada en local y validada manualmente.
 - Fase 3.1 — QA final de accesibilidad y build local: **completada el 18/08/2026**. Tab y VoiceOver validados manualmente por el usuario; `npm run build` concluyente con éxito (salida en `/tmp/guidasports-build-20260818.log`). Las tres validaciones finales permanecen limpias.
-- Fase 4 — identidad estable y sincronización segura: en progreso local; se completó el primer bloque y las pruebas controladas de persistencia/sincronización local de favoritos, sin sincronización remota ni cambios en Supabase.
+- Fase 4 — identidad estable y sincronización segura: bloque local completado; la sincronización remota de favoritos queda fuera de este ciclo por decisión documentada.
 - `npx tsc --noEmit`: 0 errores.
 - `npm run lint`: 0 errores y 0 advertencias.
+- `npm run test`: 33/33 pruebas pasando.
+- `npm run build`: completado con éxito sobre el estado actual de `main`, generando 173 páginas.
 - `git diff --check`: limpio.
-- `npm run build`: la ejecución heredada PID 10897 (`npm run build`) y PID 10909 (`next build`) permaneció 44:49 en estado `S`, con 0.0% de CPU y sin salida posterior a `Creating an optimized production build ...`; se terminó sólo con SIGTERM. Después se detuvo temporalmente `next dev` PID 37920/37921 para evitar competencia sobre `.next` y se ejecutó un único `npm run build` nuevo: shell PID 12649, `npm run build` PID 12651 y `next build` PID 12663. Tras 4:14 sin salida adicional y 0.0% de CPU, también se terminó sólo con SIGTERM. La salida completa quedó conservada en `/private/tmp/guidasports-build-20260812.log`; el build local siguió sin resultado final confirmado hasta el 18/08/2026, cuando un nuevo `npm run build` completó con éxito (ver Fase 3.1).
-- El servidor local fue reiniciado sólo después de esa ejecución: PID 12884 (`npm run dev`), padre PID 90713; PID 12896 (`next dev`) y PID 12899 (`next-server (v16.2.1)`), todos en `/Users/iturralde/pgweb/proyecto-agenda-final/agenda-web`, sirviendo `http://localhost:3000`. No se usó `kill -9`, no se borraron locks, `.next` ni archivos fuente, y no queda ningún `next build` activo.
-- Riesgo operativo documentado: detener estos procesos sólo afecta la compilación y el servidor local. No afecta producción, deploy, Supabase ni los cambios fuente. El riesgo local es perder la compilación en curso, dejar `.next` parcialmente generado o requerir una recompilación.
-- Procedimiento seguro aplicado: confirmar PID, padre, ruta y estado; terminar ordenadamente el build estancado; detener temporalmente `next dev`; ejecutar un único build y conservar su salida; reiniciar `next dev` sólo después del resultado observable. No se limpió ningún artefacto de forma destructiva.
-- QA manual responsive y accesibilidad repetido tras el reinicio: en ancho 1280 px no hubo overflow (`scrollWidth` y `clientWidth` de 1265 px); el árbol accesible mostró 1229 controles visibles, todos con nombre y ninguno con `tabindex` positivo. En móvil se observaron 930 controles visibles, todos con nombre y ninguno con `tabindex` positivo. El logotipo anuncia `GuíaSports, inicio` en la versión actual.
-- Menú móvil: `aria-expanded` cambia a `true`, el foco inicial pasa a `AGENDA`, `Escape` cierra y devuelve el foco al botón. Modal: `role="dialog"`, `aria-modal="true"`, foco inicial en `Cerrar`, `Escape` cierra, restaura el foco al evento y devuelve el scroll a `unset`.
-- La prueba de Tab real no pudo completarse con el controlador de navegador asistido: la tecla `Tab` no movió el foco después de enfocarlo mediante click, aunque `Escape` sí funcionó en menú y modal. Por tanto, queda pendiente un recorrido completo real con teclado y lector de pantalla OS; el árbol accesible y la auditoría estática no sustituyen esas dos validaciones.
-- Deploy: deliberadamente pendiente.
-- Rotación de credenciales y aplicación de RLS: pendientes manuales para el cierre del plan.
+- Fase 6 — SEO y contenido histórico del Mundial: completada y validada en local y staging.
+- Staging/Vercel Preview, Rich Results, Deployment Protection y Search Console: verificados.
+- RLS y backup de Supabase: completados y verificados el 25/08/2026.
+- Producción: `main` está sincronizada con `origin/main`; home, rutas SEO, login admin, sitemap, robots, headers y APIs protegidas fueron verificados el 26/08/2026.
+- Pendientes reales: script `agenda-web/test_news.js`, cobertura de relevancia de búsqueda, seguimiento del error de hidratación no reproducible y A8 de seguridad histórica.
 
 ## Orden de fases
 
@@ -637,6 +635,169 @@ git diff --check
 
 El build se valida después de cerrar cualquier proceso `next build` previo. No borrar locks ni `.next` de forma destructiva.
 
+## Fase de cierre pre-diseño visual
+
+Estado: **pendiente de ejecución**.
+
+Objetivo: resolver los últimos hallazgos técnicos, confirmar la seguridad del repositorio y dejar una base estable antes de iniciar nuevas mejoras visuales, de diseño y navegación.
+
+Esta fase es la única fuente activa para el cierre. No se deben reabrir las fases anteriores salvo que una validación de esta fase encuentre una regresión.
+
+### Prioridad P0 — Seguridad e historial Git (A8)
+
+1. Crear un respaldo completo del repositorio y registrar el commit actual.
+2. Identificar todos los secretos, JWT y valores heredados presentes en el historial sin mostrar sus valores en reportes.
+3. Confirmar que las credenciales nuevas funcionan en producción y que no existen consumidores activos de las claves antiguas.
+4. Revocar las claves API antiguas únicamente después de verificar el release y la salud de producción.
+5. Limpiar el historial Git mediante una operación controlada.
+6. Hacer `force push` sólo después de una autorización explícita y con el respaldo disponible.
+7. Activar secret scanning y push protection en GitHub.
+
+Criterios de aceptación:
+
+- No quedan secretos detectables en el historial activo.
+- Las claves antiguas están revocadas.
+- Producción continúa funcionando después de la rotación.
+- El respaldo y el procedimiento de recuperación están documentados.
+
+Esta actividad debe ejecutarse en una sesión exclusiva. No mezclarla con cambios visuales, SEO ni refactorizaciones.
+
+### Prioridad P1 — Canonical del índice de noticias
+
+Archivo objetivo: `agenda-web/src/app/noticias/page.tsx`.
+
+1. Añadir `alternates.canonical` para `/noticias`.
+2. Definir y documentar el tratamiento de `/noticias?pagina=2`, `/noticias?pagina=3`, etcétera.
+3. Confirmar que canonical, sitemap y enlaces internos utilicen URLs coherentes.
+4. Verificar el HTML real después del despliegue.
+
+Criterios de aceptación:
+
+- `/noticias` publica exactamente un `rel="canonical"` válido.
+- Las páginas paginadas tienen una estrategia consistente y no generan canonical ambiguo.
+- El sitemap no apunta a URLs distintas de las canónicas.
+
+### Resultado — Documentación y canonical del índice de noticias (26/08/2026)
+
+Estado: **completado localmente**. Sólo se modificaron el índice de noticias y este plan; no se tocaron datos, APIs, estilos, Supabase, scripts, credenciales, RLS ni el historial Git.
+
+Decisión SEO:
+
+- `/noticias` y `/noticias?pagina=1` usan la canonical `https://www.guiasports.com/noticias`.
+- Cada página `N >= 2` conserva su contenido diferenciado y usa canonical autorreferencial `https://www.guiasports.com/noticias?pagina=N`.
+- La canonical se construye con el número normalizado que utiliza la página; parámetros no soportados no se incorporan a ella.
+- El sitemap conserva únicamente `/noticias`, que es la entrada principal del índice. Las páginas paginadas se descubren mediante los enlaces de paginación internos y no se duplican en el sitemap.
+- El JSON-LD `CollectionPage.url`, Open Graph y `rel="canonical"` usan la misma URL normalizada para evitar señales contradictorias.
+
+Implementación:
+
+- `agenda-web/src/app/noticias/page.tsx` usa `generateMetadata` porque la canonical depende de `searchParams.pagina`.
+- La página 1 no genera una variante con query string; las páginas posteriores sí conservan `?pagina=N`.
+- La verificación del HTML real de producción queda pendiente hasta un despliegue autorizado; esta sesión no hace deploy.
+
+### Prioridad P1 — Scripts de prueba sin escrituras accidentales
+
+Archivo objetivo: `agenda-web/test_news.js`.
+
+1. Eliminar la inserción directa de la noticia de prueba o sustituirla por una prueba de solo lectura.
+2. Revisar los scripts auxiliares en busca de `insert`, `update` o `delete` contra Supabase.
+3. Mantener cualquier prueba de escritura únicamente con mocks o en un entorno aislado.
+4. Documentar cualquier script que requiera autorización explícita.
+
+Criterios de aceptación:
+
+- Ningún script exploratorio puede modificar producción accidentalmente.
+- Las operaciones administrativas pasan por APIs protegidas.
+- Las pruebas automatizadas continúan pasando.
+
+### Prioridad P2 — Relevancia y regresión de búsqueda
+
+Archivo objetivo: `agenda-web/src/lib/eventSearch.ts`.
+
+Añadir cobertura para:
+
+- `Apple TV`.
+- `TV abierta`.
+- `América`.
+- `Chivas`.
+- `Liga MX`.
+
+Revisar especialmente las coincidencias accidentales de `América` dentro de nombres como `Central American Cup`.
+
+Criterios de aceptación:
+
+- Apple TV encuentra los eventos correspondientes.
+- TV abierta devuelve eventos con canales abiertos.
+- América coloca al Club América primero sin llenar la lista de resultados irrelevantes.
+- Los criterios de ranking quedan documentados y probados.
+
+### Prioridad P2 — Incidencia de hidratación React
+
+1. Repetir cargas limpias de home, noticias, Mundial y detalle de evento.
+2. Probar navegación rápida entre rutas críticas.
+3. Revisar la consola del navegador después de cada carga.
+4. Si el error React reaparece, aislar el componente responsable y corregir la diferencia servidor/cliente.
+5. Si no reaparece, registrarlo como incidencia no reproducible y vigilarlo durante el rediseño.
+
+Criterios de aceptación:
+
+- No hay errores reproducibles de hidratación en las rutas críticas.
+- No aparecen diferencias visibles entre HTML inicial y contenido hidratado.
+- El resultado de la prueba queda registrado en este plan.
+
+### Validación local de cada bloque
+
+Ejecutar después de cada bloque de cambios:
+
+```bash
+npm run test
+npx tsc --noEmit
+npm run lint
+npm run build
+git diff --check
+```
+
+El build requiere acceso de red para descargar `next/font`; si el entorno aislado bloquea Google Fonts, registrar el motivo y repetirlo en un entorno con red autorizada. No borrar `.next`, locks ni archivos fuente para resolver un build lento.
+
+### Smoke test posterior al despliegue
+
+Verificar en producción:
+
+- `/`
+- `/noticias`
+- `/admin`
+- `/admin/login`
+- `/mundial-2026`
+- `/robots.txt`
+- `/sitemap.xml`
+
+Confirmar también headers de seguridad, rechazo 401 de las APIs administrativas sin sesión, canonical de noticias y ausencia de errores en consola.
+
+### Orden optimizado de sesiones
+
+1. **Documentación y canonical:** plan definitivo + índice de noticias.
+2. **Scripts y búsqueda:** script de prueba, motor de búsqueda y tests asociados.
+3. **QA de hidratación:** diagnóstico sin cambios iniciales; corregir sólo si se reproduce.
+4. **Seguridad A8:** sesión exclusiva para respaldo, historial Git, revocación y GitHub. Requiere autorización antes del `force push`.
+5. **Verificación final:** validaciones locales, smoke test de producción y actualización del estado del plan.
+
+Cada sesión debe limitarse a un objetivo, un conjunto pequeño de archivos y una validación final. No ejecutar agentes en paralelo sobre la misma rama de trabajo.
+
+### Regla de contexto para sesiones nuevas
+
+Leer únicamente:
+
+1. `PLAN-REMEDIACION-UX-SEGURIDAD-SEO-CALIDAD.md`.
+2. `agenda-web/AGENTS.md`.
+3. `agenda-web/CLAUDE.md`.
+4. El handoff de la sesión anterior, si existe.
+
+No volver a leer la auditoría ni el PlanMaster salvo que sea necesario recuperar una decisión histórica.
+
+### Estado de salida antes del rediseño
+
+La fase se considera cerrada cuando el canonical esté corregido, los scripts de prueba no puedan escribir accidentalmente, la búsqueda tenga regresiones cubiertas, la hidratación no presente errores reproducibles, A8 tenga una decisión ejecutada o formalmente documentada y este plan refleje un único estado vigente.
+
 ## Estrategia de sesiones y contexto
 
 - Usar una sesión nueva por fase o por grupo de lint.
@@ -649,7 +810,7 @@ El build se valida después de cerrar cualquier proceso `next build` previo. No 
 ## Prompt de continuidad para la siguiente sesión
 
 ```text
-Continuamos GuíaSports para ejecutar el Release a Producción (Merge de staging a main y deploy en Vercel) y el cierre de la remediación.
+Continuamos GuíaSports con la Fase de cierre pre-diseño visual. El objetivo de esta sesión es completar únicamente el bloque de scripts de prueba y regresión de búsqueda.
 
 Lee primero:
 - PLAN-REMEDIACION-UX-SEGURIDAD-SEO-CALIDAD.md
@@ -657,25 +818,39 @@ Lee primero:
 - agenda-web/CLAUDE.md
 
 Estado actual:
-- Fases 0 a 4 (local) y Fase 6 (SEO histórico del Mundial) completadas y validadas.
-- Pruebas críticas automatizadas: Vitest (33/33 tests pasando).
-- Staging / Vercel Preview validado con Rich Results sin errores; Deployment Protection reactivada; GSC verificada por DNS.
-- Item A (Rotación): Claves nuevas Publishable/Secret y secretos admin cargados en Preview y Producción de Vercel.
-- Item B (RLS Supabase): COMPLETADO Y VERIFICADO el 25/08/2026. Backup manual seguro en ~/backups-guiasports/, RLS activo en eventos, noticias, status, default deny en escrituras anónimas y sólo lectura pública permitida.
-- Regla de no deploy: Todos los 10 prerrequisitos CUMPLIDOS.
+- `main` está sincronizada con `origin/main` y producción está operativa.
+- Fases 0–4, 3.1 y 6 están completadas y documentadas.
+- Staging/Vercel Preview, Rich Results, Deployment Protection, Search Console, backup y RLS fueron verificados.
+- Validaciones base actuales: Vitest 33/33, TypeScript 0 errores, ESLint 0/0, build exitoso y `git diff --check` limpio.
+- Canonical de `/noticias` y tratamiento de `/noticias?pagina=N`: completados y documentados localmente; no se hizo deploy.
+- Pendientes generales: script `agenda-web/test_news.js`, pruebas de búsqueda, incidencia React no reproducible y A8 de seguridad histórica.
 
-Próximos pasos:
-1. Ejecutar checklist de Release a Producción: merge de la rama staging a main.
-2. Hacer push a GitHub de main para disparar el deployment de producción en Vercel.
-3. Verificar salud en vivo de https://www.guiasports.com (home, /mundial-2026, /admin/login).
-4. Proceder con Item A7: Revocar las claves API legacy en Supabase tras confirmar producción en vivo.
-5. Item A8 opcional: Sanitización de historial Git y push protection.
+Alcance obligatorio de esta sesión:
+1. Revisar `agenda-web/test_news.js` y los scripts auxiliares relacionados.
+2. Eliminar cualquier escritura accidental contra Supabase o sustituirla por una prueba de sólo lectura/mocks.
+3. Revisar `agenda-web/src/lib/eventSearch.ts` y sus pruebas.
+4. Añadir regresiones para `Apple TV`, `TV abierta`, `América`, `Chivas` y `Liga MX`, cuidando la coincidencia accidental de `América` en `Central American Cup`.
+5. Ejecutar las validaciones locales.
+6. Si el cambio es correcto, dejarlo en un commit separado y reportar el hash.
+
+Restricciones:
+- No tocar Supabase, scripts de sincronización, credenciales, RLS ni el historial Git.
+- No hacer deploy sin autorización explícita.
+- No iniciar todavía el rediseño visual.
+- Si detectas una operación de escritura cuya intención no sea inequívoca, detén esa parte y reporta la alternativa segura.
 
 Validaciones obligatorias:
+- npm run test
 - npx tsc --noEmit
 - npm run lint
+- npm run build
 - git diff --check
-- npm run test
 
-Entrega el handoff con estado actual, archivos modificados, validaciones, pendientes y el siguiente prompt de continuidad.
+Entrega:
+- Reporte breve de resultado.
+- Archivos modificados.
+- Validaciones ejecutadas y resultado.
+- Pendientes o riesgos.
+- Handoff para la siguiente sesión.
+- Nuevo prompt de continuidad para el siguiente bloque de la Fase de cierre.
 ```

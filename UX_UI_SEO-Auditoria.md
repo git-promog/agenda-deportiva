@@ -1,3 +1,7 @@
+> **DOCUMENTO HISTÓRICO — NO OPERATIVO**
+>
+> Esta auditoría conserva el diagnóstico original del proyecto y las evidencias de la etapa inicial. No representa necesariamente el estado actual del código, la producción ni la infraestructura. Para continuar el trabajo, utilizar únicamente `PLAN-REMEDIACION-UX-SEGURIDAD-SEO-CALIDAD.md`.
+
 ## Resultado ejecutivo
 
 La aplicación, Supabase y la fuente del scraper están operativos. No hice cambios en archivos ni datos; el servidor local ya fue cerrado.

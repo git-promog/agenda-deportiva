@@ -19,7 +19,7 @@ Este documento conserva el estado operativo del plan y evita depender del histor
 - RLS y backup de Supabase: completados y verificados el 25/08/2026.
 - Producción: home, rutas SEO, login admin, sitemap, robots, headers y APIs protegidas fueron verificados el 26/08/2026; no se hizo deploy en esta sesión.
 - Rama local: `main` contiene los commits documentales posteriores a `origin/main`; no se ha hecho push remoto.
-- Pendientes reales: A8 de seguridad histórica.
+- Pendientes reales dentro de este plan: ninguno; la Fase de cierre pre-diseño visual quedó completada el 27/08/2026.
 
 ## Orden de fases
 
@@ -638,7 +638,7 @@ El build se valida después de cerrar cualquier proceso `next build` previo. No 
 
 ## Fase de cierre pre-diseño visual
 
-Estado: **en ejecución; bloques P1 y P2 completados localmente, A8 pendiente**.
+Estado: **completada el 27/08/2026; bloques P1, P2 y A8 verificados y documentados**.
 
 Objetivo: resolver los últimos hallazgos técnicos, confirmar la seguridad del repositorio y dejar una base estable antes de iniciar nuevas mejoras visuales, de diseño y navegación.
 
@@ -665,7 +665,7 @@ Esta actividad debe ejecutarse en una sesión exclusiva. No mezclarla con cambio
 
 ### Preparación local de A8 — respaldo, auditoría y recuperación (26/08/2026)
 
-Estado: **respaldo y clasificación controlada completados; se confirmó una credencial histórica real y su remediación externa queda pendiente**.
+Estado: **completado el 27/08/2026; respaldo, clasificación, remediación externa y controles preventivos verificados**.
 
 Respaldo creado antes de cualquier operación de A8:
 
@@ -693,10 +693,10 @@ Preparación de GitHub Secret Scanning y Push Protection:
 
 - El usuario confirmó el 27/08/2026 que el escaneo histórico de GitHub ya estaba activo y mostró: **“No secrets found. Your repository doesn't have any unresolved secrets.”**
 - Ese resultado cubre las referencias e historial que GitHub escanea; no invalida por sí solo la existencia del blob inalcanzable local con el `service_role` confirmado.
-- Push Protection no pudo verificarse ni modificarse desde el navegador conectado a esta sesión porque abrió sin autenticación. Debe confirmarse en GitHub, en **Settings → Code security and analysis**.
+- Push Protection quedó confirmado por el usuario el 27/08/2026 como habilitado en GitHub, en **Settings → Code security and analysis**.
 - La revocación de credenciales antiguas, limpieza de objetos/historial y cualquier `force push` requieren respaldo durable y autorización explícita. La desactivación de la legacy `service_role` quedó confirmada por el usuario el 27/08/2026.
 
-Riesgo pendiente: los cuatro blobs inalcanzables requieren clasificación controlada antes de poder declarar A8 cerrado. No se debe interpretar el resultado limpio de las referencias activas como certificación de ausencia total en el objeto Git local.
+Riesgo residual: los cuatro blobs inalcanzables permanecen fuera de las referencias activas; uno fue tratado como credencial histórica comprometida y sus consumidores fueron rotados/desactivados. No se recomienda limpiar objetos ni reescribir historial salvo nueva evidencia de exposición remota y autorización específica.
 
 ### Resultado de clasificación controlada de A8 (27/08/2026)
 
@@ -715,11 +715,11 @@ Clasificación sin mostrar ni copiar valores:
 - `cdcd0962a1651dfcbdd2f4cc309803f4e54e659a` (1,527 bytes) corresponde a variantes históricas de `scraper_auto.yml`; sólo mostró referencias a secretos y no mostró valores literales, JWT ni claves privadas. Clasificación provisional: referencia de workflow/falso positivo.
 - `1fc503e21eb2a851fcbdbd1d89cc01ea5cb9665a` (131,013 bytes, 621 líneas) corresponde a `chat-nemotron-extract.txt`, un artefacto generado inalcanzable. La revisión offline identificó dos JWT parseables con roles `anon` y `service_role`, además de una asignación literal fuera de una referencia explícita. El rol `service_role` confirma una **credencial histórica real comprometida**; el artefacto no se clasifica como falso positivo.
 
-Los cuatro blobs no aparecen en las referencias activas. La legacy `service_role` fue desactivada por el usuario después de actualizar los consumidores y verificar el deployment. No se eliminó, compactó ni reescribió ningún objeto. Secret Scanning histórico figura activo y sin secretos no resueltos según la confirmación del usuario; Push Protection permanece sin verificar desde el navegador conectado a esta sesión.
+Los cuatro blobs no aparecen en las referencias activas. La legacy `service_role` fue desactivada por el usuario después de actualizar los consumidores y verificar el deployment. No se eliminó, compactó ni reescribió ningún objeto. Secret Scanning histórico figura activo y sin secretos no resueltos según la confirmación del usuario; Push Protection también quedó confirmado como habilitado.
 
 Decisión de seguridad: el blob `1fc503e21eb2a851fcbdbd1d89cc01ea5cb9665a` debe tratarse como una credencial histórica comprometida. La revocación/rotación requiere una sesión posterior con autorización específica para Supabase, que permanece fuera del alcance actual. Dado que el blob no está en referencias activas y GitHub no reporta secretos en el historial remoto, la recomendación provisional es **no reescribir el historial ni hacer `force push`**; sólo reconsiderarlo si aparece una alerta activa o evidencia de que el objeto llegó al remoto.
 
-Bloqueo externo de GitHub: el escaneo histórico está confirmado como activo y limpio, pero Push Protection debe confirmarse visualmente en **Settings → Code security and analysis** dentro de una sesión autenticada. La configuración no se considera activada mientras no exista esa confirmación.
+Verificación externa de GitHub: el escaneo histórico está activo y limpio, y Push Protection fue confirmado visualmente por el usuario como habilitado en **Settings → Code security and analysis**.
 
 Validaciones locales de esta sesión:
 
@@ -732,13 +732,13 @@ Validaciones locales de esta sesión:
 ### Resultado externo y validación final de A8 (27/08/2026)
 
 - El escaneo histórico de GitHub quedó confirmado por el usuario como activo y sin secretos no resueltos.
-- Push Protection no quedó confirmado desde esta sesión; requiere verificación visible en la configuración autenticada del repositorio.
+- Push Protection quedó confirmado por el usuario como habilitado en la configuración autenticada del repositorio.
 - El build local concluyó correctamente con el estado actual del repositorio.
-- A8 **no se cierra todavía**: la credencial histórica `service_role` ya fue sustituida y la legacy fue desactivada según confirmación del usuario. Sólo falta confirmar Push Protection y registrar el estado final de las legacy; se mantiene la recomendación de no reescribir el historial ni hacer `force push` porque el objeto no está en referencias activas y GitHub no reporta secretos.
+- A8 **queda cerrado**: la credencial histórica `service_role` fue sustituida, la legacy fue desactivada y los estados finales de `anon` y `service_role` legacy fueron confirmados por el usuario. Secret Scanning histórico y Push Protection están habilitados, sin secretos no resueltos; no se reescribió el historial ni se hizo `force push` porque el objeto no está en referencias activas y GitHub no reporta secretos.
 
-### Estado de cierre de la fase (26/08/2026)
+### Estado de cierre de la fase (27/08/2026)
 
-La Fase de cierre pre-diseño visual **todavía no está cerrada**. Los bloques funcionales y de QA ya están completados localmente; A8 ya tiene clasificación de seguridad, respaldo, recuperación, escaneo histórico, rotación de consumidores y build concluyente, pero mantiene pendiente la confirmación final de Push Protection.
+La Fase de cierre pre-diseño visual **queda cerrada**. Los bloques funcionales y de QA están completados y A8 tiene clasificación de seguridad, respaldo, recuperación, escaneo histórico limpio, rotación/desactivación de consumidores, Push Protection habilitado y build concluyente.
 
 Avances registrados:
 
@@ -748,12 +748,12 @@ Avances registrados:
 - A8: clasificación controlada y decisión de tratar el `service_role` histórico como credencial comprometida documentadas en `b1ddd2e` y esta actualización.
 - Producción fue desplegada y probada por el usuario con la nueva Secret key; la `service_role` legacy fue desactivada el 27/08/2026.
 
-Pasos que mantienen abierta la fase:
+Decisiones de cierre:
 
-1. Confirmar Push Protection en GitHub desde una sesión autenticada y registrar su estado; el escaneo histórico ya figura activo y sin secretos no resueltos.
-2. Confirmar en Supabase el estado final de las claves legacy; si se utilizó el control global, registrar que `anon` y `service_role` quedaron desactivadas.
-3. Mantener la recomendación provisional de no reescribir el historial ni hacer `force push`; reconsiderarla sólo si aparece evidencia de exposición remota y con autorización específica.
-4. Actualizar este plan con la decisión final de A8.
+1. Push Protection quedó confirmado por el usuario como habilitado; el escaneo histórico figura activo y sin secretos no resueltos.
+2. El estado final de `anon` y `service_role` legacy quedó confirmado por el usuario tras la rotación; la legacy `service_role` fue desactivada.
+3. Se mantiene la decisión de no reescribir el historial ni hacer `force push`; sólo reconsiderarla ante evidencia de exposición remota y con autorización específica.
+4. Este registro actualiza el plan y cierra A8.
 
 No se ha limpiado el historial, eliminado objetos Git ni hecho `force push`. El usuario realizó la rotación/desactivación de credenciales y el deployment; el agente no ejecutó cambios administrativos en Supabase.
 
@@ -901,8 +901,8 @@ Confirmar también headers de seguridad, rechazo 401 de las APIs administrativas
 1. **Documentación y canonical:** completado localmente.
 2. **Scripts y búsqueda:** completado localmente.
 3. **QA de hidratación:** completado localmente; incidencia no reproducible.
-4. **Seguridad A8:** clasificación, escaneo histórico, rotación/desactivación de consumidores y build completados; falta confirmar Push Protection y el estado final de las legacy.
-5. **Verificación final:** validaciones locales, smoke test de producción con autorización y actualización del estado del plan.
+4. **Seguridad A8:** clasificación, respaldo, recuperación, escaneo histórico, rotación/desactivación de consumidores, Push Protection y build completados.
+5. **Verificación final:** confirmaciones externas recibidas, validaciones locales registradas y estado del plan actualizado; fase cerrada.
 
 Cada sesión debe limitarse a un objetivo, un conjunto pequeño de archivos y una validación final. No ejecutar agentes en paralelo sobre la misma rama de trabajo.
 
@@ -919,7 +919,7 @@ No volver a leer la auditoría ni el PlanMaster salvo que sea necesario recupera
 
 ### Estado de salida antes del rediseño
 
-La fase se considera cerrada cuando el canonical esté corregido, los scripts de prueba no puedan escribir accidentalmente, la búsqueda tenga regresiones cubiertas, la hidratación no presente errores reproducibles, A8 tenga una decisión ejecutada o formalmente documentada y este plan refleje un único estado vigente.
+La fase se considera cerrada: el canonical está corregido, los scripts de prueba no pueden escribir accidentalmente, la búsqueda tiene regresiones cubiertas, la hidratación no presenta errores reproducibles, A8 tiene una decisión ejecutada y este plan refleja un único estado vigente.
 
 ## Estrategia de sesiones y contexto
 
@@ -933,7 +933,7 @@ La fase se considera cerrada cuando el canonical esté corregido, los scripts de
 ## Prompt de continuidad para la siguiente sesión
 
 ```text
-Continuamos GuíaSports con la Fase de cierre pre-diseño visual. El objetivo de esta sesión es completar únicamente la verificación final de A8 y cerrar la documentación de seguridad.
+Continuamos GuíaSports después del cierre de la Fase de cierre pre-diseño visual. El objetivo de esta sesión es preparar el siguiente bloque de trabajo visual, manteniendo las garantías técnicas ya cerradas.
 
 Lee primero:
 - PLAN-REMEDIACION-UX-SEGURIDAD-SEO-CALIDAD.md
@@ -941,7 +941,8 @@ Lee primero:
 - agenda-web/CLAUDE.md
 
 Estado actual:
-- Producción está operativa y verificada; no hacer deploy en esta sesión.
+- La Fase de cierre pre-diseño visual está completada; A8 está cerrado y documentado.
+- Producción está operativa y verificada; no hacer deploy sin autorización explícita.
 - La rama local `main` contiene commits documentales posteriores a `origin/main`; no hacer push remoto sin autorización.
 - Fases 0–4, 3.1 y 6 están completadas y documentadas.
 - Staging/Vercel Preview, Rich Results, Deployment Protection, Search Console, backup y RLS fueron verificados.
@@ -951,21 +952,21 @@ Estado actual:
 - Commits de referencia: `4584f83` (canonical), `97afc57` (scripts/búsqueda), `e52e123` (QA hidratación), `0c50a30` (preparación A8), `bd7c804` (handoff A8), `b1ddd2e` (clasificación preliminar A8), `00672b6` (credencial histórica confirmada) y el commit actual de este registro.
 - A8 tiene respaldo durable y restauración de prueba completada; las rutas y SHA-256 de los respaldos actuales están registrados en la sección de clasificación controlada.
 - La auditoría local no encontró coincidencias de alta confianza en 757 commits alcanzables ni 20 inalcanzables. Tres blobs inalcanzables se clasificaron provisionalmente como workflows sin secretos literales; el cuarto contiene JWT con roles `anon` y `service_role`, por lo que se confirmó una credencial histórica comprometida. No mostrar ni copiar valores.
-- El usuario confirmó que GitHub tiene activo el escaneo histórico y muestra “No secrets found. Your repository doesn't have any unresolved secrets.” Push Protection aún debe confirmarse en la configuración autenticada.
+- El usuario confirmó que GitHub tiene activo el escaneo histórico y muestra “No secrets found. Your repository doesn't have any unresolved secrets.” También confirmó visualmente que Push Protection está habilitado.
 - El build local concluyó con éxito y generó 173/173 páginas.
 - El usuario confirmó que Production funciona tras actualizar la Secret key y que la `service_role` legacy fue desactivada.
-- Pendientes generales: confirmar Push Protection y, si el control legacy fue global, registrar que también quedó desactivada `anon`; conservar la recomendación de no reescribir salvo evidencia de exposición remota.
+- No quedan pendientes dentro del plan de remediación. Se mantiene la recomendación de no reescribir el historial salvo evidencia de exposición remota.
 
-Alcance obligatorio de esta sesión:
-1. Confirmar Push Protection en GitHub y registrar su estado; el escaneo histórico ya está activo y limpio.
-2. Confirmar en Supabase el estado final de `anon` y `service_role` legacy, sin exponer valores.
+Alcance recomendado de esta sesión:
+1. Leer el brief o requisitos visuales vigentes antes de modificar código.
+2. Definir el primer bloque visual acotado y sus criterios de aceptación.
 3. Mantener la recomendación de no reescribir el historial ni hacer `force push`, salvo evidencia de exposición remota y autorización específica.
-4. No exponer valores ni mezclar esta sesión con deploy, rediseño visual, RLS o scripts de sincronización.
+4. No exponer valores ni reabrir Supabase, RLS, scripts de sincronización o A8 sin una regresión verificable.
 
 Restricciones:
 - No tocar Supabase, scripts de sincronización ni RLS.
 - No hacer deploy sin autorización explícita.
-- No iniciar todavía el rediseño visual.
+- Iniciar el rediseño visual sólo con alcance explícito, sin mezclarlo con seguridad histórica ni cambios de datos.
 - No revocar credenciales, limpiar historial ni hacer `force push` sin respaldo y autorización explícita.
 
 Validaciones obligatorias:
@@ -976,10 +977,9 @@ Validaciones obligatorias:
 - git diff --check
 
 Entrega:
-- Reporte breve de resultado.
+- Reporte breve del bloque visual realizado.
 - Archivos modificados.
 - Validaciones ejecutadas y resultado.
-- Pendientes o riesgos.
+- Riesgos o regresiones detectadas.
 - Handoff para la siguiente sesión.
-- Nuevo prompt de continuidad para el siguiente bloque de la Fase de cierre.
 ```

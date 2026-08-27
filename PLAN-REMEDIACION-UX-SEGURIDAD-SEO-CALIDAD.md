@@ -691,8 +691,9 @@ Procedimiento de recuperación documentado:
 
 Preparación de GitHub Secret Scanning y Push Protection:
 
-- No se activaron cambios remotos en esta sesión.
-- La activación pendiente debe hacerse en GitHub, en **Settings → Code security and analysis**, habilitando **Secret scanning** y **Push protection**; después debe ejecutarse un escaneo histórico y registrar su resultado.
+- El usuario confirmó el 27/08/2026 que el escaneo histórico de GitHub ya estaba activo y mostró: **“No secrets found. Your repository doesn't have any unresolved secrets.”**
+- Ese resultado cubre las referencias e historial que GitHub escanea; no invalida por sí solo la existencia del blob inalcanzable local con el `service_role` confirmado.
+- Push Protection no pudo verificarse ni modificarse desde el navegador conectado a esta sesión porque abrió sin autenticación. Debe confirmarse en GitHub, en **Settings → Code security and analysis**.
 - La revocación de credenciales antiguas, limpieza de objetos/historial y cualquier `force push` requieren una sesión separada, respaldo durable y autorización explícita.
 
 Riesgo pendiente: los cuatro blobs inalcanzables requieren clasificación controlada antes de poder declarar A8 cerrado. No se debe interpretar el resultado limpio de las referencias activas como certificación de ausencia total en el objeto Git local.
@@ -714,7 +715,7 @@ Clasificación sin mostrar ni copiar valores:
 - `cdcd0962a1651dfcbdd2f4cc309803f4e54e659a` (1,527 bytes) corresponde a variantes históricas de `scraper_auto.yml`; sólo mostró referencias a secretos y no mostró valores literales, JWT ni claves privadas. Clasificación provisional: referencia de workflow/falso positivo.
 - `1fc503e21eb2a851fcbdbd1d89cc01ea5cb9665a` (131,013 bytes, 621 líneas) corresponde a `chat-nemotron-extract.txt`, un artefacto generado inalcanzable. La revisión offline identificó dos JWT parseables con roles `anon` y `service_role`, además de una asignación literal fuera de una referencia explícita. El rol `service_role` confirma una **credencial histórica real comprometida**; el artefacto no se clasifica como falso positivo.
 
-Los cuatro blobs no aparecen en las referencias activas. No se revocaron credenciales ni se eliminó, compactó o reescribió ningún objeto. Secret Scanning y Push Protection no se activaron: GitHub abrió sin sesión autenticada y el entorno no tiene `gh` instalado.
+Los cuatro blobs no aparecen en las referencias activas. No se revocaron credenciales ni se eliminó, compactó o reescribió ningún objeto. Secret Scanning histórico figura activo y sin secretos no resueltos según la confirmación del usuario; Push Protection permanece sin verificar por falta de sesión autenticada en el navegador conectado.
 
 Decisión de seguridad: el blob `1fc503e21eb2a851fcbdbd1d89cc01ea5cb9665a` debe tratarse como una credencial histórica comprometida. La revocación/rotación requiere una sesión posterior con autorización específica para Supabase, que permanece fuera del alcance actual. La limpieza de historial y cualquier `force push` también quedan pendientes de una autorización específica posterior.
 
@@ -725,12 +726,19 @@ Validaciones locales de esta sesión:
 - `npm run test`: 38/38 pruebas correctas.
 - `npx tsc --noEmit`: 0 errores.
 - `npm run lint`: 0 errores y 0 advertencias.
-- `npm run build`: no concluyó tras aproximadamente 90 segundos, detenido normalmente en `Creating an optimized production build ...` con `Ctrl-C` (salida 130). No se usó `kill -9` ni se eliminaron `.next`, locks o archivos fuente.
+- `npm run build`: **completado con éxito** con red autorizada; compilación correcta, TypeScript finalizado y 173/173 páginas estáticas generadas.
 - `git diff --check`: limpio antes de registrar esta actualización.
+
+### Resultado externo y validación final de A8 (27/08/2026)
+
+- El escaneo histórico de GitHub quedó confirmado por el usuario como activo y sin secretos no resueltos.
+- Push Protection no quedó confirmado desde esta sesión; requiere verificación visible en la configuración autenticada del repositorio.
+- El build local concluyó correctamente con el estado actual del repositorio.
+- A8 **no se cierra todavía**: la credencial histórica `service_role` sigue pendiente de rotación/revocación en una sesión autorizada para Supabase, y permanece pendiente la decisión sobre la reescritura de historial.
 
 ### Estado de cierre de la fase (26/08/2026)
 
-La Fase de cierre pre-diseño visual **todavía no está cerrada**. Los bloques funcionales y de QA ya están completados localmente; A8 ya tiene clasificación de seguridad, respaldo y recuperación, pero mantiene remediaciones externas pendientes.
+La Fase de cierre pre-diseño visual **todavía no está cerrada**. Los bloques funcionales y de QA ya están completados localmente; A8 ya tiene clasificación de seguridad, respaldo, recuperación, escaneo histórico y build concluyente, pero mantiene remediaciones externas pendientes.
 
 Avances registrados:
 
@@ -741,10 +749,10 @@ Avances registrados:
 
 Pasos que mantienen abierta la fase:
 
-1. Activar Secret Scanning y Push Protection en GitHub después de iniciar sesión y registrar el resultado del escaneo histórico.
+1. Confirmar Push Protection en GitHub desde una sesión autenticada y registrar su estado; el escaneo histórico ya figura activo y sin secretos no resueltos.
 2. En una sesión separada y autorizada para Supabase, confirmar producción con las credenciales nuevas y revocar/rotar las credenciales históricas comprometidas.
 3. Decidir explícitamente si procede la limpieza de historial. Si procede, ejecutar la reescritura y el `force push` únicamente con autorización específica, respaldo durable y coordinación de todos los clones.
-4. Repetir las validaciones locales y actualizar este plan con la decisión final de A8.
+4. Repetir las validaciones locales después de cualquier cambio y actualizar este plan con la decisión final de A8.
 
 No se han revocado credenciales, limpiado el historial, eliminado objetos Git, hecho `force push`, tocado Supabase ni realizado deploy.
 
@@ -892,7 +900,7 @@ Confirmar también headers de seguridad, rechazo 401 de las APIs administrativas
 1. **Documentación y canonical:** completado localmente.
 2. **Scripts y búsqueda:** completado localmente.
 3. **QA de hidratación:** completado localmente; incidencia no reproducible.
-4. **Seguridad A8:** clasificación completada y se confirmó una credencial histórica comprometida; faltan controles de GitHub, rotación/revocación autorizada y la decisión sobre limpieza/`force push`.
+4. **Seguridad A8:** clasificación, escaneo histórico y build completados; falta confirmar Push Protection, rotar/revocar la credencial comprometida y decidir sobre limpieza/`force push`.
 5. **Verificación final:** validaciones locales, smoke test de producción con autorización y actualización del estado del plan.
 
 Cada sesión debe limitarse a un objetivo, un conjunto pequeño de archivos y una validación final. No ejecutar agentes en paralelo sobre la misma rama de trabajo.
@@ -939,14 +947,15 @@ Estado actual:
 - Validaciones base actuales: Vitest 38/38, TypeScript 0 errores, ESLint 0/0, build exitoso y `git diff --check` limpio.
 - Canonical de `/noticias` y tratamiento de `/noticias?pagina=N`: completados y documentados localmente; no se hizo deploy.
 - Scripts de prueba, regresiones de búsqueda y QA de hidratación: completados y documentados localmente; no se hizo deploy.
-- Commits de referencia: `4584f83` (canonical), `97afc57` (scripts/búsqueda), `e52e123` (QA hidratación), `0c50a30` (preparación A8), `bd7c804` (handoff A8) y `b1ddd2e` (clasificación preliminar A8).
+- Commits de referencia: `4584f83` (canonical), `97afc57` (scripts/búsqueda), `e52e123` (QA hidratación), `0c50a30` (preparación A8), `bd7c804` (handoff A8), `b1ddd2e` (clasificación preliminar A8) y `00672b6` (credencial histórica confirmada).
 - A8 tiene respaldo durable y restauración de prueba completada; las rutas y SHA-256 de los respaldos actuales están registrados en la sección de clasificación controlada.
 - La auditoría local no encontró coincidencias de alta confianza en 757 commits alcanzables ni 20 inalcanzables. Tres blobs inalcanzables se clasificaron provisionalmente como workflows sin secretos literales; el cuarto contiene JWT con roles `anon` y `service_role`, por lo que se confirmó una credencial histórica comprometida. No mostrar ni copiar valores.
-- GitHub no pudo modificarse porque la sesión del navegador no estaba autenticada y `gh` no está instalado. Secret Scanning y Push Protection siguen pendientes.
-- Pendientes generales: activar los controles de GitHub, rotar/revocar la credencial comprometida en una sesión autorizada para Supabase y decidir si procede la reescritura histórica.
+- El usuario confirmó que GitHub tiene activo el escaneo histórico y muestra “No secrets found. Your repository doesn't have any unresolved secrets.” Push Protection aún debe confirmarse en la configuración autenticada.
+- El build local concluyó con éxito y generó 173/173 páginas.
+- Pendientes generales: confirmar Push Protection, rotar/revocar la credencial comprometida en una sesión autorizada para Supabase y decidir si procede la reescritura histórica.
 
 Alcance obligatorio de esta sesión:
-1. Activar Secret Scanning y Push Protection en GitHub después de iniciar sesión y registrar el resultado del escaneo histórico.
+1. Confirmar Push Protection en GitHub y registrar su estado; no repetir el escaneo histórico salvo que GitHub lo solicite.
 2. En una sesión separada y autorizada para Supabase, confirmar producción con las credenciales nuevas y revocar/rotar la credencial histórica comprometida.
 3. Decidir explícitamente si procede la limpieza de historial. Si procede, ejecutar la reescritura y el `force push` únicamente con autorización específica, respaldo durable y coordinación de todos los clones.
 4. No exponer valores ni mezclar esta sesión con deploy, rediseño visual, RLS o scripts de sincronización.

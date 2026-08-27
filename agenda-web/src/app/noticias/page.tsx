@@ -8,18 +8,41 @@ import type { Noticia } from '@/types';
 
 export const revalidate = 3600;
 
-export const metadata: Metadata = {
-  title: "Noticias Deportivas y Dónde Ver Partidos Hoy | GuíaSports",
-  description: "Lee las mejores previas, análisis y noticias deportivas de México. Fútbol, F1, MLB, NBA y más. Información actualizada sobre dónde ver deportes en vivo.",
-  openGraph: {
-    title: "Noticias Deportivas y Dónde Ver Partidos Hoy | GuíaSports",
-    description: "Lee las mejores previas, análisis y noticias deportivas de México. Fútbol, F1, MLB, NBA y más.",
-    type: "website",
-    locale: "es_MX",
-  },
-};
-
 const NOTICIAS_POR_PAGINA = 12;
+const SITE_URL = "https://www.guiasports.com";
+const NOTICIAS_URL = `${SITE_URL}/noticias`;
+
+function getPaginaActual(pagina?: string) {
+  return Math.max(1, parseInt(pagina || "1", 10) || 1);
+}
+
+function getNoticiasCanonical(paginaActual: number) {
+  return paginaActual > 1 ? `${NOTICIAS_URL}?pagina=${paginaActual}` : NOTICIAS_URL;
+}
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ pagina?: string }>;
+}): Promise<Metadata> {
+  const { pagina } = await searchParams;
+  const canonical = getNoticiasCanonical(getPaginaActual(pagina));
+
+  return {
+    title: "Noticias Deportivas y Dónde Ver Partidos Hoy | GuíaSports",
+    description: "Lee las mejores previas, análisis y noticias deportivas de México. Fútbol, F1, MLB, NBA y más. Información actualizada sobre dónde ver deportes en vivo.",
+    alternates: {
+      canonical,
+    },
+    openGraph: {
+      title: "Noticias Deportivas y Dónde Ver Partidos Hoy | GuíaSports",
+      description: "Lee las mejores previas, análisis y noticias deportivas de México. Fútbol, F1, MLB, NBA y más.",
+      type: "website",
+      locale: "es_MX",
+      url: canonical,
+    },
+  };
+}
 
 export default async function NoticiasIndex({
   searchParams,
@@ -27,7 +50,8 @@ export default async function NoticiasIndex({
   searchParams: Promise<{ pagina?: string }>;
 }) {
   const { pagina } = await searchParams;
-  const paginaActual = Math.max(1, parseInt(pagina || "1", 10) || 1);
+  const paginaActual = getPaginaActual(pagina);
+  const canonical = getNoticiasCanonical(paginaActual);
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -51,7 +75,7 @@ export default async function NoticiasIndex({
     "@type": "CollectionPage",
     "name": "Noticias y Previas Deportivas | GuíaSports",
     "description": "Lee las mejores previas, análisis y noticias deportivas de México.",
-    "url": "https://www.guiasports.com/noticias",
+    "url": canonical,
     "inLanguage": "es-MX",
     "publisher": {
       "@type": "Organization",

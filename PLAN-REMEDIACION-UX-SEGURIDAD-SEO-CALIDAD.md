@@ -17,7 +17,8 @@ Este documento conserva el estado operativo del plan y evita depender del histor
 - Fase 6 — SEO y contenido histórico del Mundial: completada y validada en local y staging.
 - Staging/Vercel Preview, Rich Results, Deployment Protection y Search Console: verificados.
 - RLS y backup de Supabase: completados y verificados el 25/08/2026.
-- Producción: `main` está sincronizada con `origin/main`; home, rutas SEO, login admin, sitemap, robots, headers y APIs protegidas fueron verificados el 26/08/2026.
+- Producción: home, rutas SEO, login admin, sitemap, robots, headers y APIs protegidas fueron verificados el 26/08/2026; no se hizo deploy en esta sesión.
+- Rama local: `main` contiene los commits documentales posteriores a `origin/main`; no se ha hecho push remoto.
 - Pendientes reales: A8 de seguridad histórica.
 
 ## Orden de fases
@@ -637,7 +638,7 @@ El build se valida después de cerrar cualquier proceso `next build` previo. No 
 
 ## Fase de cierre pre-diseño visual
 
-Estado: **pendiente de ejecución**.
+Estado: **en ejecución; bloques P1 y P2 completados localmente, A8 pendiente**.
 
 Objetivo: resolver los últimos hallazgos técnicos, confirmar la seguridad del repositorio y dejar una base estable antes de iniciar nuevas mejoras visuales, de diseño y navegación.
 
@@ -695,6 +696,28 @@ Preparación de GitHub Secret Scanning y Push Protection:
 - La revocación de credenciales antiguas, limpieza de objetos/historial y cualquier `force push` requieren una sesión separada, respaldo durable y autorización explícita.
 
 Riesgo pendiente: los cuatro blobs inalcanzables requieren clasificación controlada antes de poder declarar A8 cerrado. No se debe interpretar el resultado limpio de las referencias activas como certificación de ausencia total en el objeto Git local.
+
+### Estado de cierre de la fase (26/08/2026)
+
+La Fase de cierre pre-diseño visual **todavía no está cerrada**. Los bloques funcionales y de QA ya están completados localmente; A8 sólo tiene terminada la preparación documental y de respaldo.
+
+Avances registrados:
+
+- Canonical de `/noticias` y tratamiento de `/noticias?pagina=N`: completados y documentados en `4584f83`.
+- Scripts de prueba sin escrituras accidentales y regresiones de búsqueda: completados y documentados en `97afc57`.
+- QA de hidratación React: cargas limpias y navegación revisadas; incidencia no reproducible, documentado en `e52e123`.
+- Preparación A8: respaldo, auditoría histórica sin exposición de valores, recuperación y checklist de GitHub documentados en `0c50a30`.
+
+Pasos que mantienen abierta la fase:
+
+1. Clasificar en una copia restaurada y desechable los cuatro blobs inalcanzables que activaron patrones potencialmente sensibles.
+2. Trasladar el respaldo de `/private/tmp` a almacenamiento durable y verificar una restauración antes de cualquier operación destructiva.
+3. Activar Secret scanning y Push protection en GitHub y registrar el resultado del escaneo histórico.
+4. Confirmar, en una sesión autorizada, el estado de las credenciales nuevas y los consumidores de las legacy; revocar sólo cuando producción haya sido verificada con las nuevas.
+5. Decidir explícitamente si procede la limpieza de historial. Si procede, ejecutar la reescritura y el `force push` únicamente con autorización expresa, respaldo durable y coordinación de todos los clones.
+6. Repetir las validaciones locales y actualizar este plan con la decisión final de A8.
+
+No se han revocado credenciales, limpiado el historial, eliminado objetos Git, hecho `force push`, tocado Supabase ni realizado deploy.
 
 ### Prioridad P1 — Canonical del índice de noticias
 
@@ -840,8 +863,8 @@ Confirmar también headers de seguridad, rechazo 401 de las APIs administrativas
 1. **Documentación y canonical:** completado localmente.
 2. **Scripts y búsqueda:** completado localmente.
 3. **QA de hidratación:** completado localmente; incidencia no reproducible.
-4. **Seguridad A8:** sesión exclusiva para respaldo, historial Git, revocación y GitHub. Requiere autorización antes del `force push`.
-5. **Verificación final:** validaciones locales, smoke test de producción y actualización del estado del plan.
+4. **Seguridad A8:** preparación local completada; falta clasificar los cuatro blobs inalcanzables, activar los controles de GitHub y obtener autorización para cualquier revocación, limpieza o `force push`.
+5. **Verificación final:** validaciones locales, smoke test de producción con autorización y actualización del estado del plan.
 
 Cada sesión debe limitarse a un objetivo, un conjunto pequeño de archivos y una validación final. No ejecutar agentes en paralelo sobre la misma rama de trabajo.
 
@@ -872,7 +895,7 @@ La fase se considera cerrada cuando el canonical esté corregido, los scripts de
 ## Prompt de continuidad para la siguiente sesión
 
 ```text
-Continuamos GuíaSports con la Fase de cierre pre-diseño visual. El objetivo de esta sesión es completar únicamente el bloque A8 de seguridad histórica.
+Continuamos GuíaSports con la Fase de cierre pre-diseño visual. El objetivo de esta sesión es completar únicamente la clasificación controlada y la decisión pendiente de A8 de seguridad histórica.
 
 Lee primero:
 - PLAN-REMEDIACION-UX-SEGURIDAD-SEO-CALIDAD.md
@@ -880,20 +903,24 @@ Lee primero:
 - agenda-web/CLAUDE.md
 
 Estado actual:
-- `main` está sincronizada con `origin/main` y producción está operativa.
+- Producción está operativa y verificada; no hacer deploy en esta sesión.
+- La rama local `main` contiene commits documentales posteriores a `origin/main`; no hacer push remoto sin autorización.
 - Fases 0–4, 3.1 y 6 están completadas y documentadas.
 - Staging/Vercel Preview, Rich Results, Deployment Protection, Search Console, backup y RLS fueron verificados.
 - Validaciones base actuales: Vitest 38/38, TypeScript 0 errores, ESLint 0/0, build exitoso y `git diff --check` limpio.
 - Canonical de `/noticias` y tratamiento de `/noticias?pagina=N`: completados y documentados localmente; no se hizo deploy.
 - Scripts de prueba, regresiones de búsqueda y QA de hidratación: completados y documentados localmente; no se hizo deploy.
-- Pendientes generales: A8 de seguridad histórica.
+- Commits de referencia: `4584f83` (canonical), `97afc57` (scripts/búsqueda), `e52e123` (QA hidratación) y `0c50a30` (preparación A8).
+- A8 preparado localmente: bundle `/private/tmp/guidasports-a8-backup.ij9lI9/guidasports-all-refs.bundle` y archivo del árbol `/private/tmp/guidasports-a8-backup.ij9lI9/guidasports-working-tree.tar.gz`; sus SHA-256 están registrados en este plan.
+- La auditoría local no encontró coincidencias de alta confianza en 757 commits alcanzables ni 20 inalcanzables, pero cuatro blobs inalcanzables activaron patrones potencialmente sensibles. No mostrar ni copiar valores.
+- Pendientes generales: clasificación de esos cuatro blobs, respaldo durable, activación y resultado de Secret scanning/Push protection, y decisión autorizada sobre revocación y reescritura.
 
 Alcance obligatorio de esta sesión:
-1. Crear un respaldo completo del repositorio y registrar el commit actual.
-2. Identificar secretos, JWT y valores heredados del historial sin mostrar valores en reportes.
-3. Confirmar consumidores de claves antiguas y preparar su revocación sólo después de verificar el release.
-4. Documentar el procedimiento de recuperación y activar secret scanning/push protection.
-5. No limpiar historial ni hacer `force push` sin autorización explícita.
+1. Verificar el respaldo existente y, antes de cualquier operación destructiva, trasladarlo a almacenamiento durable con una restauración de prueba.
+2. Trabajar en una copia restaurada y desechable para clasificar los cuatro blobs inalcanzables, sin exponer valores ni modificar el repositorio original.
+3. Preparar y, sólo con autorización para cambios externos, activar Secret scanning y Push protection en GitHub; registrar el resultado del escaneo histórico.
+4. Documentar si los blobs son falsos positivos, artefactos generados o secretos reales, y dejar explícita la decisión siguiente.
+5. No revocar credenciales, limpiar historial, eliminar objetos ni hacer `force push` sin autorización explícita.
 
 Restricciones:
 - No tocar Supabase, scripts de sincronización ni RLS.

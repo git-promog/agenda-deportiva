@@ -717,7 +717,7 @@ Clasificación sin mostrar ni copiar valores:
 
 Los cuatro blobs no aparecen en las referencias activas. No se revocaron credenciales ni se eliminó, compactó o reescribió ningún objeto. Secret Scanning histórico figura activo y sin secretos no resueltos según la confirmación del usuario; Push Protection permanece sin verificar por falta de sesión autenticada en el navegador conectado.
 
-Decisión de seguridad: el blob `1fc503e21eb2a851fcbdbd1d89cc01ea5cb9665a` debe tratarse como una credencial histórica comprometida. La revocación/rotación requiere una sesión posterior con autorización específica para Supabase, que permanece fuera del alcance actual. La limpieza de historial y cualquier `force push` también quedan pendientes de una autorización específica posterior.
+Decisión de seguridad: el blob `1fc503e21eb2a851fcbdbd1d89cc01ea5cb9665a` debe tratarse como una credencial histórica comprometida. La revocación/rotación requiere una sesión posterior con autorización específica para Supabase, que permanece fuera del alcance actual. Dado que el blob no está en referencias activas y GitHub no reporta secretos en el historial remoto, la recomendación provisional es **no reescribir el historial ni hacer `force push`**; sólo reconsiderarlo si aparece una alerta activa o evidencia de que el objeto llegó al remoto.
 
 Bloqueo externo de GitHub: para activar Secret Scanning y Push Protection, el usuario debe iniciar sesión en GitHub en el navegador y repetir la operación en **Settings → Code security and analysis**. La configuración no se considera activada mientras no exista confirmación visible en esa sección.
 
@@ -734,7 +734,7 @@ Validaciones locales de esta sesión:
 - El escaneo histórico de GitHub quedó confirmado por el usuario como activo y sin secretos no resueltos.
 - Push Protection no quedó confirmado desde esta sesión; requiere verificación visible en la configuración autenticada del repositorio.
 - El build local concluyó correctamente con el estado actual del repositorio.
-- A8 **no se cierra todavía**: la credencial histórica `service_role` sigue pendiente de rotación/revocación en una sesión autorizada para Supabase, y permanece pendiente la decisión sobre la reescritura de historial.
+- A8 **no se cierra todavía**: la credencial histórica `service_role` sigue pendiente de rotación/revocación en una sesión autorizada para Supabase. La recomendación provisional es no reescribir el historial ni hacer `force push` porque el objeto no está en referencias activas y GitHub no reporta secretos.
 
 ### Estado de cierre de la fase (26/08/2026)
 
@@ -751,7 +751,7 @@ Pasos que mantienen abierta la fase:
 
 1. Confirmar Push Protection en GitHub desde una sesión autenticada y registrar su estado; el escaneo histórico ya figura activo y sin secretos no resueltos.
 2. En una sesión separada y autorizada para Supabase, confirmar producción con las credenciales nuevas y revocar/rotar las credenciales históricas comprometidas.
-3. Decidir explícitamente si procede la limpieza de historial. Si procede, ejecutar la reescritura y el `force push` únicamente con autorización específica, respaldo durable y coordinación de todos los clones.
+3. Mantener la recomendación provisional de no reescribir el historial ni hacer `force push`; reconsiderarla sólo si aparece evidencia de exposición remota y con autorización específica.
 4. Repetir las validaciones locales después de cualquier cambio y actualizar este plan con la decisión final de A8.
 
 No se han revocado credenciales, limpiado el historial, eliminado objetos Git, hecho `force push`, tocado Supabase ni realizado deploy.
@@ -947,17 +947,17 @@ Estado actual:
 - Validaciones base actuales: Vitest 38/38, TypeScript 0 errores, ESLint 0/0, build exitoso y `git diff --check` limpio.
 - Canonical de `/noticias` y tratamiento de `/noticias?pagina=N`: completados y documentados localmente; no se hizo deploy.
 - Scripts de prueba, regresiones de búsqueda y QA de hidratación: completados y documentados localmente; no se hizo deploy.
-- Commits de referencia: `4584f83` (canonical), `97afc57` (scripts/búsqueda), `e52e123` (QA hidratación), `0c50a30` (preparación A8), `bd7c804` (handoff A8), `b1ddd2e` (clasificación preliminar A8) y `00672b6` (credencial histórica confirmada).
+- Commits de referencia: `4584f83` (canonical), `97afc57` (scripts/búsqueda), `e52e123` (QA hidratación), `0c50a30` (preparación A8), `bd7c804` (handoff A8), `b1ddd2e` (clasificación preliminar A8), `00672b6` (credencial histórica confirmada) y el commit actual de este registro.
 - A8 tiene respaldo durable y restauración de prueba completada; las rutas y SHA-256 de los respaldos actuales están registrados en la sección de clasificación controlada.
 - La auditoría local no encontró coincidencias de alta confianza en 757 commits alcanzables ni 20 inalcanzables. Tres blobs inalcanzables se clasificaron provisionalmente como workflows sin secretos literales; el cuarto contiene JWT con roles `anon` y `service_role`, por lo que se confirmó una credencial histórica comprometida. No mostrar ni copiar valores.
 - El usuario confirmó que GitHub tiene activo el escaneo histórico y muestra “No secrets found. Your repository doesn't have any unresolved secrets.” Push Protection aún debe confirmarse en la configuración autenticada.
 - El build local concluyó con éxito y generó 173/173 páginas.
-- Pendientes generales: confirmar Push Protection, rotar/revocar la credencial comprometida en una sesión autorizada para Supabase y decidir si procede la reescritura histórica.
+- Pendientes generales: confirmar Push Protection, rotar/revocar la credencial comprometida en una sesión autorizada para Supabase y conservar la recomendación de no reescribir salvo evidencia de exposición remota.
 
 Alcance obligatorio de esta sesión:
 1. Confirmar Push Protection en GitHub y registrar su estado; no repetir el escaneo histórico salvo que GitHub lo solicite.
 2. En una sesión separada y autorizada para Supabase, confirmar producción con las credenciales nuevas y revocar/rotar la credencial histórica comprometida.
-3. Decidir explícitamente si procede la limpieza de historial. Si procede, ejecutar la reescritura y el `force push` únicamente con autorización específica, respaldo durable y coordinación de todos los clones.
+3. Mantener la recomendación de no reescribir el historial ni hacer `force push`, salvo evidencia de exposición remota y autorización específica.
 4. No exponer valores ni mezclar esta sesión con deploy, rediseño visual, RLS o scripts de sincronización.
 
 Restricciones:

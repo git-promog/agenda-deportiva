@@ -983,3 +983,7 @@ Entrega:
 - Riesgos o regresiones detectadas.
 - Handoff para la siguiente sesión.
 ```
+
+## Referencia al plan activo de diseño visual
+
+La Fase de cierre pre-diseño visual está cerrada. El trabajo nuevo de diseño, UX y navegación se documenta en [PLAN-DISENO-UX-VISUAL-GUIASPORTS.md](PLAN-DISENO-UX-VISUAL-GUIASPORTS.md). Este documento permanece como referencia histórica y técnica; no se deben añadir aquí nuevas instrucciones visuales ni reabrir A8 sin nueva evidencia.

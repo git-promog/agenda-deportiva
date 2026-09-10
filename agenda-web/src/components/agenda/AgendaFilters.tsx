@@ -1,7 +1,10 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-import { Filter, X, Search, Tv, RotateCcw, CalendarDays, Trophy } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { CalendarDays, Filter, RotateCcw, Search, Tv, Trophy, X } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+
+const FILTER_PANEL_EASE: [number, number, number, number] = [0.2, 0.8, 0.2, 1];
 
 interface AgendaFiltersProps {
   filtroFecha: string;
@@ -30,6 +33,7 @@ export default function AgendaFilters({
   onReset,
   formatButtonFecha,
 }: AgendaFiltersProps) {
+  const shouldReduceMotion = useReducedMotion();
   const [isOpen, setIsOpen] = useState(false);
   const [busquedaCompeticion, setBusquedaCompeticion] = useState("");
   const panelRef = useRef<HTMLDivElement>(null);
@@ -39,16 +43,12 @@ export default function AgendaFilters({
     setBusquedaCompeticion("");
   };
 
-  // Cerrar panel al hacer click fuera
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
-        closePanel();
-      }
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) closePanel();
     };
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
+
+    if (isOpen) document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
@@ -59,58 +59,54 @@ export default function AgendaFilters({
   return (
     <div className="relative" ref={panelRef}>
       <button
+        type="button"
         onClick={() => (isOpen ? closePanel() : setIsOpen(true))}
-        className={`flex items-center gap-2 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all border ${
-          isOpen || activeCount > 0
-            ? "bg-blue-600/20 text-blue-400 border-blue-500/40"
-            : "bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
-        }`}
+        className={`gs-button ${isOpen || activeCount > 0 ? "gs-button-secondary" : "gs-button-quiet"}`}
         aria-expanded={isOpen}
         aria-controls="agenda-filters-panel"
+        aria-label={activeCount > 0 ? `Editar filtros, ${activeCount} activos` : "Abrir filtros"}
       >
-        <Filter size={14} />
+        <Filter size={15} aria-hidden="true" />
         Filtrar
-        {activeCount > 0 && (
-          <span className="ml-1 bg-blue-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
-            {activeCount}
-          </span>
-        )}
+        {activeCount > 0 && <span className="rounded-full bg-white/15 px-1.5 py-0.5 text-[10px] text-white">{activeCount}</span>}
       </button>
 
-      {isOpen && (
-        <div
-          id="agenda-filters-panel"
-          className="absolute top-full left-0 mt-2 w-[calc(100vw-2rem)] max-w-md bg-[#020617] border border-slate-800 rounded-2xl shadow-2xl z-50 p-4"
-        >
-          <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
-            <h3 className="text-xs font-black text-slate-300 uppercase tracking-widest flex items-center gap-2">
-              <Filter size={14} className="text-blue-500" /> Filtros
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            key="agenda-filters-panel"
+            id="agenda-filters-panel"
+            role="region"
+            aria-label="Filtros de agenda"
+            className="gs-panel absolute left-0 top-full z-50 mt-2 w-[min(24rem,calc(100vw-2rem))] p-4"
+            style={{ transformOrigin: "top left" }}
+            initial={{ opacity: 0, y: shouldReduceMotion ? 0 : -6, scale: shouldReduceMotion ? 1 : 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: shouldReduceMotion ? 0 : -6, scale: shouldReduceMotion ? 1 : 0.98 }}
+            transition={shouldReduceMotion ? { type: "tween", duration: 0 } : { type: "tween", duration: 0.16, ease: FILTER_PANEL_EASE }}
+          >
+          <div className="mb-4 flex items-center justify-between border-b border-slate-800 pb-3">
+            <h3 className="flex items-center gap-2 text-sm font-extrabold text-white">
+              <Filter size={15} className="text-blue-400" aria-hidden="true" /> Ajusta tu agenda
             </h3>
-            <button
-              onClick={closePanel}
-              className="p-1.5 rounded-full text-slate-500 hover:text-white hover:bg-slate-800 transition-colors"
-              aria-label="Cerrar filtros"
-            >
-              <X size={16} />
+            <button type="button" onClick={closePanel} className="gs-button-icon !min-h-11 !min-w-11 !rounded-lg" aria-label="Cerrar filtros">
+              <X size={16} aria-hidden="true" />
             </button>
           </div>
 
           <div className="space-y-5">
-            {/* Fecha */}
             <div>
-              <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                <CalendarDays size={12} /> Fecha
+              <h4 className="mb-2 flex items-center gap-1.5 text-[0.6875rem] font-bold uppercase tracking-[0.08em] text-slate-400">
+                <CalendarDays size={13} aria-hidden="true" /> Fecha
               </h4>
               <div className="flex flex-wrap gap-2">
                 {fechas.map((f) => (
                   <button
                     key={f}
+                    type="button"
                     onClick={() => onFechaChange(f)}
-                    className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border ${
-                      filtroFecha === f
-                        ? "bg-[#a3e635]/10 text-[#a3e635] border-[#a3e635]/40"
-                        : "bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800"
-                    }`}
+                    aria-pressed={filtroFecha === f}
+                    className={`gs-chip ${filtroFecha === f ? "border-lime-400/40 bg-lime-400/10 text-lime-300" : "hover:border-slate-600 hover:text-slate-200"}`}
                   >
                     {formatButtonFecha(f)}
                   </button>
@@ -118,32 +114,30 @@ export default function AgendaFilters({
               </div>
             </div>
 
-            {/* Competición */}
             {competiciones.length > 1 && (
               <div>
-                <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                  <Trophy size={12} /> Competición
+                <h4 className="mb-2 flex items-center gap-1.5 text-[0.6875rem] font-bold uppercase tracking-[0.08em] text-slate-400">
+                  <Trophy size={13} aria-hidden="true" /> Competición
                 </h4>
                 <div className="relative mb-2">
-                  <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                  <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" aria-hidden="true" />
                   <input
                     type="text"
                     placeholder="Buscar liga..."
                     value={busquedaCompeticion}
                     onChange={(e) => setBusquedaCompeticion(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 pl-9 pr-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500"
+                    className="gs-field !min-h-11 !py-2 !pl-9 !text-sm"
+                    aria-label="Buscar competición"
                   />
                 </div>
-                <div className="max-h-40 overflow-y-auto scrollbar-hide space-y-1">
+                <div className="max-h-40 space-y-1 overflow-y-auto scrollbar-hide">
                   {competicionesFiltradas.map((c) => (
                     <button
                       key={c}
+                      type="button"
                       onClick={() => onCompeticionChange(c)}
-                      className={`w-full text-left px-3 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
-                        filtroCompeticion === c
-                          ? "bg-blue-600/20 text-blue-400 border border-blue-500/30"
-                          : "text-slate-400 hover:bg-slate-900"
-                      }`}
+                      aria-pressed={filtroCompeticion === c}
+                      className={`w-full rounded-lg px-3 py-2.5 text-left text-sm font-semibold transition-colors ${filtroCompeticion === c ? "bg-blue-400/10 text-blue-300" : "text-slate-400 hover:bg-slate-900 hover:text-slate-200"}`}
                     >
                       {c === "Todos" ? "Todas las ligas" : c}
                     </button>
@@ -152,37 +146,31 @@ export default function AgendaFilters({
               </div>
             )}
 
-            {/* TV Abierta */}
             <div>
-              <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                <Tv size={12} /> Tipo de transmisión
+              <h4 className="mb-2 flex items-center gap-1.5 text-[0.6875rem] font-bold uppercase tracking-[0.08em] text-slate-400">
+                <Tv size={13} aria-hidden="true" /> Tipo de transmisión
               </h4>
               <button
+                type="button"
                 onClick={() => onTvAbiertaChange(!soloTvAbierta)}
-                className={`flex items-center gap-2 w-full px-3 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all border ${
-                  soloTvAbierta
-                    ? "bg-white text-black border-white"
-                    : "bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800"
-                }`}
+                aria-pressed={soloTvAbierta}
+                className={`flex min-h-11 w-full items-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-semibold transition-colors ${soloTvAbierta ? "border-lime-400/40 bg-lime-400/10 text-lime-300" : "border-slate-800 bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200"}`}
               >
-                <Tv size={14} /> Solo TV Abierta
+                <Tv size={15} aria-hidden="true" /> Solo TV abierta
               </button>
             </div>
           </div>
 
-          {/* Footer del panel */}
           {activeCount > 0 && (
-            <div className="mt-5 pt-4 border-t border-slate-800">
-              <button
-                onClick={onReset}
-                className="flex items-center justify-center gap-2 w-full text-slate-300 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-800 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-colors"
-              >
-                <RotateCcw size={14} /> Limpiar todo
+            <div className="mt-5 border-t border-slate-800 pt-4">
+              <button type="button" onClick={onReset} className="gs-button gs-button-quiet w-full">
+                <RotateCcw size={14} aria-hidden="true" /> Limpiar todo
               </button>
             </div>
           )}
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

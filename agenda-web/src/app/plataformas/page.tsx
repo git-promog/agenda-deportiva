@@ -24,11 +24,11 @@ export default function PlataformasPage() {
             <div className="bg-blue-600/10 p-4 rounded-2xl border border-blue-500/20 text-4xl">
               📺
             </div>
-            <div>
-              <h1 className="text-3xl md:text-5xl font-black italic uppercase leading-[0.95] tracking-tighter">
+            <div className="min-w-0">
+              <h1 className="text-3xl md:text-5xl font-black italic uppercase leading-[0.95] tracking-tighter break-words">
                 Guía de <span className="text-blue-500">Plataformas</span>
               </h1>
-              <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-2">
+              <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-2">
                 Dónde ver deportes en México (2026)
               </p>
             </div>
@@ -84,7 +84,7 @@ export default function PlataformasPage() {
                     </span>
                   ))}
                   {platform.keyContent.length > 3 && (
-                    <span className="text-[9px] font-black text-slate-500 px-3 py-1.5 rounded-full border border-slate-800 uppercase tracking-widest">
+                    <span className="text-[9px] font-black text-slate-400 px-3 py-1.5 rounded-full border border-slate-800 uppercase tracking-widest">
                       +{platform.keyContent.length - 3} más
                     </span>
                   )}
@@ -103,7 +103,7 @@ export default function PlataformasPage() {
         {/* Disclaimer */}
         <div className="mt-16 p-8 bg-slate-900/50 border border-slate-800 rounded-3xl flex items-start gap-4">
           <Info className="text-blue-500 shrink-0" size={20} />
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-relaxed">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-relaxed">
             GuíaSports no tiene afiliación directa con estas plataformas salvo que se indique lo contrario. Los precios y contenidos pueden cambiar según las políticas de cada proveedor.
           </p>
         </div>

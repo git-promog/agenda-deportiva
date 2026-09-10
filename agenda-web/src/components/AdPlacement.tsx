@@ -4,7 +4,7 @@ export default function AdPlacement({ className = "" }: { className?: string }) 
       <div className="w-full max-w-[300px] sm:max-w-[336px] mx-auto bg-[#020617] border border-slate-800/60 rounded-xl overflow-hidden relative group shrink-0">
         
         {/* Etiqueta de Anuncio */}
-        <div className="bg-slate-900/80 text-[8px] text-slate-500 uppercase tracking-[0.2em] font-black text-center py-1 border-b border-slate-800/60">
+        <div className="bg-slate-900/80 text-[8px] text-slate-400 uppercase tracking-[0.2em] font-black text-center py-1 border-b border-slate-800/60">
           Publicidad
         </div>
         
@@ -13,10 +13,10 @@ export default function AdPlacement({ className = "" }: { className?: string }) 
           {/* Patrón Visual */}
           <div className="absolute inset-0 opacity-[0.02] bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.2)_50%,transparent_75%,transparent_100%)] bg-[length:20px_20px]"></div>
           
-          <div className="text-slate-700 font-bold text-xs italic z-10 text-center mb-2">
+          <div className="text-slate-400 font-bold text-xs italic z-10 text-center mb-2">
             [ Espacio de AdSense Inactivo ]
           </div>
-          <p className="text-[10px] text-slate-600 text-center px-4">
+          <p className="text-[10px] text-slate-400 text-center px-4">
             Este bloque reservado garantiza que la estructura no &quot;brinque&quot; cuando se activen los anuncios reales (Previene Cumulative Layout Shift).
           </p>
         </div>

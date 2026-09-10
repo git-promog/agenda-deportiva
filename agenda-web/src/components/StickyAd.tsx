@@ -29,12 +29,12 @@ export default function StickyAd() {
           <X size={16} />
         </button>
         
-        <div className="text-[8px] text-slate-500 uppercase tracking-widest font-black mb-1">
+        <div className="text-[8px] text-slate-400 uppercase tracking-widest font-black mb-1">
           Anuncio Patrocinado
         </div>
 
         {/* Dummy AdSense Container (320x50 or 320x100 equivalent) */}
-        <div className="w-full h-[50px] bg-slate-900/80 border border-slate-800 rounded flex items-center justify-center text-slate-600 font-bold text-[10px] italic">
+        <div className="w-full h-[50px] bg-slate-900/80 border border-slate-800 rounded flex items-center justify-center text-slate-400 font-bold text-[10px] italic">
           Espacio AdSense (Sticky)
         </div>
       </div>

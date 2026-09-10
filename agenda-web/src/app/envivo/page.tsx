@@ -93,7 +93,7 @@ export default async function EnVivo() {
                 <h1 className="text-3xl md:text-5xl font-black italic uppercase leading-[0.95] tracking-tighter">
                   En Vivo <span className="text-red-500">Ahora</span>
                 </h1>
-                <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-2">
+                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-2">
                   Eventos transmitiéndose en este momento
                 </p>
               </div>
@@ -140,7 +140,7 @@ export default async function EnVivo() {
             <div className="bg-slate-900/50 border border-slate-800 rounded-[32px] p-12 text-center">
               <Radio size={64} className="mx-auto mb-6 text-slate-700" />
               <h2 className="text-xl font-black italic uppercase mb-3 text-slate-400">No hay eventos en vivo</h2>
-              <p className="text-sm text-slate-600 mb-8">En este momento no se está transmitiendo ningún evento.</p>
+              <p className="text-sm text-slate-400 mb-8">En este momento no se está transmitiendo ningún evento.</p>
             </div>
           )}
 
@@ -157,7 +157,7 @@ export default async function EnVivo() {
                         {emojis[evento.deporte] || "🏆"}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-[8px] font-black text-slate-600 uppercase tracking-widest">{evento.competicion}</div>
+                        <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{evento.competicion}</div>
                         <h3 className="text-sm font-black italic uppercase text-slate-300 leading-tight">{evento.evento}</h3>
                       </div>
                       <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold text-blue-400 shrink-0">

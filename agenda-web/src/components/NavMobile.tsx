@@ -3,11 +3,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { Home, Search, Radio, Menu, X, Newspaper, Tv, Users, Mail } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { trackEvent } from '@/lib/analytics';
+
+const MENU_EASE: [number, number, number, number] = [0.2, 0.8, 0.2, 1];
 
 export default function NavMobile() {
   const pathname = usePathname();
+  const router = useRouter();
+  const shouldReduceMotion = useReducedMotion();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const menuPanelRef = useRef<HTMLDivElement>(null);
@@ -27,6 +32,21 @@ export default function NavMobile() {
       if (event.key === 'Escape') {
         setMenuOpen(false);
         menuButtonRef.current?.focus();
+        return;
+      }
+
+      if (event.key === 'Tab' && menuPanelRef.current) {
+        const focusableItems = Array.from(menuPanelRef.current.querySelectorAll<HTMLElement>('a, button'));
+        if (focusableItems.length === 0) return;
+        const firstItem = focusableItems[0];
+        const lastItem = focusableItems[focusableItems.length - 1];
+        if (event.shiftKey && document.activeElement === firstItem) {
+          event.preventDefault();
+          lastItem.focus();
+        } else if (!event.shiftKey && document.activeElement === lastItem) {
+          event.preventDefault();
+          firstItem.focus();
+        }
       }
     };
 
@@ -40,6 +60,10 @@ export default function NavMobile() {
 
   const scrollToSection = (id: string) => {
     setMenuOpen(false);
+    if (pathname !== '/') {
+      router.push('/#buscar');
+      return;
+    }
     if (id === 'listado-eventos-principal') {
       const eventosEnVivo = document.querySelectorAll('[data-envivo="true"]');
       if (eventosEnVivo.length > 0) {
@@ -58,6 +82,7 @@ export default function NavMobile() {
                     pathname.includes('/quienes-somos') || 
                     pathname.includes('/contacto') || 
                     pathname.includes('/team') || 
+                    pathname.includes('/envivo') ||
                     pathname.includes('/futbol') || 
                     pathname.includes('/f1') || 
                     pathname.includes('/nba') || 
@@ -65,18 +90,49 @@ export default function NavMobile() {
                     pathname.includes('/mundial-2026');
 
   const isHome = pathname === '/';
+  const isLive = pathname.startsWith('/envivo');
+  const isNews = pathname.startsWith('/noticias');
+  const isPlatforms = pathname.startsWith('/plataformas');
+  const isAbout = pathname.startsWith('/quienes-somos') || pathname.startsWith('/team');
+  const isContact = pathname.startsWith('/contacto');
 
   return (
-    <nav aria-label="Navegación móvil" className="md:hidden fixed inset-x-0 bottom-0 z-[80] bg-black/60 backdrop-blur-2xl border-t border-white/10 safe-area-bottom">
+    <nav aria-label="Navegación móvil" className="gs-mobile-nav md:hidden fixed inset-x-0 bottom-0 z-[80] safe-area-bottom">
       {/* Dynamic Mobile Bottom Sheet Navigation Overlay */}
-      {menuOpen && (
-        <div ref={menuPanelRef} id="mobile-menu" className="absolute bottom-full left-0 right-0 mb-3 px-4">
-          <div className="bg-[#020617]/95 backdrop-blur-2xl border border-white/10 rounded-[32px] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.9)] max-w-md mx-auto animate-in fade-in slide-in-from-bottom-5 duration-300">
+      <AnimatePresence initial={false}>
+        {menuOpen && (
+          <>
+            <motion.button
+              type="button"
+              key="gs-menu-backdrop"
+              className="gs-menu-backdrop absolute bottom-full left-0 right-0 h-[calc(100vh-4rem)] bg-black/40"
+              aria-label="Cerrar menú"
+              onClick={closeMenu}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.16, ease: MENU_EASE }}
+            />
+            <motion.div
+              ref={menuPanelRef}
+              key="gs-menu-panel"
+              id="mobile-menu"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Menú principal"
+              className="gs-menu-panel absolute bottom-full left-0 right-0 mb-3 mx-4 p-5 max-w-md md:mx-auto"
+              style={{ transformOrigin: 'bottom' }}
+              initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: shouldReduceMotion ? 0 : 12 }}
+              transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.16, ease: MENU_EASE }}
+            >
             <div className="grid grid-cols-2 gap-3 mb-4">
               <Link 
                 href="/" 
+                aria-current={isHome ? 'page' : undefined}
                 onClick={() => { closeMenu(); trackEvent('nav_click', { destination: 'home' }); }}
-                className="flex items-center gap-2.5 bg-slate-900/60 border border-white/5 p-3 min-h-11 rounded-2xl text-[10px] font-black uppercase tracking-wider text-slate-300 hover:text-white transition-colors active:scale-95"
+                className={`gs-menu-item ${isHome ? 'gs-menu-item-active' : ''}`}
               >
                 <Radio size={15} className="text-blue-500" aria-hidden="true" /> Agenda
               </Link>
@@ -87,58 +143,63 @@ export default function NavMobile() {
                   window.dispatchEvent(new CustomEvent('scroll-to-live')); 
                   trackEvent('nav_click', { destination: 'envivo' });
                 }} 
-                className="flex items-center justify-center gap-1.5 bg-red-950/20 border border-red-500/20 p-3 min-h-11 rounded-2xl text-[10px] font-black uppercase tracking-wider text-red-400 hover:text-red-300 transition-colors active:scale-95"
+                className={`gs-menu-item gs-menu-item-live ${isLive ? 'gs-menu-item-active' : ''}`}
               >
-                <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" aria-hidden="true"></span> En Vivo
+                <span className="gs-status-dot gs-status-dot-live" aria-hidden="true"></span> En Vivo
               </button>
               <Link 
                 href="/noticias" 
+                aria-current={isNews ? 'page' : undefined}
                 onClick={() => { closeMenu(); trackEvent('nav_click', { destination: 'noticias' }); }}
-                className="flex items-center gap-2.5 bg-slate-900/60 border border-white/5 p-3 min-h-11 rounded-2xl text-[10px] font-black uppercase tracking-wider text-slate-300 hover:text-white transition-colors active:scale-95"
+                className={`gs-menu-item ${isNews ? 'gs-menu-item-active' : ''}`}
               >
                 <Newspaper size={15} className="text-emerald-500" aria-hidden="true" /> Noticias
               </Link>
               <Link 
                 href="/plataformas" 
+                aria-current={isPlatforms ? 'page' : undefined}
                 onClick={() => { closeMenu(); trackEvent('nav_click', { destination: 'plataformas' }); }}
-                className="flex items-center gap-2.5 bg-slate-900/60 border border-white/5 p-3 min-h-11 rounded-2xl text-[10px] font-black uppercase tracking-wider text-slate-300 hover:text-white transition-colors active:scale-95"
+                className={`gs-menu-item ${isPlatforms ? 'gs-menu-item-active' : ''}`}
               >
                 <Tv size={15} className="text-orange-500" aria-hidden="true" /> Plataformas
               </Link>
               <Link 
                 href="/quienes-somos" 
+                aria-current={isAbout ? 'page' : undefined}
                 onClick={() => { closeMenu(); trackEvent('nav_click', { destination: 'quienes-somos' }); }}
-                className="flex items-center gap-2.5 bg-slate-900/60 border border-white/5 p-3 min-h-11 rounded-2xl text-[10px] font-black uppercase tracking-wider text-slate-300 hover:text-white transition-colors active:scale-95"
+                className={`gs-menu-item ${isAbout ? 'gs-menu-item-active' : ''}`}
               >
                 <Users size={15} className="text-purple-500" aria-hidden="true" /> Nosotros
               </Link>
               <Link 
                 href="/contacto" 
+                aria-current={isContact ? 'page' : undefined}
                 onClick={() => { closeMenu(); trackEvent('nav_click', { destination: 'contacto' }); }}
-                className="flex items-center gap-2.5 bg-slate-900/60 border border-white/5 p-3 min-h-11 rounded-2xl text-[10px] font-black uppercase tracking-wider text-slate-300 hover:text-white transition-colors active:scale-95"
+                className={`gs-menu-item ${isContact ? 'gs-menu-item-active' : ''}`}
               >
                 <Mail size={15} className="text-pink-500" aria-hidden="true" /> Contacto
               </Link>
             </div>
-            <div className="flex items-center justify-between border-t border-white/5 pt-3 px-1 text-[9px] font-black text-slate-500 uppercase tracking-widest">
+            <div className="gs-menu-meta flex items-center justify-between">
               <span>Región: México</span>
               <span>GuíaSports © 2026</span>
             </div>
-          </div>
-        </div>
-      )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Docked Tab Bar */}
-      <div className="h-16 max-w-md mx-auto flex items-stretch px-2">
+      <div className="gs-mobile-nav-inner h-16 max-w-md mx-auto flex items-stretch px-2">
         <Link
           href="/"
           onClick={() => trackEvent('nav_click', { destination: 'home' })}
           aria-label="Inicio"
           aria-current={isHome ? 'page' : undefined}
-          className={`group flex flex-1 min-w-0 items-center justify-center min-h-11 active:scale-95 transition-transform ${isHome && !menuOpen ? 'text-[#a3e635]' : 'text-slate-400 hover:text-white'}`}
+          className={`gs-mobile-tab group flex flex-1 min-w-0 items-center justify-center ${isHome && !menuOpen ? 'gs-mobile-tab-active' : ''}`}
         >
-          <span className={`grid place-items-center w-11 h-11 rounded-2xl transition-colors ${isHome && !menuOpen ? 'bg-[#a3e635]/20 shadow-[0_0_15px_rgba(163,230,53,0.3)]' : 'group-hover:bg-white/10'}`}>
-            <Home size={22} className={isHome && !menuOpen ? 'fill-[#a3e635]/20' : ''} aria-hidden="true" />
+          <span className="gs-mobile-tab-icon">
+            <Home size={22} aria-hidden="true" />
           </span>
         </Link>
 
@@ -146,20 +207,25 @@ export default function NavMobile() {
           type="button"
           onClick={() => scrollToSection('buscar')}
           aria-label="Buscar eventos"
-          className="group flex flex-1 min-w-0 items-center justify-center min-h-11 text-slate-400 hover:text-white active:scale-95 transition-transform"
+          className="gs-mobile-tab group flex flex-1 min-w-0 items-center justify-center"
         >
-          <span className="grid place-items-center w-11 h-11 rounded-2xl transition-colors group-hover:bg-white/10">
+          <span className="gs-mobile-tab-icon">
             <Search size={22} aria-hidden="true" />
           </span>
         </button>
 
         <button
           type="button"
-          onClick={() => { setMenuOpen(false); window.dispatchEvent(new CustomEvent('scroll-to-live')); }}
+          onClick={() => {
+            setMenuOpen(false);
+            if (pathname === '/') window.dispatchEvent(new CustomEvent('scroll-to-live'));
+            else router.push('/envivo');
+          }}
           aria-label="Ver eventos en vivo"
-          className="flex flex-1 min-w-0 items-center justify-center min-h-11 active:scale-95 transition-transform"
+          aria-current={isLive ? 'page' : undefined}
+          className={`gs-mobile-tab flex flex-1 min-w-0 items-center justify-center ${isLive ? 'gs-mobile-tab-active' : ''}`}
         >
-          <span className="flex items-center justify-center gap-1.5 bg-red-600 text-white rounded-xl h-11 px-2 min-[360px]:px-3 border border-red-500 shadow-[0_0_20px_rgba(220,38,38,0.5)] animate-pulse whitespace-nowrap">
+          <span className="gs-mobile-live flex items-center justify-center gap-1.5 whitespace-nowrap">
             <Radio size={20} aria-hidden="true" />
             <span className="hidden min-[360px]:inline text-[10px] font-black uppercase tracking-widest">En Vivo</span>
           </span>
@@ -177,13 +243,13 @@ export default function NavMobile() {
           aria-expanded={menuOpen}
           aria-controls="mobile-menu"
           aria-label={menuOpen ? 'Cerrar menú principal' : 'Abrir menú principal'}
-          className={`group flex flex-1 min-w-0 items-center justify-center min-h-11 active:scale-95 transition-transform ${(isSubpage || menuOpen) ? 'text-blue-400' : 'text-slate-400 hover:text-white'}`}
+          className={`gs-mobile-tab group flex flex-1 min-w-0 items-center justify-center ${(isSubpage || menuOpen) ? 'gs-mobile-tab-context' : ''}`}
         >
-          <span className={`grid place-items-center w-11 h-11 rounded-2xl transition-colors ${(isSubpage || menuOpen) ? 'bg-blue-600/20 shadow-[0_0_15px_rgba(59,130,246,0.3)] border border-blue-500/30' : 'group-hover:bg-white/10'}`}>
+          <span className="gs-mobile-tab-icon">
             {menuOpen ? (
-              <X size={22} className="text-blue-400" aria-hidden="true" />
+              <X size={22} aria-hidden="true" />
             ) : (
-              <Menu size={22} className={(isSubpage || menuOpen) ? 'text-blue-400' : 'text-slate-400'} aria-hidden="true" />
+              <Menu size={22} aria-hidden="true" />
             )}
           </span>
         </button>

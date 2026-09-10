@@ -60,10 +60,10 @@ export default function WCMatchCard({
       {onToggleFavorite && (
         <button
           onClick={onToggleFavorite}
-          className="absolute top-3 right-3 z-20 p-2 rounded-full bg-slate-800/50 hover:bg-slate-700/50 transition-colors"
+          className="absolute top-3 right-3 z-20 p-2 rounded-full bg-slate-800/50 hover:bg-slate-700/50 transition-colors active:scale-90 motion-reduce:active:scale-100"
           aria-label={isFavorite ? "Quitar de favoritos" : "Añadir a favoritos"}
         >
-          <Star size={16} className={isFavorite ? "fill-yellow-500 text-yellow-500" : "text-slate-500"} />
+          <Star size={16} className={`transition-colors ${isFavorite ? "fill-yellow-500 text-yellow-500" : "text-slate-500"}`} />
         </button>
       )}
 

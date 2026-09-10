@@ -115,7 +115,7 @@ export default function ContactoForm() {
               </div>
 
               <div>
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1 mb-2 block">Teléfono <span className="text-slate-600">(opcional)</span></label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1 mb-2 block">Teléfono <span className="text-slate-400">(opcional)</span></label>
                 <input 
                   type="tel" 
                   placeholder="+52 55 1234 5678"
@@ -161,7 +161,7 @@ export default function ContactoForm() {
                 )}
               </button>
 
-              <p className="mt-4 text-center text-[10px] text-slate-600 uppercase tracking-widest">
+              <p className="mt-4 text-center text-[10px] text-slate-400 uppercase tracking-widest">
                 Respondemos en menos de 24 horas hábiles.
               </p>
             </form>

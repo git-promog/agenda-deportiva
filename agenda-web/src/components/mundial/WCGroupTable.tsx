@@ -20,7 +20,7 @@ export default function WCGroupTable({ grupo }: Props) {
       <div className="overflow-x-auto scrollbar-hide">
         <table className="w-full text-left text-[10px] whitespace-nowrap min-w-[380px]">
           <thead>
-            <tr className="text-slate-500 uppercase font-black text-[9px] border-b border-white/5 bg-slate-950/20">
+            <tr className="text-slate-400 uppercase font-black text-[9px] border-b border-white/5 bg-slate-950/20">
               <th className="px-4 py-3 tracking-widest">Equipo</th>
               <th className="px-2 py-3 text-center" title="Partidos Jugados">PJ</th>
               <th className="px-2 py-3 text-center" title="Ganados">G</th>
@@ -69,9 +69,9 @@ export default function WCGroupTable({ grupo }: Props) {
                   <td className="px-2 py-3 text-center text-slate-400 font-bold">{equipo.pj}</td>
                   <td className="px-2 py-3 text-center text-slate-300">{equipo.pg}</td>
                   <td className="px-2 py-3 text-center text-slate-400">{equipo.pe}</td>
-                  <td className="px-2 py-3 text-center text-slate-500">{equipo.pp}</td>
+                  <td className="px-2 py-3 text-center text-slate-400">{equipo.pp}</td>
                   <td className="px-2 py-3 text-center text-slate-400">{equipo.gf}</td>
-                  <td className="px-2 py-3 text-center text-slate-500">{equipo.gc}</td>
+                  <td className="px-2 py-3 text-center text-slate-400">{equipo.gc}</td>
                   <td className="px-2 py-3 text-center font-bold text-slate-300">{dg > 0 ? `+${dg}` : dg}</td>
                   <td className="px-4 py-3 text-center text-blue-400 font-black bg-blue-950/10 text-xs">{equipo.pts}</td>
                 </tr>

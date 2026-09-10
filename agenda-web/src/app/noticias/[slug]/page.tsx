@@ -38,6 +38,29 @@ interface NoticiaRelacionada {
   imagen_url?: string | null;
 }
 
+function getRelatedSportHub(title: string, content: string): { label: string; href: string } | null {
+  const text = `${title} ${content}`.toLowerCase();
+  if (text.includes('mundial 2026') || text.includes('fifa 2026') || text.includes('#mundial2026')) {
+    return { label: 'Mundial 2026', href: '/mundial-2026' };
+  }
+  if (text.includes('liga mx') || text.includes('apertura') || text.includes('clausura')) {
+    return { label: 'Liga MX', href: '/futbol/liga-mx' };
+  }
+  if (text.includes('fútbol') || text.includes('futbol') || text.includes('champions') || text.includes('premier')) {
+    return { label: 'Fútbol', href: '/futbol' };
+  }
+  if (text.includes('nba') || text.includes('básquetbol') || text.includes('basquetbol') || text.includes('lakers')) {
+    return { label: 'NBA', href: '/nba' };
+  }
+  if (text.includes('mlb') || text.includes('béisbol') || text.includes('beisbol') || text.includes('grandes ligas')) {
+    return { label: 'MLB', href: '/mlb' };
+  }
+  if (text.includes('f1') || text.includes('fórmula 1') || text.includes('formula 1') || text.includes('gran premio') || text.includes('checo')) {
+    return { label: 'Fórmula 1', href: '/f1' };
+  }
+  return null;
+}
+
 function extractChannelsFromContent(content: string): { tvText: string; streamText: string } {
   const lines = content.split('\n');
   let isTargetSection = false;
@@ -430,11 +453,8 @@ function renderArticleContent(content: string) {
       
       if (isSpecialSection) {
         elements.push(
-          <div key={`special-${elements.length}`} id={id} className="scroll-mt-24 my-10 p-6 bg-gradient-to-br from-slate-900 to-[#020617] border border-blue-500/20 rounded-3xl relative overflow-hidden group hover:border-blue-500/40 transition-all shadow-xl shadow-blue-900/10">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              {headingInfo.icon}
-            </div>
-            <h2 className="text-xl font-black italic uppercase text-white mb-6 flex items-center gap-3">
+          <div key={`special-${elements.length}`} id={id} className="scroll-mt-24 my-8 p-6 bg-slate-900/80 border border-slate-700/60 rounded-2xl relative overflow-hidden group hover:border-slate-600 transition-colors shadow-lg">
+            <h2 className="text-lg font-black italic uppercase text-white mb-5 flex items-center gap-3">
               {headingInfo.icon}
               {cleanTitle}
             </h2>
@@ -448,13 +468,13 @@ function renderArticleContent(content: string) {
                   const colonIdx = subLine.indexOf(':');
                   if (colonIdx > 0 && colonIdx < 40) {
                     subElements.push(
-                      <div key={`sub-${nextIdx}`} className="flex justify-between items-center border-b border-slate-800/50 py-3 last:border-0">
-                        <span className="text-[10px] font-black uppercase text-slate-500 tracking-[0.1em]">{subLine.substring(0, colonIdx)}</span>
-                        <span className="text-sm font-black text-[#a3e635] italic">{subLine.substring(colonIdx + 1).trim()}</span>
+                      <div key={`sub-${nextIdx}`} className="flex justify-between items-center border-b border-slate-800 py-3 last:border-0">
+                        <span className="text-xs font-bold uppercase text-slate-400 tracking-wider">{subLine.substring(0, colonIdx)}</span>
+                        <span className="text-sm font-black text-[var(--gs-color-lime)] italic">{subLine.substring(colonIdx + 1).trim()}</span>
                       </div>
                     );
                   } else {
-                    subElements.push(<p key={`sub-${nextIdx}`} className="text-sm text-slate-400 py-1 leading-relaxed">{subLine}</p>);
+                    subElements.push(<p key={`sub-${nextIdx}`} className="text-sm text-slate-300 py-1 leading-relaxed">{subLine}</p>);
                   }
                   nextIdx++;
                 }
@@ -466,7 +486,7 @@ function renderArticleContent(content: string) {
         );
       } else {
         elements.push(
-          <h2 key={`h2-${elements.length}`} id={id} className="scroll-mt-24 text-xl md:text-2xl font-black italic uppercase text-white mt-12 mb-6 tracking-tight flex items-center gap-3 border-l-4 border-blue-600 pl-4 py-1 bg-blue-600/5 rounded-r-lg group hover:bg-blue-600/10 transition-colors">
+          <h2 key={`h2-${elements.length}`} id={id} className="scroll-mt-24 text-xl md:text-2xl font-black italic uppercase text-white mt-10 mb-5 tracking-tight flex items-center gap-3 border-l-4 border-blue-500 pl-4 py-1 bg-blue-950/20 rounded-r-lg group hover:bg-blue-950/30 transition-colors">
             {headingInfo.icon}
             {cleanTitle}
           </h2>
@@ -697,6 +717,12 @@ export default async function NoticiaDetalle({ params }: Props) {
     }))
   };
 
+  const relatedHub = getRelatedSportHub(noticia.titulo, noticia.contenido);
+  const breadcrumbItems = [{ label: "Noticias", href: "/noticias" }];
+  if (relatedHub) {
+    breadcrumbItems.push(relatedHub);
+  }
+
   return (
     <>
       <ArticleViewTracker slug={noticia.slug} title={noticia.titulo} />
@@ -709,32 +735,39 @@ export default async function NoticiaDetalle({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
       <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-20">
-      <div className="max-w-3xl mx-auto px-4 pt-10">
+      <div className="max-w-3xl mx-auto px-4 pt-8">
         
-        <Breadcrumbs items={[{ label: "Noticias", href: "/noticias" }]} current={noticia.titulo} currentHref={`/noticias/${noticia.slug}`} />
+        <Breadcrumbs items={breadcrumbItems} current={noticia.titulo} currentHref={`/noticias/${noticia.slug}`} />
 
         <header className="mb-8">
-          <Link href="/noticias" className="text-[10px] font-black text-[#a3e635] bg-[#a3e635]/10 px-3 py-1 rounded-full w-fit border border-[#a3e635]/20 uppercase mb-6 italic tracking-widest inline-block hover:bg-[#a3e635]/20 transition-colors">
-            Previas y Análisis
-          </Link>
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <Link href="/noticias" className="gs-badge gs-badge-live">
+              Previas y Análisis
+            </Link>
+            {relatedHub && (
+              <Link href={relatedHub.href} className="gs-badge hover:border-blue-400 transition-colors">
+                Ver hub {relatedHub.label} →
+              </Link>
+            )}
+          </div>
           
-          <h1 className="text-4xl md:text-6xl font-black italic uppercase leading-[0.95] tracking-tighter mb-8 bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
+          <h1 className="text-3xl md:text-5xl font-black italic uppercase leading-[0.98] tracking-tighter mb-6 text-white">
             {noticia.titulo}
           </h1>
 
-          <div className="flex flex-wrap items-center gap-6 text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] border-y border-slate-800/50 py-6 mb-8">
-            <div className="flex items-center gap-2">
-              <Calendar size={14} className="text-blue-500"/> 
+          <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-slate-400 text-xs font-bold uppercase tracking-wider border-y border-slate-800/80 py-4 mb-8">
+            <div className="flex items-center gap-2 text-[var(--gs-color-lime)]">
+              <Calendar size={14} />
               {noticia.fecha}
             </div>
             <div className="flex items-center gap-2">
-              <Clock size={14} className="text-blue-500"/> 
+              <Clock size={14} className="text-blue-400" />
               Lectura aprox. 4 min
             </div>
             <div className="h-4 w-px bg-slate-800 hidden sm:block"></div>
             <div className="flex items-center gap-2">
               <span className="text-slate-500">Por:</span>
-              <Link href={`/autores/${autor.id}`} className="text-blue-400 hover:text-blue-300 hover:underline transition-colors font-black font-sans">
+              <Link href={`/autores/${autor.id}`} className="text-blue-400 hover:text-blue-300 hover:underline transition-colors font-black">
                 {autor.name}
               </Link>
             </div>
@@ -877,15 +910,14 @@ export default async function NoticiaDetalle({ params }: Props) {
         )}
 
         {/* BANNER INFERIOR Y COMPARTIR */}
-        <div className="p-8 bg-gradient-to-br from-blue-600 to-blue-900 rounded-[32px] flex flex-col md:flex-row justify-between items-center gap-6 shadow-xl relative">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-400 opacity-20 blur-3xl rounded-full transform translate-x-1/2 -translate-y-1/2"></div>
-            <div className="text-center md:text-left relative z-10">
-              <h2 className="text-white font-black uppercase italic text-lg leading-none">¿Te sirvió la guía?</h2>
-              <p className="text-blue-200 text-xs font-bold uppercase tracking-widest mt-1">Ayúdanos compartiendo GuíaSports</p>
-            </div>
-            <div className="relative z-10 w-full md:w-auto">
-              <ShareButton titulo={noticia.titulo} slug={noticia.slug} />
-            </div>
+        <div className="p-6 md:p-8 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6 shadow-lg relative overflow-hidden">
+          <div className="text-center md:text-left relative z-10">
+            <h2 className="text-white font-black uppercase italic text-lg leading-tight">¿Te sirvió esta previa?</h2>
+            <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mt-1">Comparte los horarios y canales de transmisión con otros aficionados</p>
+          </div>
+          <div className="relative z-10 w-full md:w-auto shrink-0">
+            <ShareButton titulo={noticia.titulo} slug={noticia.slug} />
+          </div>
         </div>
       </div>
       </div>

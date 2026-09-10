@@ -35,7 +35,7 @@ export default function LigaMxStandings({ standings, syncedAt }: Props) {
           </h2>
         </div>
         {syncedAt && (
-          <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest bg-slate-800/50 px-3 py-1.5 rounded-full border border-slate-700/50 self-start sm:self-auto">
+          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest bg-slate-800/50 px-3 py-1.5 rounded-full border border-slate-700/50 self-start sm:self-auto">
             Act. {new Date(syncedAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}
           </span>
         )}
@@ -56,7 +56,7 @@ export default function LigaMxStandings({ standings, syncedAt }: Props) {
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm border-collapse">
           <thead>
-            <tr className="border-b border-slate-800 text-[10px] font-black uppercase text-slate-500 tracking-wider">
+            <tr className="border-b border-slate-800 text-[10px] font-black uppercase text-slate-400 tracking-wider">
               <th className="py-3 px-2 text-center w-10">Pos</th>
               <th className="py-3 px-3">Club</th>
               <th className="py-3 px-2 text-center">JJ</th>
@@ -86,7 +86,7 @@ export default function LigaMxStandings({ standings, syncedAt }: Props) {
                           ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40'
                           : isPlayIn
                           ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
-                          : 'text-slate-500'
+                          : 'text-slate-400'
                       }`}
                     >
                       {row.position}

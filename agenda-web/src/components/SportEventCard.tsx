@@ -2,9 +2,10 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ExternalLink, Tv, Clock } from 'lucide-react';
+import { ChevronRight, Clock, ExternalLink, Tv } from 'lucide-react';
 import ShareButton from '@/components/ShareButton';
 import { buildEventPath, buildEventUrl } from '@/lib/eventUrls';
+import { Evento } from '@/types';
 
 const EMOJIS: { [key: string]: string } = {
   "Fútbol": "⚽️", "Básquetbol": "🏀", "Béisbol": "⚾️", "Fórmula 1": "🏎️", 
@@ -13,23 +14,6 @@ const EMOJIS: { [key: string]: string } = {
   "Golf": "⛳️", "Natación": "🏊", "Fútbol Sala": "👟", "Otros": "🏆"
 };
 
-interface Theme {
-  borderHover: string;
-  textColor: string;
-  bgTV: string;
-}
-
-const THEMES: { [key: string]: Theme } = {
-  "Fútbol": { borderHover: "hover:border-green-500/40", textColor: "text-green-400", bgTV: "bg-green-950/20" },
-  "Básquetbol": { borderHover: "hover:border-orange-500/40", textColor: "text-orange-400", bgTV: "bg-orange-950/20" },
-  "Béisbol": { borderHover: "hover:border-blue-500/40", textColor: "text-blue-400", bgTV: "bg-blue-950/20" },
-  "Fórmula 1": { borderHover: "hover:border-red-500/40", textColor: "text-red-400", bgTV: "bg-red-950/20" },
-};
-
-const DEFAULT_THEME = { borderHover: "hover:border-blue-400/40", textColor: "text-[#a3e635]", bgTV: "bg-[#020617]" };
-
-import { Evento } from '@/types';
-
 interface Props {
   evento: Evento;
   isLive: boolean;
@@ -37,126 +21,174 @@ interface Props {
   onClick?: () => void;
 }
 
-const formatChannels = (canalesStr: string, theme: Theme) => {
-  const canales = canalesStr.split(/, | - | \/ /);
-  return canales.map((c, i) => {
-    let color = `${theme.bgTV} ${theme.textColor} border-white/5`;
-    const cl = c.toLowerCase();
-    if (cl.includes("vix")) color = "bg-orange-600/20 text-orange-400 border-orange-500/30";
-    else if (cl.includes("espn")) color = "bg-red-900/30 text-red-400 border-red-500/30";
-    else if (cl.includes("fox")) color = "bg-blue-900/30 text-blue-400 border-blue-500/30";
-    else if (cl.includes("tudn") || cl.includes("canal 5")) color = "bg-green-900/30 text-green-400 border-green-500/30";
-    else if (cl.includes("azteca")) color = "bg-purple-900/30 text-purple-400 border-purple-500/30";
-    else if (cl.includes("claro")) color = "bg-red-900/30 text-red-400 border-red-600/30";
-    
+type EventStatus = 'live' | 'upcoming' | 'finished';
+
+const UNCONFIRMED_CHANNEL_PATTERN = /por\s+confirmar|por\s+definir|pendiente|sin\s+(?:confirmar|determinar)|no\s+disponible|n\/d|tbd|por\s+anunciar/i;
+
+function isTransmissionUnconfirmed(canales: string) {
+  return !canales.trim() || UNCONFIRMED_CHANNEL_PATTERN.test(canales);
+}
+
+function getEventStatus(fecha: string, hora: string, isLive: boolean): EventStatus {
+  if (isLive) return 'live';
+
+  const start = new Date(`${fecha}T${hora || '00:00'}:00-06:00`);
+  return Number.isNaN(start.getTime()) || start.getTime() > Date.now() ? 'upcoming' : 'finished';
+}
+
+function formatEventDate(fecha: string) {
+  const date = new Date(`${fecha}T12:00:00`);
+  if (Number.isNaN(date.getTime())) return fecha;
+  return date.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
+function getStatusLabel(status: EventStatus) {
+  if (status === 'live') return 'En vivo';
+  if (status === 'finished') return 'Finalizado';
+  return 'Próximo';
+}
+
+function formatChannels(canalesStr: string, unconfirmed: boolean) {
+  const canales = canalesStr.split(/, | - | \/ | · /).map((channel) => channel.trim()).filter(Boolean);
+
+  if (unconfirmed) {
     return (
-      <div key={i} className={`flex items-center gap-1.5 border px-3 py-1.5 rounded-lg ${color}`}>
-        <Tv size={12} />
-        <span className="text-[10px] font-bold tracking-wide whitespace-nowrap">{c.trim()}</span>
-      </div>
+      <span className="gs-chip gs-chip-muted min-h-9 px-2.5 py-1.5 text-[11px] font-bold">
+        <Tv size={13} aria-hidden="true" />
+        Por confirmar
+      </span>
+    );
+  }
+
+  return canales.map((c, i) => {
+    return (
+      <span key={i} className="gs-chip gs-chip-selected min-h-9 px-2.5 py-1.5 text-[11px] font-bold">
+        <Tv size={13} aria-hidden="true" />
+        <span className="whitespace-nowrap">{c}</span>
+      </span>
     );
   });
-};
+}
 
 export default function SportEventCard({ evento, isLive, onFiltrarLiga, onClick }: Props) {
-  const theme = THEMES[evento.deporte] || DEFAULT_THEME;
   const eventPath = buildEventPath(evento);
   const eventUrl = buildEventUrl(evento);
-
-  const liveBorder = isLive ? "border-red-500/60" : "border-slate-800/80";
-  const liveHover = isLive ? "hover:border-red-400/70" : theme.borderHover;
-
+  const status = getEventStatus(evento.fecha, evento.hora, isLive);
+  const statusLabel = getStatusLabel(status);
+  const transmissionUnconfirmed = isTransmissionUnconfirmed(evento.canales);
   const teams = evento.evento.split(/ vs /i);
   const isMatch = teams.length === 2;
 
   return (
-    <article className={`group bg-slate-900/40 backdrop-blur-xl border ${liveBorder} ${liveHover} rounded-2xl p-4 md:p-5 hover:bg-slate-900/60 transition-colors duration-300 relative flex flex-col md:flex-row md:items-center gap-4 shadow-xl`}>
-      {isLive && (
-        <div className="absolute top-0 left-0 bg-red-600 text-white text-[8px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-br-xl rounded-tl-2xl flex items-center gap-1 z-10">
-          <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" aria-hidden="true" /> EN VIVO
+    <article className={`group gs-card gs-card-interactive relative overflow-hidden p-4 md:p-5 ${status === 'live' ? 'border-red-500/60 hover:border-red-400/70' : 'border-slate-800/80'}`}>
+      <header className="flex items-center justify-between gap-3 border-b border-white/10 pb-3">
+        <span className={`gs-badge normal-case tracking-normal ${status === 'live' ? 'gs-badge-live' : status === 'finished' ? 'gs-badge-finished' : 'gs-badge-upcoming'}`}>
+          {status === 'live' && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current" aria-hidden="true" />}
+          {statusLabel}
+        </span>
+        <div className="min-w-0 max-w-[55%] text-right">
+          {onFiltrarLiga ? (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onFiltrarLiga(evento.competicion); }}
+              className="min-h-11 max-w-full truncate rounded-lg px-2 text-[10px] font-bold text-slate-400 transition-colors hover:text-blue-300"
+              title={`Filtrar por ${evento.competicion}`}
+            >
+              {evento.competicion}
+            </button>
+          ) : (
+            <span className="block truncate px-2 text-[10px] font-bold text-slate-400">{evento.competicion}</span>
+          )}
         </div>
-      )}
+      </header>
 
-      {/* Tipo de deporte visual y Hora */}
-      <div className="flex flex-row md:flex-col items-center md:items-start justify-between md:justify-center border-b md:border-b-0 md:border-r border-white/10 pb-3 md:pb-0 md:pr-6 gap-2 w-full md:w-auto md:min-w-[120px]">
-        <div className="flex items-center gap-3 md:block">
-          <div className="text-3xl md:text-4xl opacity-80 md:mb-1">{EMOJIS[evento.deporte] || "🏆"}</div>
-          <div className="flex items-center gap-2 text-slate-200 font-bold text-xl tracking-tighter">
-            <Clock size={16} className={isLive ? "text-red-400" : "text-slate-400"} />
-            <span className={isLive ? "text-red-400" : ""}>{evento.hora}</span>
+      <div className="flex flex-col gap-4 pt-4 md:flex-row md:items-center">
+        <div className="flex shrink-0 items-center gap-3 border-b border-white/10 pb-4 md:min-w-[118px] md:flex-col md:items-start md:border-b-0 md:border-r md:pb-0 md:pr-5">
+          <div className="text-2xl opacity-80 md:text-3xl" aria-hidden="true">{EMOJIS[evento.deporte] || "🏆"}</div>
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">{status === 'live' ? 'Ahora' : 'Inicio'}</p>
+            <div className={`flex items-center gap-2 text-2xl font-black tracking-tight ${status === 'live' ? 'text-red-300' : 'text-white'}`}>
+              <Clock size={17} aria-hidden="true" />
+              <span className="gs-time">{evento.hora || 'Por definir'}</span>
+            </div>
+            <p className="mt-1 text-xs font-semibold capitalize text-slate-400">{formatEventDate(evento.fecha)}</p>
           </div>
         </div>
-      </div>
 
-      {/* Main Info */}
-      <div className="flex-1 flex flex-col justify-center min-w-0 pr-2">
-        {onFiltrarLiga ? (
+        <div className="min-w-0 flex-1">
           <button
             type="button"
-            onClick={(e) => { e.stopPropagation(); onFiltrarLiga?.(evento.competicion); }}
-            className="min-h-11 text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1 truncate hover:text-blue-400 transition-colors text-left flex items-center gap-1"
+            onClick={onClick}
+            disabled={!onClick}
+            aria-label={`Ver detalles de ${evento.evento}`}
+            className="w-full rounded-xl text-left focus-visible:ring-2 focus-visible:ring-[#a3e635] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
           >
-            {evento.competicion}
-            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-0 group-hover:opacity-100 transition-opacity">
-              <path d="m15 18-6-6 6-6"/>
-            </svg>
+            {isMatch ? (
+              <span className="flex items-center gap-2 sm:gap-4">
+                <span className="flex min-w-0 flex-1 items-center justify-end gap-2">
+                  <span className="line-clamp-2 text-right text-sm font-bold leading-snug text-white sm:text-base">{teams[0].trim()}</span>
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-white/10 bg-slate-800 text-[10px] font-black text-slate-300" aria-hidden="true">
+                    {teams[0].trim().substring(0, 2).toUpperCase()}
+                  </span>
+                </span>
+                <span className="select-none text-[10px] font-bold text-slate-500" aria-hidden="true">VS</span>
+                <span className="flex min-w-0 flex-1 items-center gap-2">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-white/10 bg-slate-800 text-[10px] font-black text-slate-300" aria-hidden="true">
+                    {teams[1].trim().substring(0, 2).toUpperCase()}
+                  </span>
+                  <span className="line-clamp-2 text-sm font-bold leading-snug text-white sm:text-base">{teams[1].trim()}</span>
+                </span>
+              </span>
+            ) : (
+              <span className="block line-clamp-2 text-base font-bold leading-snug text-white transition-colors group-hover:text-slate-100 md:text-lg">{evento.evento}</span>
+            )}
           </button>
-        ) : (
-          <span className="min-h-11 text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1 truncate flex items-center">
-            {evento.competicion}
-          </span>
-        )}
 
-        <button
-          type="button"
-          onClick={onClick}
-          disabled={!onClick}
-          aria-label={`Ver detalles de ${evento.evento}`}
-          className="w-full min-h-11 rounded-xl text-left focus-visible:ring-2 focus-visible:ring-[#a3e635] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
-        >
-          {isMatch ? (
-            <span className="flex items-center gap-3 md:gap-6 my-2">
-              <span className="flex items-center gap-1.5 sm:gap-2 flex-1 justify-end min-w-0">
-                <span className="text-[11px] sm:text-sm md:text-base font-bold text-white line-clamp-2 text-right leading-snug">{teams[0].trim()}</span>
-                <span className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center border-2 border-white/10 shadow-lg text-[10px] font-black shrink-0 text-slate-300" aria-hidden="true">
-                  {teams[0].trim().substring(0,2).toUpperCase()}
-                </span>
-              </span>
-              <span className="text-[10px] font-bold text-slate-500 select-none" aria-hidden="true">VS</span>
-              <span className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
-                <span className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center border-2 border-white/10 shadow-lg text-[10px] font-black shrink-0 text-slate-300" aria-hidden="true">
-                  {teams[1].trim().substring(0,2).toUpperCase()}
-                </span>
-                <span className="text-[11px] sm:text-sm md:text-base font-bold text-white line-clamp-2 leading-snug">{teams[1].trim()}</span>
-              </span>
+          <div className="mt-3 flex min-w-0 flex-wrap items-center gap-2" aria-label={transmissionUnconfirmed ? 'Transmisión no confirmada' : 'Canales de transmisión'}>
+            <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-blue-300">
+              <Tv size={14} aria-hidden="true" /> Dónde verlo
             </span>
-          ) : (
-            <span className="block text-base md:text-lg font-bold text-slate-200 group-hover:text-white leading-snug mb-2 line-clamp-2">{evento.evento}</span>
-          )}
-        </button>
-
-        {/* Canales */}
-        <div className="flex flex-wrap items-center gap-2 mt-1">
-          {formatChannels(evento.canales, theme)}
+            {formatChannels(evento.canales, transmissionUnconfirmed)}
+          </div>
         </div>
-      </div>
 
-      {/* Share / Actions */}
-      <div className="flex items-center justify-end gap-2 w-full md:w-auto md:shrink-0 mt-1 md:mt-0">
-        <Link
-          href={eventPath}
-          onClick={(e) => e.stopPropagation()}
-          className="hidden sm:flex min-h-11 min-w-11 items-center justify-center gap-1.5 p-2.5 bg-slate-800/50 rounded-xl hover:bg-white/10 transition-colors text-slate-400 hover:text-white"
-          aria-label={`Ver página de ${evento.evento}`}
-        >
-          <ExternalLink size={14} aria-hidden="true" />
-        </Link>
-        <ShareButton 
-          titulo={evento.evento} 
-          url={eventUrl} 
-          variant="icon"
-          className="min-h-11 min-w-11 grid place-items-center bg-slate-800/50 hover:bg-white/10"
-        />
+        <div className="flex w-full shrink-0 items-center justify-end gap-2 md:w-auto md:flex-col">
+          {onClick ? (
+            <button
+              type="button"
+              onClick={onClick}
+              className="gs-button gs-button-primary min-h-11 flex-1 px-3 text-[10px] sm:flex-none"
+            >
+              Ver detalle <ChevronRight size={15} aria-hidden="true" />
+            </button>
+          ) : (
+            <Link
+              href={eventPath}
+              className="gs-button gs-button-primary min-h-11 flex-1 px-3 text-[10px] sm:flex-none"
+              aria-label={`Ver página de ${evento.evento}`}
+            >
+              Ver detalle <ExternalLink size={14} aria-hidden="true" />
+            </Link>
+          )}
+          <div className="flex shrink-0 items-center gap-2">
+            {onClick && (
+              <Link
+                href={eventPath}
+                onClick={(e) => e.stopPropagation()}
+                className="gs-button-icon"
+                aria-label={`Ver página de ${evento.evento}`}
+              >
+                <ExternalLink size={14} aria-hidden="true" />
+              </Link>
+            )}
+            <ShareButton
+              titulo={evento.evento}
+              url={eventUrl}
+              variant="icon"
+              className="min-h-11 min-w-11"
+            />
+          </div>
+        </div>
       </div>
     </article>
   );

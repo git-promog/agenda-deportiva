@@ -193,28 +193,51 @@ export default async function CompetitionHub({ params }: Props) {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-24">
-        <div className="max-w-4xl mx-auto px-4 pt-10">
+        <div className="max-w-4xl mx-auto px-4 pt-8">
           <Breadcrumbs
             items={[{ label: 'Fútbol', href: '/futbol' }]}
             current={hub.name}
             currentHref={`/futbol/${competicion}`}
           />
 
-          <header className="mb-12">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="text-[10px] font-black text-[#a3e635] uppercase tracking-[0.3em] bg-[#a3e635]/10 px-3 py-1 rounded-full border border-[#a3e635]/20">
-                GuíaSports Hub
+          <header className="gs-hub-header">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="gs-badge gs-badge-live">
+                Hub {hub.name}
               </span>
               {isLigaMx && (
-                <span className="text-[10px] font-black text-blue-400 uppercase tracking-[0.3em] bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
-                  Estadísticas Oficiales
+                <span className="gs-badge">
+                  Estadísticas Oficiales Apertura 2026
                 </span>
               )}
             </div>
-            <h1 className="text-3xl md:text-5xl font-black italic uppercase leading-[0.95] tracking-tighter mb-5">
-              {hub.name} <span className="text-blue-500">en Vivo</span>
-            </h1>
-            <p className="text-slate-400 max-w-2xl leading-relaxed">{hub.intro}</p>
+            <div>
+              <h1 className="gs-hub-title">
+                {hub.name} <strong>en Vivo</strong>
+              </h1>
+              <p className="text-slate-300 max-w-2xl text-sm leading-relaxed mt-2">{hub.intro}</p>
+            </div>
+
+            <nav aria-label="Navegación entre competiciones" className="gs-hub-quicklinks">
+              <Link href="/futbol" className="gs-hub-quicklink">
+                ← Todo Fútbol
+              </Link>
+              {competicion !== 'liga-mx' && (
+                <Link href="/futbol/liga-mx" className="gs-hub-quicklink">
+                  🇲🇽 Liga MX
+                </Link>
+              )}
+              {competicion !== 'champions-league' && (
+                <Link href="/futbol/champions-league" className="gs-hub-quicklink">
+                  ⭐ Champions League
+                </Link>
+              )}
+              {competicion !== 'premier-league' && (
+                <Link href="/futbol/premier-league" className="gs-hub-quicklink">
+                  🦁 Premier League
+                </Link>
+              )}
+            </nav>
           </header>
 
           {/* Agenda de Partidos y Canales (Prioridad 1) */}
@@ -240,15 +263,23 @@ export default async function CompetitionHub({ params }: Props) {
 
           {/* Noticias y previas */}
           {noticias.length > 0 && (
-            <section>
-              <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-5">Noticias y previas</h2>
+            <section className="mt-14">
+              <h2 className="gs-section-title mb-5">Noticias y previas de {hub.name}</h2>
               <div className="grid md:grid-cols-2 gap-4">
                 {noticias.map((noticia) => (
-                  <Link key={noticia.slug} href={`/noticias/${noticia.slug}`} className="bg-slate-900/30 border border-slate-800 rounded-2xl p-5 hover:border-blue-500/30 transition-colors group">
-                    <h3 className="font-black italic uppercase text-sm text-slate-200 group-hover:text-white leading-tight mb-3">{noticia.titulo}</h3>
-                    <p className="text-[9px] text-slate-500 uppercase font-bold tracking-widest flex items-center gap-1">
-                      Leer previa <ChevronRight size={10} />
-                    </p>
+                  <Link
+                    key={noticia.slug}
+                    href={`/noticias/${noticia.slug}`}
+                    className="gs-news-card group"
+                  >
+                    <div className="gs-news-card-body">
+                      <h3 className="gs-news-title group-hover:text-blue-400 transition-colors line-clamp-2">
+                        {noticia.titulo}
+                      </h3>
+                      <p className="text-[11px] font-bold text-slate-400 mt-auto uppercase tracking-wider flex items-center gap-1 group-hover:text-white transition-colors">
+                        Leer previa <ChevronRight size={12} />
+                      </p>
+                    </div>
                   </Link>
                 ))}
               </div>

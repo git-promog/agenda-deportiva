@@ -2,15 +2,15 @@ import Link from 'next/link';
 
 export default function Footer() {
   return (
-    <footer className="max-w-4xl mx-auto px-4 py-12 border-t border-slate-900 mt-10 text-center w-full">
-      <div className="flex flex-wrap justify-center gap-6 mb-8">
-        <Link href="/" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-blue-500 transition-colors">Inicio</Link>
-        <Link href="/noticias" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-blue-500 transition-colors">Noticias</Link>
-        <Link href="/quienes-somos" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-blue-500 transition-colors">Quiénes Somos</Link>
-        <Link href="/privacidad" prefetch={false} className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-blue-500 transition-colors">Privacidad</Link>
-        <Link href="/contacto" prefetch={false} className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-blue-500 transition-colors">Contacto</Link>
+    <footer className="gs-footer max-w-4xl mx-auto w-full">
+      <div className="gs-footer-links flex flex-wrap justify-center">
+        <Link href="/" className="gs-footer-link">Inicio</Link>
+        <Link href="/noticias" className="gs-footer-link">Noticias</Link>
+        <Link href="/quienes-somos" className="gs-footer-link">Quiénes Somos</Link>
+        <Link href="/privacidad" prefetch={false} className="gs-footer-link">Privacidad</Link>
+        <Link href="/contacto" prefetch={false} className="gs-footer-link">Contacto</Link>
       </div>
-      <p className="text-[10px] text-slate-600 uppercase tracking-[0.3em] leading-loose">
+      <p className="gs-footer-copy">
         © {new Date().getFullYear()} GuíaSports <br/>
         Toda la programación está sujeta a cambios por parte de las televisoras. <br/>
         No transmitimos eventos, solo proporcionamos información de guía de canales.

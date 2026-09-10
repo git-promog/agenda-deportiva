@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import NextImage from 'next/image';
+import { usePathname, useRouter } from 'next/navigation';
 import { Newspaper, Radio, Mail, Users, Tv } from 'lucide-react';
 import { trackEvent } from '@/lib/analytics';
 
@@ -15,13 +16,28 @@ interface HeaderProps {
 
 export default function Header({ ultimaAct, showSearch = false, busqueda = '', onBusquedaChange }: HeaderProps) {
   const [scrollProgress, setScrollProgress] = useState(0);
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const isActiveRoute = (href: string) => href === '/' ? pathname === '/' : pathname.startsWith(href);
+  const isLiveRoute = pathname.startsWith('/envivo');
+  const isAboutRoute = pathname.startsWith('/quienes-somos') || pathname.startsWith('/team');
+
+  const handleLiveNavigation = () => {
+    trackEvent('nav_click', { destination: 'envivo' });
+    if (pathname === '/') {
+      window.dispatchEvent(new CustomEvent('scroll-to-live'));
+    } else {
+      router.push('/envivo');
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
       const totalScroll = window.scrollY;
       const windowHeight = document.body.scrollHeight - window.innerHeight;
       if (windowHeight > 0) {
-        setScrollProgress((totalScroll / windowHeight) * 100);
+        setScrollProgress(Math.min(100, Math.max(0, (totalScroll / windowHeight) * 100)));
       }
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -30,58 +46,62 @@ export default function Header({ ultimaAct, showSearch = false, busqueda = '', o
 
   return (
     <>
-      <div className="fixed top-0 left-0 w-full h-1 bg-slate-900 z-[60]">
-        <div className="h-full bg-gradient-to-r from-[#a3e635] to-blue-500 transition-all duration-75" style={{ width: `${scrollProgress}%` }}></div>
+      <div className="gs-progress-track fixed top-0 left-0 z-[60] w-full" aria-hidden="true">
+        <div className="gs-progress-bar h-full" style={{ width: `${scrollProgress}%` }}></div>
       </div>
-      <header className="relative z-50 border-b border-white/5 bg-[#020617]/50 backdrop-blur-xl w-full overflow-x-hidden pt-1">
-        <div className="max-w-4xl mx-auto px-4 py-3 md:pt-4 md:pb-0 w-full">
+      <header className="gs-shell-header relative z-50 w-full overflow-x-hidden pt-1">
+        <div className="gs-shell-container mx-auto w-full">
           <div className="flex justify-between items-center md:mb-4">
-            <Link href="/" aria-label="GuíaSports, inicio" className="inline-flex min-h-11 items-center transition-transform active:scale-95 shrink-0">
+            <Link href="/" aria-label="GuíaSports, inicio" className="gs-brand inline-flex min-h-11 shrink-0 items-center">
               <NextImage src="/GuiaSports-logo.svg" alt="GuíaSports" width={200} height={50} className="h-10 w-auto" priority />
             </Link>
             <div className="hidden sm:flex flex-col items-end">
-              <div className="text-[10px] font-black text-[#a3e635] bg-[#a3e635]/10 px-2 py-1 rounded border border-[#a3e635]/20 uppercase italic mb-1 tracking-widest">México</div>
+              <div className="gs-region-badge mb-1">México</div>
               {ultimaAct && (
-                <div className="text-[9px] font-bold text-slate-500 uppercase flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 bg-[#a3e635] rounded-full animate-pulse"></div> {ultimaAct}
+                <div className="gs-update-status flex items-center gap-1.5">
+                  <div className="gs-status-dot" aria-hidden="true"></div> {ultimaAct}
                 </div>
               )}
             </div>
           </div>
 
           {/* Desktop Navigation */}
-          <nav aria-label="Navegación principal" className="hidden md:flex items-center gap-6 mb-4">
-            <Link href="/" className="min-h-11 text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-[#a3e635] transition-colors flex items-center gap-1.5">
+          <nav aria-label="Navegación principal" className="gs-desktop-nav hidden md:flex items-center">
+            <Link href="/" aria-current={isActiveRoute('/') ? 'page' : undefined} className={`gs-nav-link ${isActiveRoute('/') ? 'gs-nav-link-active' : ''}`}>
               <Radio size={14} aria-hidden="true" /> Agenda
             </Link>
-            <button type="button" aria-label="Ver eventos en vivo" onClick={() => { window.dispatchEvent(new CustomEvent('scroll-to-live')); }} className="min-h-11 bg-red-600 text-white rounded-xl px-3 py-2 font-black uppercase text-[10px] tracking-widest shadow-[0_0_20px_rgba(220,38,38,0.5)] animate-pulse flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" aria-hidden="true"></span> En Vivo
+            <button type="button" aria-label="Ver eventos en vivo" aria-current={isLiveRoute ? 'page' : undefined} onClick={handleLiveNavigation} className={`gs-nav-link gs-nav-link-live ${isLiveRoute ? 'gs-nav-link-active' : ''}`}>
+              <span className="gs-status-dot gs-status-dot-live" aria-hidden="true"></span> En Vivo
             </button>
             <Link 
               href="/noticias" 
+              aria-current={isActiveRoute('/noticias') ? 'page' : undefined}
               onClick={() => trackEvent('nav_click', { destination: 'noticias' })}
-              className="min-h-11 text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-[#a3e635] transition-colors flex items-center gap-1.5"
+              className={`gs-nav-link ${isActiveRoute('/noticias') ? 'gs-nav-link-active' : ''}`}
             >
               <Newspaper size={14} aria-hidden="true" /> Noticias
             </Link>
             <Link 
               href="/plataformas" 
+              aria-current={isActiveRoute('/plataformas') ? 'page' : undefined}
               onClick={() => trackEvent('nav_click', { destination: 'plataformas' })}
-              className="min-h-11 text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-[#a3e635] transition-colors flex items-center gap-1.5"
+              className={`gs-nav-link ${isActiveRoute('/plataformas') ? 'gs-nav-link-active' : ''}`}
             >
               <Tv size={14} aria-hidden="true" /> Plataformas
             </Link>
             <Link 
               href="/quienes-somos" 
+              aria-current={isAboutRoute ? 'page' : undefined}
               onClick={() => trackEvent('nav_click', { destination: 'quienes-somos' })}
-              className="min-h-11 text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-[#a3e635] transition-colors flex items-center gap-1.5"
+              className={`gs-nav-link ${isAboutRoute ? 'gs-nav-link-active' : ''}`}
             >
               <Users size={14} aria-hidden="true" /> Nosotros
             </Link>
             <Link 
               href="/contacto" 
+              aria-current={isActiveRoute('/contacto') ? 'page' : undefined}
               onClick={() => trackEvent('nav_click', { destination: 'contacto' })}
-              className="min-h-11 text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-[#a3e635] transition-colors flex items-center gap-1.5"
+              className={`gs-nav-link ${isActiveRoute('/contacto') ? 'gs-nav-link-active' : ''}`}
             >
               <Mail size={14} aria-hidden="true" /> Contacto
             </Link>
@@ -94,7 +114,7 @@ export default function Header({ ultimaAct, showSearch = false, busqueda = '', o
                 id="buscar" 
                 type="text" 
                 placeholder="Busca equipos o ligas..." 
-                className="w-full bg-slate-900/50 border border-slate-800 rounded-2xl py-3 pl-4 pr-12 text-base focus:outline-none focus:border-[#a3e635] focus-visible:ring-2 focus-visible:ring-[#a3e635] text-slate-200"
+                className="gs-field py-3 pr-12"
                 value={busqueda} 
                 onChange={(e) => onBusquedaChange?.(e.target.value)} 
               />
@@ -102,7 +122,7 @@ export default function Header({ ultimaAct, showSearch = false, busqueda = '', o
                 <button 
                   type="button"
                   onClick={() => onBusquedaChange?.('')} 
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-slate-800 grid place-items-center w-11 h-11 rounded-full text-slate-400 hover:text-white"
+                  className="gs-button-icon absolute right-2 top-1/2 -translate-y-1/2"
                   aria-label="Limpiar búsqueda"
                 >
                   ✕

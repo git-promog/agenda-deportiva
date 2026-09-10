@@ -412,79 +412,80 @@ export default function Mundial2026() {
       <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-24 relative overflow-x-hidden">
         <Header />
         {/* Background Accents */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2"></div>
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-yellow-500/5 blur-[100px] rounded-full translate-y-1/2 -translate-x-1/2"></div>
-
-        <div className="max-w-4xl mx-auto px-4 pt-10 relative z-10">
-          <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest mb-8">
-            <Link href="/" className="text-slate-600 hover:text-blue-400 transition-colors">Inicio</Link>
-            <span className="text-slate-700">/</span>
+        <div className="max-w-4xl mx-auto px-4 pt-8 relative z-10">
+          <nav aria-label="Breadcrumb" className="gs-breadcrumbs">
+            <Link href="/" className="gs-breadcrumbs-link">Inicio</Link>
+            <span className="gs-breadcrumbs-separator" aria-hidden="true">/</span>
             <button 
               onClick={() => { setActiveTab('overview'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-              className={`transition-colors ${activeTab === 'overview' ? 'text-slate-300 cursor-default' : 'text-slate-500 hover:text-blue-400'}`}
+              className={`gs-breadcrumbs-link ${activeTab === 'overview' ? 'gs-breadcrumbs-current cursor-default' : ''}`}
             >
               Mundial 2026
             </button>
             {activeTab !== 'overview' && (
               <>
-                <span className="text-slate-700">/</span>
-                <span className="text-slate-300">{TAB_CONFIG.find(t => t.id === activeTab)?.label}</span>
+                <span className="gs-breadcrumbs-separator" aria-hidden="true">/</span>
+                <span className="gs-breadcrumbs-current">{TAB_CONFIG.find(t => t.id === activeTab)?.label}</span>
               </>
             )}
           </nav>
 
-          <header className="mb-10 relative bg-slate-900/40 rounded-[40px] border border-white/5 p-8 md:p-12 overflow-hidden shadow-2xl">
-            {/* Animated CSS Background & Video */}
+          <header className="mb-10 relative bg-slate-900/60 rounded-3xl border border-slate-800 p-6 md:p-10 overflow-hidden shadow-2xl">
+            {/* Background & Video */}
             <div className="absolute inset-0 z-0 bg-[#020617]">
-              <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-60">
+              <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-40">
                 <source src="/video/heromundial.mp4" type="video/mp4" />
               </video>
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-900/40 via-[#020617]/70 to-[#020617]/90"></div>
-              <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-500/20 via-transparent to-transparent"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-slate-950/90 via-[#020617]/85 to-[#020617]/95"></div>
             </div>
 
-            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
-              <div className="flex items-center gap-6">
-                <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 p-3 rounded-3xl shadow-2xl shadow-black/20 w-24 h-24 md:w-32 md:h-32 flex items-center justify-center overflow-hidden">
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+              <div className="flex items-center gap-5">
+                <div className="relative bg-slate-900/80 border border-slate-700/60 p-2.5 rounded-2xl shadow-lg w-20 h-20 md:w-28 md:h-28 flex items-center justify-center overflow-hidden shrink-0">
                   <NextImage
                     src="/images/mundial/Copa_Mundial_FIFA_2026-logo.webp" 
                     alt="Copa Mundial de la FIFA 2026™" 
                     fill
-                    sizes="128px"
-                    className="w-full h-full object-contain transform hover:scale-110 transition-transform duration-700 drop-shadow-xl"
+                    sizes="112px"
+                    className="w-full h-full object-contain"
                   />
                 </div>
                 <div>
-                  <h1 className="text-4xl md:text-6xl font-black italic uppercase leading-[0.9] tracking-tighter bg-gradient-to-r from-white via-white to-slate-400 bg-clip-text text-transparent drop-shadow-sm">
-                    Mundial <span className="text-yellow-500">2026</span>
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <span className="gs-badge gs-badge-unconfirmed">
+                      Archivo Histórico Oficial
+                    </span>
+                    <span className="gs-badge">
+                      Torneo Concluido
+                    </span>
+                  </div>
+                  <h1 className="text-3xl md:text-5xl font-black italic uppercase leading-[0.95] tracking-tighter text-white">
+                    Mundial <span className="text-[var(--gs-color-yellow)]">2026</span>
                   </h1>
-                  <p className="text-[10px] font-black text-white/90 uppercase tracking-widest mt-2 bg-blue-600/30 w-fit px-3 py-1 rounded-lg border border-blue-500/30 backdrop-blur-md">
-                    Archivo histórico · Copa Mundial de la FIFA 2026™
-                  </p>
-                  <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.4em] mt-4 flex items-center gap-2">
-                    <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
+                  <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mt-2 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-yellow-400 rounded-full"></span>
                     México • Estados Unidos • Canadá
                   </p>
                 </div>
               </div>
-              <div className="flex flex-col items-center gap-3">
-                <div className="flex md:flex-col items-center md:items-end gap-2 bg-slate-900/60 backdrop-blur-xl border border-slate-700/50 p-4 rounded-3xl px-6 shadow-inner">
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Fechas del torneo</span>
-                  <span className="text-2xl font-black italic text-white leading-none">11 JUN — 19 JUL</span>
+              <div className="flex flex-col items-start md:items-end gap-2">
+                <div className="bg-slate-900/90 border border-slate-800 p-3.5 px-5 rounded-2xl">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Fechas de disputa</span>
+                  <span className="text-xl font-black italic text-white leading-none">11 JUN — 19 JUL 2026</span>
                 </div>
               </div>
             </div>
 
             {/* Stat Pills */}
-            <div className="relative z-10 flex flex-wrap gap-3">
+            <div className="relative z-10 flex flex-wrap gap-2.5">
               {[
-                { valor: '48',  label: 'Selecciones', color: 'from-blue-600/20 to-blue-600/5   border-blue-500/20  text-blue-400'  },
-                { valor: '104', label: 'Partidos',    color: 'from-yellow-500/20 to-yellow-500/5 border-yellow-500/20 text-yellow-400' },
-                { valor: '16',  label: 'Sedes',       color: 'from-green-600/20 to-green-600/5  border-green-500/20 text-green-400'  },
-                { valor: '39',  label: 'Días de torneo', color: 'from-purple-600/20 to-purple-600/5 border-purple-500/20 text-purple-400' },
+                { valor: '48',  label: 'Selecciones', color: 'text-blue-400 border-slate-800 bg-slate-900/80' },
+                { valor: '104', label: 'Partidos',    color: 'text-yellow-400 border-slate-800 bg-slate-900/80' },
+                { valor: '16',  label: 'Sedes',       color: 'text-emerald-400 border-slate-800 bg-slate-900/80' },
+                { valor: '39',  label: 'Días de torneo', color: 'text-purple-400 border-slate-800 bg-slate-900/80' },
               ].map(({ valor, label, color }) => (
-                <div key={label} className={`flex items-center gap-2 bg-gradient-to-r ${color} border px-4 py-2 rounded-2xl backdrop-blur-sm`}>
-                  <span className={`text-lg font-black italic leading-none ${color.includes('blue') ? 'text-blue-400' : color.includes('yellow') ? 'text-yellow-400' : color.includes('green') ? 'text-green-400' : 'text-purple-400'}`}>{valor}</span>
+                <div key={label} className={`flex items-center gap-2 border px-3.5 py-1.5 rounded-xl ${color}`}>
+                  <span className="text-base font-black italic leading-none">{valor}</span>
                   <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">{label}</span>
                 </div>
               ))}
@@ -596,7 +597,7 @@ export default function Mundial2026() {
                 {noticias.length > 0 && (
                   <section>
                     <div className="flex items-center justify-between mb-8">
-                      <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] flex items-center gap-2">
+                      <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-2">
                         <Newspaper size={14} className="text-blue-500" /> MUNDIAL: Últimas Noticias
                       </h2>
                       <Link href="/noticias" className="text-[10px] font-black text-blue-400 hover:text-blue-300 uppercase transition-colors">
@@ -606,9 +607,9 @@ export default function Mundial2026() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {noticias.map((n) => (
                         <Link key={n.id} href={`/noticias/${n.slug}`} className="bg-slate-900/30 border border-slate-800/50 p-6 rounded-3xl hover:border-blue-500/30 transition-all group">
-                          <span className="text-[9px] font-bold text-slate-500 block mb-3 uppercase tracking-widest">{n.fecha}</span>
+                          <span className="text-[9px] font-bold text-slate-400 block mb-3 uppercase tracking-widest">{n.fecha}</span>
                           <h3 className="text-sm font-black italic uppercase text-slate-200 group-hover:text-white leading-tight mb-2 line-clamp-2">{n.titulo}</h3>
-                          <p className="text-[10px] text-slate-500 font-bold uppercase group-hover:text-blue-400 transition-colors">Leer noticia completa →</p>
+                          <p className="text-[10px] text-slate-400 font-bold uppercase group-hover:text-blue-400 transition-colors">Leer noticia completa →</p>
                         </Link>
                       ))}
                     </div>
@@ -617,7 +618,7 @@ export default function Mundial2026() {
 
                 {/* FAQ Section */}
                 <section>
-                  <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-8">Preguntas Frecuentes</h2>
+                  <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8">Preguntas Frecuentes</h2>
                   <div className="grid gap-3">
                     {FAQS.map((faq) => (
                       <div key={faq.q} className="bg-slate-900/20 border border-slate-800/50 p-6 rounded-3xl">
@@ -652,7 +653,7 @@ export default function Mundial2026() {
                 >
                   <div className="max-w-4xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className={filtersFixed ? 'hidden md:block' : 'block'}>
-                      <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Archivo de partidos</h2>
+                      <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Archivo de partidos</h2>
                       <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest bg-blue-500/10 px-3 py-1 rounded-lg mt-2 inline-block">FIFA 2026™</span>
                     </div>
 
@@ -671,9 +672,9 @@ export default function Mundial2026() {
                       {isLoaded && favorites.length > 0 && (
                         <button
                           onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                          className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shrink-0 transition-all border ${showFavoritesOnly ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40' : 'bg-slate-900/80 text-slate-400 border-slate-700/50 hover:border-yellow-500/30 hover:text-yellow-400'}`}
+                          className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shrink-0 transition-all border active:scale-95 motion-reduce:active:scale-100 ${showFavoritesOnly ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40' : 'bg-slate-900/80 text-slate-400 border-slate-700/50 hover:border-yellow-500/30 hover:text-yellow-400'}`}
                         >
-                          <Star size={12} className={showFavoritesOnly ? "fill-yellow-500 text-yellow-500" : "text-slate-400"} />
+                          <Star size={12} className={`transition-colors ${showFavoritesOnly ? "fill-yellow-500 text-yellow-500" : "text-slate-400"}`} />
                           Mis Favoritos
                         </button>
                       )}
@@ -738,7 +739,7 @@ export default function Mundial2026() {
                           placeholder="Buscar..."
                           value={searchQuery}
                           onChange={e => setSearchQuery(e.target.value)}
-                          className="bg-transparent text-[10px] font-black text-white uppercase outline-none placeholder:text-slate-600 w-full"
+                          className="bg-transparent text-[10px] font-black text-white uppercase outline-none placeholder:text-slate-400 w-full"
                         />
                       </div>
                     </div>
@@ -768,10 +769,10 @@ export default function Mundial2026() {
                             <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border ${
                               'bg-slate-900/40 border-slate-800/50'
                             }`}>
-                              <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">{fechaLabel}</span>
+                              <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{fechaLabel}</span>
                             </div>
                             <div className="flex-1 h-px bg-slate-800/60" />
-                            <span className="text-[8px] font-black text-slate-700 uppercase">{partidos.length} partido{partidos.length > 1 ? 's' : ''}</span>
+                            <span className="text-[8px] font-black text-slate-400 uppercase">{partidos.length} partido{partidos.length > 1 ? 's' : ''}</span>
                           </div>
 
                           {/* Partidos del día */}
@@ -801,7 +802,7 @@ export default function Mundial2026() {
 
                   {filteredMatches.length === 0 && (
                     <div className="text-center py-20 bg-slate-900/20 rounded-[40px] border border-dashed border-slate-800">
-                      <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">No hay partidos registrados con estos filtros</p>
+                      <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">No hay partidos registrados con estos filtros</p>
                     </div>
                   )}
                 </div>
@@ -816,7 +817,7 @@ export default function Mundial2026() {
                       Ver más partidos 
                       <span className="block text-[8px] opacity-70 mt-1 uppercase tracking-normal">Mostrando {visibleMatches} de {MATCHES.length}</span>
                     </button>
-                    <p className="text-[9px] text-slate-600 font-bold uppercase tracking-widest mt-4">El archivo conserva los 104 partidos del torneo</p>
+                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-4">El archivo conserva los 104 partidos del torneo</p>
                   </div>
                 )}
               </div>
@@ -888,11 +889,11 @@ export default function Mundial2026() {
                           </div>
                           <div className="flex flex-col items-end gap-2">
                             <div className="bg-white/5 border border-white/10 px-5 py-3 rounded-2xl backdrop-blur-md hidden sm:block">
-                              <span className="text-[9px] font-black text-slate-500 block uppercase tracking-widest mb-1">Capacidad</span>
+                              <span className="text-[9px] font-black text-slate-400 block uppercase tracking-widest mb-1">Capacidad</span>
                               <span className="text-lg font-black text-white italic">{s.capacidad}</span>
                             </div>
                             <div className={`px-4 py-2 rounded-xl border ${borderColor} bg-slate-900/50 flex flex-col items-center min-w-[100px]`}>
-                               <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-0.5">Primer partido</span>
+                               <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Primer partido</span>
                                <span className={`text-sm font-black italic ${textColor}`}>{getFirstMatchDate(s.estadio)}</span>
                             </div>
                           </div>
@@ -932,7 +933,7 @@ export default function Mundial2026() {
                  </div>
                  <Calendar className="text-green-500 mb-4" size={32} />
                  <h3 className="text-lg font-black italic uppercase text-white mb-2">Calendario</h3>
-                 <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Ver todos los partidos →</p>
+                 <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Ver todos los partidos →</p>
                </div>
                <div 
                  onClick={() => { setActiveTab('groups'); window.scrollTo({ top: 400, behavior: 'smooth' }); }}
@@ -943,7 +944,7 @@ export default function Mundial2026() {
                  </div>
                  <Table className="text-blue-500 mb-4" size={32} />
                  <h3 className="text-lg font-black italic uppercase text-white mb-2">Tabla de Grupos</h3>
-                 <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Consulta las 48 selecciones →</p>
+                 <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Consulta las 48 selecciones →</p>
                </div>
                <div 
                  onClick={() => { setActiveTab('venues'); window.scrollTo({ top: 400, behavior: 'smooth' }); }}
@@ -954,12 +955,12 @@ export default function Mundial2026() {
                  </div>
                  <MapPin className="text-yellow-500 mb-4" size={32} />
                  <h3 className="text-lg font-black italic uppercase text-white mb-2">Sedes del torneo</h3>
-                 <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Explora los estadios →</p>
+                 <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Explora los estadios →</p>
                </div>
             </div>
 
             <div className="text-center flex flex-col items-center">
-              <h2 className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] mb-6">¿Deseas volver a la programación general?</h2>
+              <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-6">¿Deseas volver a la programación general?</h2>
               <Link href="/" className="inline-flex items-center gap-3 text-slate-400 hover:text-white transition-all text-[10px] font-black uppercase tracking-[0.2em] bg-slate-900/50 px-8 py-4 rounded-2xl border border-slate-800 hover:border-slate-600 mb-6">
                 <Radio size={14} className="text-red-500" /> Ver Agenda Principal GuíaSports
               </Link>

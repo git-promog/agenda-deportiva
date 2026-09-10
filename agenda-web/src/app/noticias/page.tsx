@@ -102,64 +102,127 @@ export default async function NoticiasIndex({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-24">
-        <div className="max-w-4xl mx-auto px-4 pt-10">
+        <div className="max-w-4xl mx-auto px-4 pt-8">
           <Breadcrumbs items={[]} current="Noticias" currentHref="/noticias" />
 
-          <header className="mb-12">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="bg-[#a3e635]/10 p-4 rounded-2xl border border-[#a3e635]/20">
-                <Newspaper className="text-[#a3e635]" size={32} />
+          <header className="gs-hub-header">
+            <div className="gs-hub-identity">
+              <div className="gs-hub-icon-box" aria-hidden="true">
+                <Newspaper className="text-[#a3e635]" size={28} />
               </div>
               <div>
-                <h1 className="text-3xl md:text-5xl font-black italic uppercase leading-[0.95] tracking-tighter">
-                  Noticias y <span className="text-[#a3e635]">Previas</span>
+                <h1 className="gs-hub-title">
+                  Noticias y <strong>Previas</strong>
                 </h1>
-                <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-2">
-                  Análisis, horarios y dónde ver
+                <p className="gs-hub-subtitle">
+                  Análisis, horarios y transmisiones en vivo
                 </p>
               </div>
             </div>
+
+            <nav aria-label="Temas y deportes" className="gs-hub-quicklinks">
+              <span className="gs-hub-quicklink gs-hub-quicklink-active">
+                Todas las noticias
+              </span>
+              <Link href="/futbol" className="gs-hub-quicklink">
+                ⚽️ Fútbol
+              </Link>
+              <Link href="/nba" className="gs-hub-quicklink">
+                🏀 NBA
+              </Link>
+              <Link href="/mlb" className="gs-hub-quicklink">
+                ⚾️ MLB
+              </Link>
+              <Link href="/f1" className="gs-hub-quicklink">
+                🏎️ F1
+              </Link>
+              <Link href="/mundial-2026" className="gs-hub-quicklink">
+                🏆 Mundial 2026
+              </Link>
+            </nav>
           </header>
 
           {noticias && noticias.length > 0 ? (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {noticias.map((n: Noticia, idx: number) => (
-                  <Link key={n.id} href={`/noticias/${n.slug}`} className="group bg-slate-900/50 border border-slate-800/50 rounded-[32px] overflow-hidden hover:border-slate-700 hover:bg-slate-900/80 transition-all duration-300">
-                    {n.imagen_url ? (
-                      <div className="w-full h-44 overflow-hidden relative">
+              {paginaActual === 1 && noticias[0] && (
+                <Link
+                  href={`/noticias/${noticias[0].slug}`}
+                  className="gs-news-hero group"
+                >
+                  <div className="gs-news-hero-media">
+                    {noticias[0].imagen_url ? (
+                      <NextImage
+                        src={noticias[0].imagen_url}
+                        alt={noticias[0].titulo}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        sizes="(max-width: 768px) 100vw, 55vw"
+                        priority
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-slate-700 bg-slate-900">
+                        <Newspaper size={56} />
+                      </div>
+                    )}
+                  </div>
+                  <div className="gs-news-hero-body">
+                    <div>
+                      <div className="gs-news-meta mb-2">
+                        <span className="gs-badge gs-badge-live">Destacado</span>
+                        <span className="gs-news-meta-date">
+                          <Calendar size={12} /> {noticias[0].fecha}
+                        </span>
+                        {noticias[0].autor && (
+                          <span>Por: {noticias[0].autor}</span>
+                        )}
+                      </div>
+                      <h2 className="gs-news-hero-title group-hover:text-blue-400 transition-colors">
+                        {noticias[0].titulo}
+                      </h2>
+                    </div>
+                    <div>
+                      <span className="gs-button gs-button-primary">
+                        Leer análisis completo →
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              )}
+
+              <div className="gs-news-grid">
+                {(paginaActual === 1 ? noticias.slice(1) : noticias).map((n: Noticia, idx: number) => (
+                  <Link
+                    key={n.id}
+                    href={`/noticias/${n.slug}`}
+                    className="gs-news-card group"
+                  >
+                    <div className="gs-news-card-media">
+                      {n.imagen_url ? (
                         <NextImage
                           src={n.imagen_url}
                           alt={n.titulo}
                           fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-700"
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
                           sizes="(max-width: 768px) 100vw, 50vw"
-                          priority={idx < 2}
-                          loading={idx < 2 ? undefined : "lazy"}
+                          loading={paginaActual === 1 && idx < 2 ? "eager" : "lazy"}
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent opacity-60"></div>
-                      </div>
-                    ) : (
-                      <div className="w-full h-44 bg-gradient-to-br from-blue-600/20 to-blue-900/20 flex items-center justify-center border-b border-slate-800/50">
-                        <Newspaper size={48} className="text-blue-500/30" />
-                      </div>
-                    )}
-                    <div className="p-6">
-                      <div className="flex flex-wrap items-center gap-3 text-[9px] font-black uppercase tracking-widest mb-3">
-                        <span className="flex items-center gap-1.5 text-[#a3e635]">
-                          <Calendar size={10} /> {n.fecha}
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-700 bg-slate-900">
+                          <Newspaper size={40} />
+                        </div>
+                      )}
+                    </div>
+                    <div className="gs-news-card-body">
+                      <div className="gs-news-meta">
+                        <span className="gs-news-meta-date">
+                          <Calendar size={11} /> {n.fecha}
                         </span>
-                        {n.autor && (
-                          <>
-                            <span className="text-slate-700">•</span>
-                            <span className="text-slate-400">Por: {n.autor}</span>
-                          </>
-                        )}
+                        {n.autor && <span>Por: {n.autor}</span>}
                       </div>
-                      <h2 className="font-black italic uppercase text-base leading-tight mb-3 text-white group-hover:text-blue-400 transition-colors line-clamp-3">
+                      <h2 className="gs-news-title group-hover:text-blue-400 transition-colors line-clamp-3">
                         {n.titulo}
                       </h2>
-                      <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">
+                      <p className="text-[11px] font-bold text-slate-400 mt-auto uppercase tracking-wider group-hover:text-white transition-colors">
                         Leer más →
                       </p>
                     </div>
@@ -168,20 +231,29 @@ export default async function NoticiasIndex({
               </div>
 
               {totalPaginas > 1 && (
-                <div className="flex justify-center items-center gap-3 mt-12 mb-8">
+                <nav aria-label="Paginación de noticias" className="flex flex-wrap justify-center items-center gap-3 mt-12 mb-8">
                   {paginaActual > 1 && (
-                    <Link href={`/noticias?pagina=${paginaActual - 1}`} className="flex items-center gap-2 bg-slate-900 border border-slate-800 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:border-slate-700 transition-colors">
+                    <Link
+                      href={`/noticias?pagina=${paginaActual - 1}`}
+                      className="gs-button gs-button-quiet"
+                      aria-label="Página anterior"
+                    >
                       <ChevronLeft size={16} />
-                      <span className="text-[10px] font-black uppercase tracking-widest">Anterior</span>
+                      <span>Anterior</span>
                     </Link>
                   )}
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center justify-center gap-2">
                     {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((p) => (
                       <Link
                         key={p}
                         href={`/noticias?pagina=${p}`}
-                        className={`w-10 h-10 rounded-xl flex items-center justify-center text-xs font-black transition-colors ${p === paginaActual ? 'bg-[#a3e635] text-black' : 'bg-slate-900 text-slate-500 hover:bg-slate-800 hover:text-slate-300'}`}
+                        aria-current={p === paginaActual ? "page" : undefined}
+                        className={`w-11 h-11 rounded-md flex items-center justify-center text-xs font-black transition-colors ${
+                          p === paginaActual
+                            ? 'bg-[var(--gs-color-lime)] text-slate-950 shadow-sm'
+                            : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
+                        }`}
                       >
                         {p}
                       </Link>
@@ -189,19 +261,23 @@ export default async function NoticiasIndex({
                   </div>
 
                   {paginaActual < totalPaginas && (
-                    <Link href={`/noticias?pagina=${paginaActual + 1}`} className="flex items-center gap-2 bg-slate-900 border border-slate-800 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:border-slate-700 transition-colors">
-                      <span className="text-[10px] font-black uppercase tracking-widest">Siguiente</span>
+                    <Link
+                      href={`/noticias?pagina=${paginaActual + 1}`}
+                      className="gs-button gs-button-quiet"
+                      aria-label="Página siguiente"
+                    >
+                      <span>Siguiente</span>
                       <ChevronRight size={16} />
                     </Link>
                   )}
-                </div>
+                </nav>
               )}
             </>
           ) : (
-            <div className="bg-slate-900/50 border border-slate-800 rounded-[32px] p-16 text-center text-slate-500">
-              <Newspaper size={64} className="mx-auto mb-6 opacity-30" />
-              <p className="font-bold text-lg mb-2 text-slate-400">No hay noticias aún</p>
-              <p className="text-sm">Pronto publicaremos las mejores previas deportivas.</p>
+            <div className="gs-state">
+              <Newspaper size={48} className="mx-auto mb-4 opacity-40 text-slate-500" />
+              <p className="font-bold text-base mb-1 text-slate-300">No hay noticias publicadas aún</p>
+              <p className="text-xs text-slate-400">Pronto publicaremos las mejores previas y análisis deportivos.</p>
             </div>
           )}
         </div>

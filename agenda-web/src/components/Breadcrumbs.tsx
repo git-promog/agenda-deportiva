@@ -51,16 +51,16 @@ export default function Breadcrumbs({ items, current, currentHref }: Breadcrumbs
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest mb-8">
-        <Link href="/" className="text-slate-600 hover:text-blue-400 transition-colors">Inicio</Link>
+      <nav aria-label="Breadcrumb" className="gs-breadcrumbs">
+        <Link href="/" className="gs-breadcrumbs-link">Inicio</Link>
         {items.map((item, i) => (
           <span key={i} className="flex items-center gap-2">
-            <span className="text-slate-700">/</span>
-            <Link href={item.href} className="text-slate-500 hover:text-blue-400 transition-colors">{item.label}</Link>
+            <span className="gs-breadcrumbs-separator" aria-hidden="true">/</span>
+            <Link href={item.href} className="gs-breadcrumbs-link">{item.label}</Link>
           </span>
         ))}
-        <span className="text-slate-700">/</span>
-        <span className="text-slate-300">{current}</span>
+        <span className="gs-breadcrumbs-separator" aria-hidden="true">/</span>
+        <span className="gs-breadcrumbs-current" aria-current="page">{current}</span>
       </nav>
     </>
   );

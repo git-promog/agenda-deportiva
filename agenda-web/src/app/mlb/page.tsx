@@ -2,9 +2,10 @@ import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
 import NextImage from 'next/image';
 import { Metadata } from 'next';
-import { Calendar, Tv, Clock } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import Breadcrumbs from '@/components/Breadcrumbs';
-import { getTodayMexicoString, isEventLive } from '@/lib/mexicoTime';
+import EventListWithModal from '@/components/EventListWithModal';
+import { getTodayMexicoString } from '@/lib/mexicoTime';
 import { deduplicateEventos } from '@/lib/eventUrls';
 import type { Evento, Noticia } from '@/types';
 
@@ -25,13 +26,6 @@ export const metadata: Metadata = {
   },
 };
 
-const emojis: { [key: string]: string } = {
-  "Fútbol": "⚽️", "Básquetbol": "🏀", "Béisbol": "⚾️", "Fórmula 1": "🏎️",
-  "Motorismo": "🏍️", "Tenis": "🎾", "Fútbol Americano": "🏈", "Rugby": "🏉",
-  "Hockey": "🏒", "Combate": "🥊", "Ciclismo": "🚴", "Voleibol": "🏐",
-  "Golf": "⛳️", "Natación": "🏊", "Fútbol Sala": "👟", "Otros": "🏆"
-};
-
 type HubNoticia = Noticia & { fecha?: string | null };
 
 export default async function MlbHub() {
@@ -49,15 +43,7 @@ export default async function MlbHub() {
 
   const eventosBeisbol = deduplicateEventos((eventos ?? []) as Evento[]);
   const noticiasMLB = (noticias ?? []) as HubNoticia[];
-  const enVivo = eventosBeisbol.filter(e => isEventLive(e.fecha, e.hora));
-  const proximos = eventosBeisbol.filter(e => e.fecha >= hoyStr);
-
-  const eventosAgrupados = proximos.reduce<Record<string, Evento[]>>((groups, evento) => {
-    const f = evento.fecha;
-    if (!groups[f]) groups[f] = [];
-    groups[f].push(evento);
-    return groups;
-  }, {});
+  const proximos = eventosBeisbol.filter((e) => e.fecha >= hoyStr);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -75,130 +61,72 @@ export default async function MlbHub() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-24">
-        <div className="max-w-4xl mx-auto px-4 pt-10">
+        <div className="max-w-4xl mx-auto px-4 pt-8">
           <Breadcrumbs items={[]} current="MLB" currentHref="/mlb" />
 
-          <header className="mb-12">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="bg-[#a3e635]/10 p-4 rounded-2xl border border-[#a3e635]/20 text-5xl">
+          <header className="gs-hub-header">
+            <div className="gs-hub-identity">
+              <div className="gs-hub-icon-box" aria-hidden="true">
                 ⚾️
               </div>
               <div>
-                <h1 className="text-3xl md:text-5xl font-black italic uppercase leading-[0.95] tracking-tighter">
-                  MLB <span className="text-[#a3e635]">en Vivo</span>
+                <h1 className="gs-hub-title">
+                  MLB <strong>en Vivo</strong>
                 </h1>
-                <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-2">
-                  Dónde ver partidos de béisbol hoy en México
+                <p className="gs-hub-subtitle">
+                  Juegos de Grandes Ligas, canales y horarios de transmisión en México
                 </p>
               </div>
             </div>
           </header>
 
-          {enVivo.length > 0 && (
-            <section className="mb-12">
-              <div className="flex items-center gap-2 mb-6">
-                <div className="w-2 h-2 bg-red-600 rounded-full animate-ping"></div>
-                <h2 className="text-[10px] font-black text-red-500 uppercase tracking-[0.3em]">
-                  {enVivo.length} partido{enVivo.length > 1 ? 's' : ''} en vivo
-                </h2>
-              </div>
-              <div className="space-y-3">
-                {enVivo.map((evento) => (
-                  <div key={evento.id} className="group bg-gradient-to-r from-red-600/10 to-red-900/5 border border-red-500/20 rounded-2xl p-5 hover:border-red-500/40 transition-all relative overflow-hidden">
-                    <div className="absolute top-3 right-3">
-                      <span className="flex items-center gap-1.5 bg-red-600 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">
-                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
-                        LIVE
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="bg-[#020617] border border-slate-800 w-14 h-14 flex items-center justify-center rounded-2xl text-3xl shrink-0">
-                        {emojis[evento.deporte] || "⚾️"}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-[9px] font-black text-red-400 uppercase tracking-widest mb-1">{evento.competicion}</div>
-                        <h3 className="text-lg font-black italic uppercase text-white leading-tight mb-2">{evento.evento}</h3>
-                        <div className="flex flex-wrap items-center gap-4">
-                          <span className="flex items-center gap-1.5 text-[10px] font-bold text-[#a3e635] bg-[#a3e635]/10 px-3 py-1 rounded-lg border border-[#a3e635]/20">
-                            <Tv size={12} /> {evento.canales}
-                          </span>
-                          <span className="flex items-center gap-1.5 text-[10px] font-mono font-bold text-slate-400">
-                            <Clock size={12} /> {evento.hora}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
+          <EventListWithModal
+            eventos={proximos}
+            emptyMessage="No hay juegos de béisbol próximos registrados. Vuelve pronto para ver la cartelera actualizada."
+          />
 
-          {Object.keys(eventosAgrupados).length > 0 ? (
-            Object.keys(eventosAgrupados).sort().map((fecha) => (
-              <section key={fecha} className="mb-12">
-                <div className="flex items-center gap-4 mb-6">
-                  <h2 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-blue-500" />
-                    {new Date(fecha + 'T12:00:00').toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}
-                  </h2>
-                  <div className="h-px w-full bg-slate-800/30"></div>
-                </div>
-                <div className="grid gap-3">
-                  {eventosAgrupados[fecha].map((evento) => (
-                    <div key={evento.id} className="group bg-slate-900/30 border border-slate-800/50 rounded-2xl p-4 hover:border-blue-500/30 hover:bg-slate-900/60 transition-all">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-                        <div className="flex items-center gap-3 w-full">
-                          <div className="flex flex-col justify-center min-w-[65px] text-blue-400 font-mono font-black text-sm md:text-xl shrink-0 border-r border-slate-800/60 pr-3">
-                            {evento.hora}
-                            {isEventLive(evento.fecha, evento.hora) && (
-                              <div className="flex items-center gap-1 mt-1 justify-center"><div className="w-1.5 h-1.5 bg-red-600 rounded-full animate-ping"></div><span className="text-[7px] font-black text-red-500 uppercase">LIVE</span></div>
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-[9px] font-black text-slate-500 uppercase mb-0.5 truncate">{evento.competicion}</div>
-                            <h3 className="text-sm font-bold text-slate-200 leading-snug">{evento.evento}</h3>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 bg-[#020617] px-4 py-2 rounded-xl border border-slate-800 shrink-0">
-                          <Tv className="w-3 h-3 text-slate-600 shrink-0" />
-                          <span className="text-[11px] font-black text-[#a3e635] italic uppercase">{evento.canales}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            ))
-          ) : (
-            <div className="bg-slate-900/50 border border-slate-800 rounded-[32px] p-16 text-center text-slate-500">
-              <div className="text-6xl mb-6 opacity-30">⚾️</div>
-              <p className="font-bold text-lg mb-2 text-slate-400">No hay partidos de béisbol próximamente</p>
-              <p className="text-sm">Vuelve pronto para ver la cartelera actualizada.</p>
-            </div>
-          )}
-
-          {noticias && noticias.length > 0 && (
-            <section className="mt-12">
-              <h2 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] mb-6 flex items-center gap-2">
-                <Calendar className="w-4 h-4" /> Últimas Noticias
+          {noticiasMLB && noticiasMLB.length > 0 && (
+            <section className="mt-14">
+              <h2 className="gs-section-title mb-6 flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-blue-500" /> Últimas Noticias y Previas
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {noticiasMLB.map((n) => (
-                  <Link key={n.id} href={`/noticias/${n.slug}`} className="group bg-slate-900/50 border border-slate-800/50 rounded-2xl overflow-hidden hover:border-blue-500/30 transition-all">
+                  <Link
+                    key={n.id}
+                    href={`/noticias/${n.slug}`}
+                    className="gs-news-card group"
+                  >
                     {n.imagen_url ? (
-                      <div className="w-full h-32 overflow-hidden relative">
-                        <NextImage src={n.imagen_url} alt={n.titulo} fill className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="(max-width: 768px) 100vw, 50vw" loading="lazy" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent opacity-60"></div>
+                      <div className="gs-news-card-media">
+                        <NextImage
+                          src={n.imagen_url}
+                          alt={n.titulo}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                          loading="lazy"
+                        />
                       </div>
                     ) : (
-                      <div className="w-full h-32 bg-gradient-to-br from-blue-600/20 to-blue-900/20 flex items-center justify-center border-b border-slate-800/50">
-                        <div className="text-4xl">⚾️</div>
+                      <div className="w-full h-32 bg-slate-900 border-b border-slate-800 flex items-center justify-center text-4xl">
+                        ⚾️
                       </div>
                     )}
-                    <div className="p-4">
-                      <h3 className="text-xs font-black italic uppercase text-slate-200 group-hover:text-white leading-tight line-clamp-2">{n.titulo}</h3>
-                      <p className="text-[9px] text-slate-500 uppercase font-bold mt-1">{n.fecha}</p>
+                    <div className="gs-news-card-body">
+                      <div className="gs-news-meta">
+                        {n.fecha && (
+                          <span className="gs-news-meta-date">
+                            <Calendar size={11} /> {n.fecha}
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="gs-news-title group-hover:text-blue-400 transition-colors line-clamp-2">
+                        {n.titulo}
+                      </h3>
+                      <p className="text-[11px] font-bold text-slate-400 mt-auto uppercase tracking-wider group-hover:text-white transition-colors">
+                        Leer previa →
+                      </p>
                     </div>
                   </Link>
                 ))}
@@ -206,24 +134,24 @@ export default async function MlbHub() {
             </section>
           )}
 
-          <section className="mt-12">
-            <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4">Otros Deportes</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <Link href="/futbol" className="bg-slate-900/50 border border-slate-800 p-4 rounded-xl text-center hover:border-blue-500/30 transition-all group">
-                <div className="text-3xl mb-2">⚽️</div>
-                <div className="text-[10px] font-black uppercase text-slate-400 group-hover:text-white transition-colors">Fútbol</div>
+          <section className="mt-14">
+            <h2 className="gs-section-title mb-4">Otros Deportes y Secciones</h2>
+            <div className="gs-sports-nav">
+              <Link href="/futbol" className="gs-sports-nav-item group">
+                <div className="gs-sports-nav-icon">⚽️</div>
+                <div className="gs-sports-nav-label">Fútbol</div>
               </Link>
-              <Link href="/nba" className="bg-slate-900/50 border border-slate-800 p-4 rounded-xl text-center hover:border-blue-500/30 transition-all group">
-                <div className="text-3xl mb-2">🏀</div>
-                <div className="text-[10px] font-black uppercase text-slate-400 group-hover:text-white transition-colors">NBA</div>
+              <Link href="/nba" className="gs-sports-nav-item group">
+                <div className="gs-sports-nav-icon">🏀</div>
+                <div className="gs-sports-nav-label">NBA</div>
               </Link>
-              <Link href="/f1" className="bg-slate-900/50 border border-slate-800 p-4 rounded-xl text-center hover:border-blue-500/30 transition-all group">
-                <div className="text-3xl mb-2">🏎️</div>
-                <div className="text-[10px] font-black uppercase text-slate-400 group-hover:text-white transition-colors">Fórmula 1</div>
+              <Link href="/f1" className="gs-sports-nav-item group">
+                <div className="gs-sports-nav-icon">🏎️</div>
+                <div className="gs-sports-nav-label">Fórmula 1</div>
               </Link>
-              <Link href="/noticias" className="bg-slate-900/50 border border-slate-800 p-4 rounded-xl text-center hover:border-blue-500/30 transition-all group">
-                <div className="text-3xl mb-2">📰</div>
-                <div className="text-[10px] font-black uppercase text-slate-400 group-hover:text-white transition-colors">Noticias</div>
+              <Link href="/mundial-2026" className="gs-sports-nav-item group">
+                <div className="gs-sports-nav-icon">🏆</div>
+                <div className="gs-sports-nav-label">Mundial 2026</div>
               </Link>
             </div>
           </section>

@@ -41,7 +41,7 @@ export default function EventListWithModal({
 
   if (eventos.length === 0) {
     return (
-      <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-8 text-slate-500 text-sm text-center">
+      <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-8 text-slate-400 text-sm text-center">
         {emptyMessage}
       </div>
     );

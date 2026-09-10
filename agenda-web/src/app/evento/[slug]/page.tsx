@@ -2,11 +2,12 @@ import { createClient } from '@supabase/supabase-js';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Calendar, Clock, ExternalLink, Radio, Trophy, Tv } from 'lucide-react';
+import { Calendar, Clock, ExternalLink, Info, Radio, Tv } from 'lucide-react';
 import BackButton from '@/components/BackButton';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import ShareButton from '@/components/ShareButton';
 import { buildEventPath, buildEventUrl, getEventIdFromSlug } from '@/lib/eventUrls';
+import { isEventLive } from '@/lib/mexicoTime';
 
 export const revalidate = 300;
 
@@ -22,6 +23,23 @@ interface Evento {
   competicion: string;
   deporte: string;
   canales: string;
+}
+
+type EventStatus = 'live' | 'upcoming' | 'finished';
+
+const UNCONFIRMED_CHANNEL_PATTERN = /por\s+confirmar|por\s+definir|pendiente|sin\s+(?:confirmar|determinar)|no\s+disponible|n\/d|tbd|por\s+anunciar/i;
+
+function getEventStatus(evento: Evento): EventStatus {
+  if (isEventLive(evento.fecha, evento.hora)) return 'live';
+
+  const start = new Date(`${evento.fecha}T${evento.hora || '00:00'}:00-06:00`);
+  return Number.isNaN(start.getTime()) || start.getTime() > Date.now() ? 'upcoming' : 'finished';
+}
+
+function getStatusLabel(status: EventStatus) {
+  if (status === 'live') return 'En vivo';
+  if (status === 'finished') return 'Finalizado';
+  return 'Próximo';
 }
 
 function getSupabaseClient() {
@@ -109,6 +127,10 @@ export default async function EventoDetalle({ params }: Props) {
 
   const eventUrl = buildEventUrl(evento);
   const eventPath = buildEventPath(evento);
+  const status = getEventStatus(evento);
+  const statusLabel = getStatusLabel(status);
+  const transmissionUnconfirmed = !evento.canales.trim() || UNCONFIRMED_CHANNEL_PATTERN.test(evento.canales);
+  const channelLabel = transmissionUnconfirmed ? 'Transmisión por confirmar' : evento.canales;
   const startDateTime = `${evento.fecha}T${evento.hora || '00:00'}:00-06:00`;
   const jsonLd = {
     "@context": "https://schema.org",
@@ -160,67 +182,78 @@ export default async function EventoDetalle({ params }: Props) {
             currentHref={eventPath}
           />
 
-          <header className="mb-10">
-            <div className="inline-flex items-center gap-2 text-[10px] font-black text-[#a3e635] bg-[#a3e635]/10 px-3 py-1 rounded-full border border-[#a3e635]/20 uppercase mb-6 tracking-widest">
-              <Radio size={12} /> Evento deportivo
+          <header className="mb-8">
+            <div className="mb-4 flex flex-wrap items-center gap-3">
+              <span className={`gs-badge normal-case tracking-normal ${status === 'live' ? 'gs-badge-live' : status === 'finished' ? 'gs-badge-finished' : 'gs-badge-upcoming'}`}>
+                {status === 'live' && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current" aria-hidden="true" />}
+                {statusLabel}
+              </span>
+              <span className="text-sm text-slate-500">{evento.deporte}</span>
             </div>
-            <h1 className="text-4xl md:text-6xl font-black italic uppercase leading-[0.95] tracking-tighter mb-6">
+            <h1 className="mb-5 text-4xl font-black leading-[0.98] tracking-tight text-white md:text-6xl">
               {evento.evento}
             </h1>
-            <p className="text-slate-400 leading-relaxed">
-              Consulta horario, competición y canales confirmados para ver este evento en México.
+            <p className="max-w-2xl leading-relaxed text-slate-400">
+              Consulta la hora, la competición y dónde ver este evento en México.
             </p>
           </header>
 
-          <section className="grid gap-4 mb-10">
-            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 flex items-start gap-4">
-              <Calendar className="text-blue-400 shrink-0 mt-1" size={20} />
+          <section className="mb-8 grid gap-3">
+            <div className="flex items-start gap-4 rounded-2xl border border-blue-400/20 bg-blue-500/10 p-5">
+              <Calendar className="mt-1 shrink-0 text-blue-300" size={20} />
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Fecha</p>
-                <p className="font-black text-white capitalize">{formatDate(evento.fecha)}</p>
+                <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-blue-200/70">Fecha</p>
+                <p className="font-bold capitalize text-white">{formatDate(evento.fecha)}</p>
               </div>
             </div>
 
-            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 flex items-start gap-4">
-              <Clock className="text-[#a3e635] shrink-0 mt-1" size={20} />
+            <div className={`flex items-start gap-4 rounded-2xl border p-5 ${status === 'live' ? 'border-red-400/30 bg-red-500/10' : 'border-lime-400/20 bg-lime-500/10'}`}>
+              <Clock className={`mt-1 shrink-0 ${status === 'live' ? 'text-red-300' : 'text-lime-300'}`} size={20} />
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Hora en México</p>
-                <p className="font-black text-white">{evento.hora}</p>
+                <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">{statusLabel} · hora en México</p>
+                <p className={`text-xl font-black ${status === 'live' ? 'text-red-200' : 'text-white'}`}>{evento.hora || 'Por definir'}</p>
               </div>
             </div>
 
-            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 flex items-start gap-4">
-              <Trophy className="text-yellow-400 shrink-0 mt-1" size={20} />
+            <div className="flex items-start gap-4 rounded-2xl border border-slate-700/60 bg-slate-900/50 p-5">
+              <Radio className="mt-1 shrink-0 text-slate-300" size={20} />
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Competición</p>
-                <p className="font-black text-white">{evento.competicion}</p>
+                <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">Competición</p>
+                <p className="font-bold text-white">{evento.competicion}</p>
               </div>
             </div>
 
-            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 flex items-start gap-4">
-              <Tv className="text-purple-400 shrink-0 mt-1" size={20} />
+            <div className={`flex items-start gap-4 rounded-2xl border p-5 ${transmissionUnconfirmed ? 'border-slate-700/60 bg-slate-900/50' : 'border-blue-400/20 bg-blue-500/10'}`}>
+              <Tv className={`mt-1 shrink-0 ${transmissionUnconfirmed ? 'text-slate-300' : 'text-blue-300'}`} size={20} />
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Dónde ver</p>
-                <p className="font-black text-white">{evento.canales}</p>
+                <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">Dónde verlo</p>
+                <p className="font-bold text-white">{channelLabel}</p>
               </div>
             </div>
           </section>
 
-          <section className="bg-blue-600/5 border border-blue-500/10 rounded-2xl p-6 mb-10">
-            <h2 className="text-xl font-black italic uppercase mb-3">Resumen rápido</h2>
-            <p className="text-slate-300 leading-relaxed">
-              {evento.evento} se juega el {formatDate(evento.fecha)} a las {evento.hora}. La transmisión en México está marcada en GuíaSports por {evento.canales}.
+          {transmissionUnconfirmed && (
+            <p className="mb-8 flex items-start gap-2 text-sm leading-relaxed text-slate-400">
+              <Info size={16} className="mt-0.5 shrink-0 text-blue-300" aria-hidden="true" />
+              La señal todavía no está confirmada. Revisa la agenda antes de comenzar el evento.
+            </p>
+          )}
+
+          <section className="mb-8 rounded-2xl border border-blue-500/10 bg-blue-600/5 p-6">
+            <h2 className="mb-3 text-lg font-black text-white">Resumen rápido</h2>
+            <p className="leading-relaxed text-slate-300">
+              {evento.evento} se realiza el {formatDate(evento.fecha)} a las {evento.hora || 'una hora por definir'}. Consulta aquí su estado, competición y transmisión para México.
             </p>
           </section>
 
-          <div className="grid sm:grid-cols-2 gap-3">
-            <Link href="/" className="flex items-center justify-center gap-2 bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 font-black py-4 px-5 rounded-2xl transition-all uppercase tracking-widest text-xs">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Link href="/" className="gs-button gs-button-primary w-full">
               Ver agenda completa
             </Link>
             <ShareButton
               titulo={evento.evento}
               url={eventUrl}
-              className="w-full flex items-center justify-center gap-2 !bg-blue-600 hover:!bg-blue-500 !text-white !p-4 !rounded-2xl text-[10px] font-black uppercase tracking-widest transition-colors border border-blue-500/50"
+              className="w-full !border-blue-400/30 !bg-blue-600 !text-white hover:!bg-blue-500"
               variant="full"
             />
           </div>

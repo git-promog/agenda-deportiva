@@ -61,7 +61,7 @@ export default function QuienesSomos() {
         {/* Metodología */}
         <section className="mb-24">
           <div className="text-center mb-12">
-             <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-4">Cómo trabajamos</h2>
+             <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-4">Cómo trabajamos</h2>
              <h3 className="text-3xl font-black italic uppercase text-white">Metodología <span className="text-blue-500">Precisión</span></h3>
           </div>
           
@@ -83,7 +83,7 @@ export default function QuienesSomos() {
         {/* Equipo Editorial */}
         <section className="mb-24">
           <div className="text-center mb-12">
-             <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-4">Especialistas al frente</h2>
+             <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-4">Especialistas al frente</h2>
              <h3 className="text-3xl font-black italic uppercase text-white">Equipo <span className="text-blue-500">Editorial</span></h3>
           </div>
 

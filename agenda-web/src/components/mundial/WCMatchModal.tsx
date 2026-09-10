@@ -2,7 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { WCMatch, getFlagUrl } from '@/data/mundialData';
 import { Calendar, MapPin, Clock, Tv, X, Star, ExternalLink, StickyNote } from 'lucide-react';
 import ShareButton from '@/components/ShareButton';
@@ -20,6 +20,8 @@ interface Props {
   tzShort?: string;
 }
 
+const WC_MODAL_EASE: [number, number, number, number] = [0.2, 0.8, 0.2, 1];
+
 export default function WCMatchModal({ 
   match, 
   isOpen, 
@@ -30,6 +32,7 @@ export default function WCMatchModal({
   notaHora,
   tzShort = 'CDMX'
 }: Props) {
+  const shouldReduceMotion = useReducedMotion();
 
   const modalRef = useRef<HTMLDivElement>(null);
   const startY = useRef(0);
@@ -89,6 +92,14 @@ export default function WCMatchModal({
     if (e.target === e.currentTarget) onClose();
   };
 
+  const sheetStartY = shouldReduceMotion ? 0 : '100%';
+  const sheetTransition = shouldReduceMotion
+    ? { type: 'tween' as const, duration: 0 }
+    : { type: 'tween' as const, duration: 0.2, ease: WC_MODAL_EASE };
+  const fadeTransition = shouldReduceMotion
+    ? { type: 'tween' as const, duration: 0 }
+    : { type: 'tween' as const, duration: 0.16, ease: WC_MODAL_EASE };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -96,15 +107,16 @@ export default function WCMatchModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
+          transition={fadeTransition}
           className="fixed inset-0 z-[200] flex items-end md:items-center justify-center bg-[#020617]/80 backdrop-blur-sm p-0 md:p-4"
           onClick={handleBackdropClick}
         >
           <motion.div
             ref={modalRef}
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            initial={{ opacity: 0, y: sheetStartY }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: sheetStartY }}
+            transition={sheetTransition}
             className="bg-slate-900 border-t md:border border-slate-800 rounded-t-[32px] md:rounded-[32px] w-full max-w-lg shadow-2xl relative max-h-[90vh] md:max-h-auto flex flex-col"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
@@ -130,10 +142,10 @@ export default function WCMatchModal({
               <div className="flex items-center gap-2">
                 <button
                   onClick={onToggleFavorite}
-                  className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+                  className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors active:scale-90 motion-reduce:active:scale-100"
                   aria-label={isFavorite ? "Quitar de favoritos" : "Añadir a favoritos"}
                 >
-                  <Star size={18} className={isFavorite ? "fill-yellow-500 text-yellow-500" : "text-slate-400"} />
+                  <Star size={18} className={`transition-colors ${isFavorite ? "fill-yellow-500 text-yellow-500" : "text-slate-400"}`} />
                 </button>
                 <button onClick={onClose} className="p-3 md:p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors" aria-label="Cerrar">
                   <X size={20} className="text-slate-300" />

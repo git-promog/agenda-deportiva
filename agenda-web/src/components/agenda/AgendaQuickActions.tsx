@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef } from "react";
-import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, Radio } from "lucide-react";
 
 interface AgendaQuickActionsProps {
   deportes: string[];
@@ -33,50 +33,50 @@ export default function AgendaQuickActions({
   };
 
   return (
-    <div className="space-y-3">
-      {/* Acciones principales */}
-      <div className="flex items-center gap-2">
+    <div className="space-y-3" role="group" aria-label="Accesos rápidos de agenda">
+      <div className="flex flex-wrap items-center gap-2">
         <button
+          type="button"
           onClick={onEnVivo}
-          className="flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white rounded-xl px-4 py-3 font-black uppercase text-xs tracking-widest shadow-lg shadow-red-900/30 transition-colors"
+          className="gs-button gs-button-live"
         >
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white" />
-          </span>
+          <Radio size={15} aria-hidden="true" />
           En vivo
         </button>
 
         <button
+          type="button"
           onClick={onHoy}
-          className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 rounded-xl px-4 py-3 font-black uppercase text-xs tracking-widest transition-colors"
+          className="gs-button gs-button-quiet"
         >
-          <CalendarDays size={16} className="text-[#a3e635]" /> Hoy
+          <CalendarDays size={15} className="text-lime-400" aria-hidden="true" /> Hoy
         </button>
       </div>
 
-      {/* Deportes principales con scroll */}
-      <div className="relative flex items-center">
+      <div className="relative flex items-center" role="group" aria-label="Filtrar por deporte">
         <button
+          type="button"
           onClick={() => scroll("left")}
-          className="absolute left-0 z-10 bg-[#020617]/90 border border-slate-800 p-1.5 rounded-full text-slate-400 hover:text-white transition-colors"
+          className="gs-button-icon absolute left-0 z-10 !min-h-11 !min-w-11 !rounded-lg bg-slate-950/95"
           aria-label="Desplazar deportes a la izquierda"
         >
-          <ChevronLeft size={16} />
+          <ChevronLeft size={16} aria-hidden="true" />
         </button>
 
         <div
           ref={scrollRef}
-          className="flex gap-2 overflow-x-auto scrollbar-hide scroll-smooth w-full px-8 py-1"
+          className="flex w-full gap-2 overflow-x-auto scroll-smooth px-10 py-1 scrollbar-hide"
         >
           {deportes.map((dep) => (
             <button
               key={dep}
+              type="button"
               onClick={() => onDeporteChange(dep)}
-              className={`px-4 py-2.5 rounded-xl text-xs font-black transition-all whitespace-nowrap border uppercase tracking-wider ${
+              aria-pressed={deporteActivo === dep}
+              className={`gs-chip whitespace-nowrap ${
                 deporteActivo === dep
-                  ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-900/30"
-                  : "bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+                  ? "gs-chip-selected"
+                  : "hover:border-slate-600 hover:text-slate-200"
               }`}
             >
               {emojis[dep] || "🏆"} {dep}
@@ -85,11 +85,12 @@ export default function AgendaQuickActions({
         </div>
 
         <button
+          type="button"
           onClick={() => scroll("right")}
-          className="absolute right-0 z-10 bg-[#020617]/90 border border-slate-800 p-1.5 rounded-full text-slate-400 hover:text-white transition-colors"
+          className="gs-button-icon absolute right-0 z-10 !min-h-11 !min-w-11 !rounded-lg bg-slate-950/95"
           aria-label="Desplazar deportes a la derecha"
         >
-          <ChevronRight size={16} />
+          <ChevronRight size={16} aria-hidden="true" />
         </button>
       </div>
     </div>

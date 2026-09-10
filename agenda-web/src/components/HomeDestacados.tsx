@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Clock } from 'lucide-react';
+import { ArrowUpRight, Clock, Star } from 'lucide-react';
 import { Evento } from '@/types';
 
 const EMOJIS: { [key: string]: string } = {
@@ -18,29 +18,42 @@ export default function HomeDestacados({ destacados, onEventClick }: Props) {
   if (!destacados || destacados.length === 0) return null;
 
   return (
-    <div className="my-12">
-      <h2 className="text-[10px] font-black text-yellow-500 uppercase tracking-[0.3em] mb-4 flex items-center gap-2 px-2">
-        <Star className="w-3 h-3 fill-yellow-500" /> Imperdibles de Hoy
-      </h2>
-      <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
+    <section className="gs-home-section" aria-labelledby="home-destacados-title">
+      <div className="gs-home-section-header">
+        <h2 id="home-destacados-title" className="gs-home-section-heading">
+          <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" aria-hidden="true" />
+          Imperdibles de hoy
+        </h2>
+        <span className="gs-home-section-meta">{destacados.length} seleccionados</span>
+      </div>
+      <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide">
         {destacados.map((e) => (
-          <div key={e.id} onClick={() => onEventClick?.(e)} className="min-w-[280px] w-[85vw] max-w-[340px] bg-gradient-to-br from-blue-600 to-blue-900 justify-between p-[1px] rounded-3xl relative overflow-hidden group flex-shrink-0 cursor-pointer">
-            <div className="bg-[#020617]/80 backdrop-blur-sm p-5 rounded-[23px] h-full flex flex-col justify-between italic text-white hover:bg-transparent transition-colors duration-500 relative z-10">
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="text-[9px] font-black text-blue-400 uppercase">{e.competicion}</div>
-                  <div className="text-xl opacity-80">{EMOJIS[e.deporte] || "🏆"}</div>
-                </div>
-                <div className="text-lg font-black leading-tight mb-2 uppercase line-clamp-2">{e.evento}</div>
+          <button
+            key={e.id}
+            type="button"
+            onClick={() => onEventClick?.(e)}
+            className="gs-card gs-card-interactive group flex min-h-[12.5rem] w-[85vw] min-w-[17.5rem] max-w-[21rem] flex-shrink-0 flex-col justify-between p-5 text-left"
+          >
+            <div>
+              <div className="mb-3 flex items-start justify-between gap-3">
+                <div className="text-[0.6875rem] font-bold uppercase tracking-[0.08em] text-yellow-400">{e.competicion}</div>
+                <div className="text-xl opacity-80" aria-hidden="true">{EMOJIS[e.deporte] || "🏆"}</div>
               </div>
-              <div className="flex justify-between items-center mt-4">
-                 <div className="flex items-center gap-2 font-mono font-bold"><Clock className="w-4 h-4 text-blue-400" /> {e.hora}</div>
-                 <div className="text-[10px] font-black text-[#a3e635] bg-[#a3e635]/20 px-3 py-1 rounded-lg border border-[#a3e635]/30 backdrop-blur-md">{e.canales}</div>
+              <div className="line-clamp-2 text-base font-extrabold leading-tight text-white">{e.evento}</div>
+            </div>
+            <div className="mt-5 grid gap-3">
+              <div className="flex items-center gap-2 text-sm font-bold text-white">
+                <Clock className="h-4 w-4 text-yellow-400" aria-hidden="true" />
+                <span>{e.hora}</span>
+              </div>
+              <div className="flex items-center justify-between gap-3 border-t border-slate-700/70 pt-3 text-xs">
+                <span className="truncate text-slate-300">{e.canales}</span>
+                <ArrowUpRight className="h-4 w-4 flex-shrink-0 text-yellow-400 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" />
               </div>
             </div>
-          </div>
+          </button>
         ))}
       </div>
-    </div>
+    </section>
   );
 }

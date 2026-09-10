@@ -48,7 +48,7 @@ export default function LigaMxTopScorers({ scorers }: Props) {
               <span className="block text-xl font-black text-[#a3e635] leading-none">
                 {scorer.goals}
               </span>
-              <span className="text-[9px] font-black uppercase text-slate-500 tracking-widest">
+              <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest">
                 Goles
               </span>
             </div>

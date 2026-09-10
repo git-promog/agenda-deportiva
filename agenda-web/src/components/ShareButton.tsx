@@ -90,7 +90,7 @@ export default function ShareButton({ titulo, slug, url, className = '', variant
       <div ref={containerRef} className="relative">
         <button 
           onClick={(e) => { e.stopPropagation(); setAbierto(!abierto); }}
-          className={`p-2.5 bg-slate-800/80 rounded-xl hover:bg-slate-700 transition-colors text-slate-400 hover:text-white ${className}`}
+          className={`gs-button-icon ${className}`}
           aria-label="Compartir"
         >
           <Share2 size={14} />
@@ -124,7 +124,7 @@ export default function ShareButton({ titulo, slug, url, className = '', variant
     <div ref={containerRef} className="relative">
       <button 
         onClick={() => setAbierto(!abierto)}
-        className={`flex items-center justify-center gap-2 bg-white text-blue-900 px-8 py-4 rounded-2xl font-black uppercase text-xs italic shadow-lg hover:scale-105 transition-all ${className}`}
+        className={`gs-button gs-button-primary ${className}`}
       >
         <Share2 size={16}/> Compartir
       </button>

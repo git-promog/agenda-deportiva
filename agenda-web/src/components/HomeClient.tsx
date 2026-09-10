@@ -172,42 +172,38 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   };
 
   const activeFilters: string[] = [];
-  if (filtroDeporte !== "Todos") activeFilters.push(`${emojis[filtroDeporte] || "🏆"} ${filtroDeporte}`);
-  if (filtroFecha !== "Todos") activeFilters.push("📅 " + formatearLabelFecha(filtroFecha));
-  if (filtroCompeticion !== "Todos") activeFilters.push("🛡️ " + filtroCompeticion);
-  if (soloTvAbierta) activeFilters.push("📺 TV Abierta");
-  if (soloEnVivo) activeFilters.push("🔴 En Vivo");
+  if (filtroDeporte !== "Todos") activeFilters.push(`Deporte: ${filtroDeporte}`);
+  if (filtroFecha !== "Todos") activeFilters.push(`Fecha: ${formatearLabelFecha(filtroFecha)}`);
+  if (filtroCompeticion !== "Todos") activeFilters.push(`Competición: ${filtroCompeticion}`);
+  if (soloTvAbierta) activeFilters.push("TV abierta");
+  if (soloEnVivo) activeFilters.push("En vivo");
 
   const activeFiltersCount = activeFilters.length;
   const isDefaultView = !busqueda && filtroDeporte === "Todos" && filtroFecha === "Todos" && filtroCompeticion === "Todos" && !soloTvAbierta && !soloEnVivo;
 
   return (
     <>
-      <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-24 w-full relative">
+      <div className="relative min-h-screen w-full bg-[#020617] pb-24 font-sans text-slate-100">
         <Header ultimaAct={initialUltimaAct} />
 
-        <main id="envivo" className="w-full max-w-4xl mx-auto px-4 pt-8 pb-8">
-          {/* 1. H1 visible + propuesta de valor */}
-          <section className="mb-6 pt-2">
-            <div className="flex items-center gap-2 text-[10px] font-black text-[#a3e635] uppercase tracking-[0.25em] mb-3">
-              <span className="inline-block w-1.5 h-1.5 bg-[#a3e635] rounded-full" />
-              Agenda deportiva en vivo
-            </div>
-            <h1 className="text-3xl md:text-5xl font-black italic lowercase leading-[0.95] tracking-tighter text-white">
-              ¿Dónde ver deportes <span className="text-[#a3e635]">hoy en México</span>?
+        <main id="envivo" className="gs-home-main">
+          <section className="gs-home-intro">
+            <div className="gs-home-kicker">Agenda deportiva en vivo</div>
+            <h1 className="gs-home-title">
+              ¿Dónde ver deportes <strong>hoy en México</strong>?
             </h1>
-            <p className="text-slate-300 text-xs md:text-sm mt-3 font-medium max-w-xl">
-              Agenda actualizada de TV abierta, de paga y streaming: partidos en vivo, horarios y canales.
+            <p className="max-w-xl text-sm leading-relaxed text-slate-300">
+              Horarios y canales de TV abierta, de paga y streaming para elegir qué ver sin perder tiempo.
             </p>
+            <div className="gs-home-summary" aria-label="Resumen de la agenda">
+              <span><strong>{eventos.length}</strong> eventos en los próximos días</span>
+              {eventosEnVivo.length > 0 && <span><strong className="text-red-300">{eventosEnVivo.length}</strong> en vivo ahora</span>}
+              <span>Hora local de México</span>
+            </div>
           </section>
 
-          {/* 2. Búsqueda grande */}
-          <section className="mb-5">
+          <section className="gs-home-toolbar" aria-label="Buscar y explorar la agenda">
             <AgendaSearch value={busqueda} onChange={setBusqueda} />
-          </section>
-
-          {/* 3. Accesos rápidos + 4. Deportes principales */}
-          <section className="mb-5">
             <AgendaQuickActions
               deportes={deportesUnicos}
               deporteActivo={filtroDeporte}
@@ -218,8 +214,11 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
             />
           </section>
 
-          {/* 5. Botón Filtrar + filtros activos */}
-          <section className="mb-6 flex flex-wrap items-center gap-2">
+          {isDefaultView && eventoHero && (
+            <HomeHero evento={eventoHero} tipo={tipoHero} onClick={() => setSelectedEvent(eventoHero)} />
+          )}
+
+          <section className="mb-6 mt-6 flex flex-wrap items-center gap-2" aria-label="Filtros activos">
             <AgendaFilters
               filtroFecha={filtroFecha}
               fechas={fechasUnicas}
@@ -234,31 +233,28 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
               formatButtonFecha={formatearBotonFecha}
             />
 
-            {activeFilters.map((f, i) => (
-              <span key={i} className="text-[10px] font-bold text-white bg-blue-600/30 px-2.5 py-1.5 rounded-lg border border-blue-500/30">
-                {f}
-              </span>
-            ))}
+            <div className="gs-filter-summary">
+              {activeFilters.map((f, i) => (
+                <span key={i} className="gs-filter-summary-chip">{f}</span>
+              ))}
+            </div>
 
             {activeFiltersCount > 0 && (
               <button
+                type="button"
                 onClick={resetFilters}
-                className="text-[10px] font-black text-white bg-red-600 hover:bg-red-500 transition-colors uppercase px-3 py-1.5 rounded-lg border border-red-500 flex items-center gap-1"
+                className="gs-button gs-button-quiet !min-h-11 !px-3 !py-1.5 !text-[0.6875rem] !normal-case !tracking-normal"
               >
-                <span>✕</span> Limpiar
+                <span aria-hidden="true">×</span> Limpiar
               </button>
             )}
           </section>
 
-          {/* Hero del evento destacado/en vivo (solo vista por defecto) */}
-          {isDefaultView && eventoHero && (
-            <HomeHero evento={eventoHero} tipo={tipoHero} onClick={() => setSelectedEvent(eventoHero)} />
-          )}
-
-          {/* 6. Resultados */}
           <div id="listado-eventos-principal" className="w-full">
             <AgendaResults
               eventosAgrupados={eventosAgrupados}
+              emptyTitle={eventos.length === 0 ? "Agenda en actualización" : busqueda.trim() ? "Sin coincidencias" : activeFiltersCount > 0 ? "No hay eventos con estos filtros" : "No hay eventos próximos"}
+              emptyDescription={eventos.length === 0 ? "Estamos actualizando los horarios. Vuelve a consultar en unos minutos." : busqueda.trim() ? `No encontramos eventos para “${busqueda.trim()}”. Prueba con otro equipo, liga o canal.` : activeFiltersCount > 0 ? "Prueba con otro criterio o limpia los filtros para ver más opciones." : "No hay eventos publicados en la ventana actual."}
               onEventClick={(evento) => {
                 trackEvent('view_event_detail', {
                   event_name: evento.evento,
@@ -275,28 +271,26 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
             />
           </div>
 
-          {/* 7. Imperdibles */}
           {isDefaultView && (
             <HomeDestacados destacados={destacados} onEventClick={setSelectedEvent} />
           )}
 
-          {/* 8. Noticias y hubs */}
           {isDefaultView && noticias.length > 0 && (
-            <section className="my-12 w-full">
-              <div className="flex items-center justify-between mb-6 px-2">
-                <h2 className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.25em] flex items-center gap-2">
-                  <Newspaper className="w-3 h-3" /> Últimas Noticias
+            <section className="gs-home-section w-full" aria-labelledby="home-noticias-title">
+              <div className="gs-home-section-header">
+                <h2 id="home-noticias-title" className="gs-home-section-heading">
+                  <Newspaper className="h-4 w-4" aria-hidden="true" /> Últimas noticias
                 </h2>
-                <Link href="/noticias" className="text-[10px] font-bold text-slate-400 uppercase tracking-wider hover:text-blue-400 transition-colors flex items-center gap-1">
-                  Ver todas <ChevronRight size={10} />
+                <Link href="/noticias" className="flex min-h-11 items-center gap-1 text-xs font-bold text-blue-400 transition-colors hover:text-blue-300">
+                  Ver todas <ChevronRight size={14} aria-hidden="true" />
                 </Link>
               </div>
-              <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
+              <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide">
                 {noticias.slice(0, 5).map((n) => {
                   const emoji = guessSportEmoji(n.titulo);
                   return (
-                    <Link key={n.id} href={`/noticias/${n.slug}`} className="min-w-[280px] w-[85vw] max-w-[340px] bg-slate-900/50 border border-slate-800 p-4 rounded-[32px] flex gap-4 items-center hover:bg-slate-800/80 hover:border-slate-700 transition-all cursor-pointer group flex-shrink-0">
-                      <div className="w-20 h-20 bg-slate-800 rounded-2xl flex-shrink-0 flex items-center justify-center border border-white/5 group-hover:scale-105 transition-all overflow-hidden relative">
+                    <Link key={n.id} href={`/noticias/${n.slug}`} className="gs-home-news-card group flex w-[85vw] max-w-[21rem] flex-shrink-0 items-center gap-4 p-4 transition-colors">
+                      <div className="relative flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-800">
                         {n.imagen_url ? (
                           <NextImage
                             src={n.imagen_url}
@@ -310,15 +304,15 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
                             {emoji ? (
                               <span className="text-2xl mb-1">{emoji}</span>
                             ) : (
-                              <Newspaper className="text-blue-500/50" size={24} />
+                            <Newspaper className="text-blue-400/60" size={24} aria-hidden="true" />
                             )}
                           </div>
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h3 className="text-sm font-bold leading-snug mb-2 text-slate-100 group-hover:text-white line-clamp-2">{n.titulo}</h3>
-                        <div className="flex items-center justify-between">
-                          <div className="flex flex-col gap-1">
+                        <h3 className="mb-2 line-clamp-2 text-sm font-bold leading-snug text-slate-100 group-hover:text-white">{n.titulo}</h3>
+                        <div className="flex items-end justify-between gap-2">
+                          <div className="flex min-w-0 flex-col gap-1">
                             {n.fecha_publicacion && (
                               <p className="text-[10px] text-slate-400 font-medium">{n.fecha_publicacion}</p>
                             )}
@@ -328,18 +322,18 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
                               <p className="text-[10px] font-bold text-slate-500 tracking-wide">GuíaSports</p>
                             )}
                           </div>
-                          <span className="text-[10px] text-blue-400 font-bold tracking-wide opacity-0 group-hover:opacity-100 transition-opacity">Leer →</span>
+                          <span className="text-xs font-bold text-blue-400">Leer →</span>
                         </div>
                       </div>
                     </Link>
                   );
                 })}
 
-                <Link href="/noticias" className="min-w-[150px] bg-slate-900/20 border border-dashed border-slate-800 p-5 rounded-[32px] flex flex-col items-center justify-center hover:bg-slate-800/40 hover:border-slate-700 transition-all cursor-pointer group flex-shrink-0">
-                  <div className="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                    <Zap className="text-blue-500" size={20} />
+                <Link href="/noticias" className="gs-home-news-card flex min-h-[8.5rem] min-w-[9.5rem] flex-shrink-0 flex-col items-center justify-center gap-2 border-dashed p-5 text-center transition-colors">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-800">
+                  <Zap className="text-blue-400" size={18} aria-hidden="true" />
                   </div>
-                  <span className="text-[10px] font-bold text-slate-400 tracking-wide group-hover:text-white transition-colors">+ Ver más</span>
+                  <span className="text-xs font-bold text-slate-300">+ Ver más</span>
                 </Link>
               </div>
             </section>

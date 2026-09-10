@@ -73,23 +73,38 @@ export default async function FutbolHub() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-24">
-        <div className="max-w-4xl mx-auto px-4 pt-10">
+        <div className="max-w-4xl mx-auto px-4 pt-8">
           <Breadcrumbs items={[]} current="Fútbol" currentHref="/futbol" />
 
-          <header className="mb-12">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="bg-[#a3e635]/10 p-4 rounded-2xl border border-[#a3e635]/20 text-5xl">
+          <header className="gs-hub-header">
+            <div className="gs-hub-identity">
+              <div className="gs-hub-icon-box" aria-hidden="true">
                 ⚽️
               </div>
               <div>
-                <h1 className="text-3xl md:text-5xl font-black italic uppercase leading-[0.95] tracking-tighter">
-                  Fútbol <span className="text-[#a3e635]">en Vivo</span>
+                <h1 className="gs-hub-title">
+                  Fútbol <strong>en Vivo</strong>
                 </h1>
-                <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-2">
-                  Dónde ver partidos hoy en México
+                <p className="gs-hub-subtitle">
+                  Partidos, canales y horarios de transmisión en México
                 </p>
               </div>
             </div>
+
+            <nav aria-label="Competiciones destacadas" className="gs-hub-quicklinks">
+              <Link href="/futbol/liga-mx" className="gs-hub-quicklink">
+                🇲🇽 Liga MX (Tabla y Goleo)
+              </Link>
+              <Link href="/futbol/champions-league" className="gs-hub-quicklink">
+                ⭐ Champions League
+              </Link>
+              <Link href="/futbol/premier-league" className="gs-hub-quicklink">
+                🦁 Premier League
+              </Link>
+              <Link href="/mundial-2026" className="gs-hub-quicklink">
+                🏆 Archivo Mundial 2026
+              </Link>
+            </nav>
           </header>
 
           <EventListWithModal
@@ -98,26 +113,45 @@ export default async function FutbolHub() {
           />
 
           {noticias && noticias.length > 0 && (
-            <section className="mt-12">
-              <h2 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] mb-6 flex items-center gap-2">
-                <Calendar className="w-4 h-4" /> Últimas Noticias
+            <section className="mt-14">
+              <h2 className="gs-section-title mb-6 flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-blue-500" /> Últimas Noticias y Previas
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {noticias.map((n: Noticia) => (
-                  <Link key={n.id} href={`/noticias/${n.slug}`} className="group bg-slate-900/50 border border-slate-800/50 rounded-2xl overflow-hidden hover:border-blue-500/30 transition-all">
+                  <Link
+                    key={n.id}
+                    href={`/noticias/${n.slug}`}
+                    className="gs-news-card group"
+                  >
                     {n.imagen_url ? (
-                      <div className="w-full h-32 overflow-hidden relative">
-                        <NextImage src={n.imagen_url} alt={n.titulo} fill className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="(max-width: 768px) 100vw, 50vw" loading="lazy" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent opacity-60"></div>
+                      <div className="gs-news-card-media">
+                        <NextImage
+                          src={n.imagen_url}
+                          alt={n.titulo}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                          loading="lazy"
+                        />
                       </div>
                     ) : (
-                      <div className="w-full h-32 bg-gradient-to-br from-blue-600/20 to-blue-900/20 flex items-center justify-center border-b border-slate-800/50">
-                        <div className="text-4xl">⚽️</div>
+                      <div className="w-full h-32 bg-slate-900 border-b border-slate-800 flex items-center justify-center text-4xl">
+                        ⚽️
                       </div>
                     )}
-                    <div className="p-4">
-                      <h3 className="text-xs font-black italic uppercase text-slate-200 group-hover:text-white leading-tight line-clamp-2">{n.titulo}</h3>
-                      <p className="text-[9px] text-slate-500 uppercase font-bold mt-1">{n.fecha}</p>
+                    <div className="gs-news-card-body">
+                      <div className="gs-news-meta">
+                        <span className="gs-news-meta-date">
+                          <Calendar size={11} /> {n.fecha}
+                        </span>
+                      </div>
+                      <h3 className="gs-news-title group-hover:text-blue-400 transition-colors line-clamp-2">
+                        {n.titulo}
+                      </h3>
+                      <p className="text-[11px] font-bold text-slate-400 mt-auto uppercase tracking-wider group-hover:text-white transition-colors">
+                        Leer previa →
+                      </p>
                     </div>
                   </Link>
                 ))}
@@ -125,24 +159,24 @@ export default async function FutbolHub() {
             </section>
           )}
 
-          <section className="mt-12">
-            <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4">Otros Deportes</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <Link href="/nba" className="bg-slate-900/50 border border-slate-800 p-4 rounded-xl text-center hover:border-blue-500/30 transition-all group">
-                <div className="text-3xl mb-2">🏀</div>
-                <div className="text-[10px] font-black uppercase text-slate-400 group-hover:text-white transition-colors">NBA</div>
+          <section className="mt-14">
+            <h2 className="gs-section-title mb-4">Otros Deportes y Secciones</h2>
+            <div className="gs-sports-nav">
+              <Link href="/nba" className="gs-sports-nav-item group">
+                <div className="gs-sports-nav-icon">🏀</div>
+                <div className="gs-sports-nav-label">NBA</div>
               </Link>
-              <Link href="/mlb" className="bg-slate-900/50 border border-slate-800 p-4 rounded-xl text-center hover:border-blue-500/30 transition-all group">
-                <div className="text-3xl mb-2">⚾️</div>
-                <div className="text-[10px] font-black uppercase text-slate-400 group-hover:text-white transition-colors">MLB</div>
+              <Link href="/mlb" className="gs-sports-nav-item group">
+                <div className="gs-sports-nav-icon">⚾️</div>
+                <div className="gs-sports-nav-label">MLB</div>
               </Link>
-              <Link href="/f1" className="bg-slate-900/50 border border-slate-800 p-4 rounded-xl text-center hover:border-blue-500/30 transition-all group">
-                <div className="text-3xl mb-2">🏎️</div>
-                <div className="text-[10px] font-black uppercase text-slate-400 group-hover:text-white transition-colors">Fórmula 1</div>
+              <Link href="/f1" className="gs-sports-nav-item group">
+                <div className="gs-sports-nav-icon">🏎️</div>
+                <div className="gs-sports-nav-label">Fórmula 1</div>
               </Link>
-              <Link href="/noticias" className="bg-slate-900/50 border border-slate-800 p-4 rounded-xl text-center hover:border-blue-500/30 transition-all group">
-                <div className="text-3xl mb-2">📰</div>
-                <div className="text-[10px] font-black uppercase text-slate-400 group-hover:text-white transition-colors">Noticias</div>
+              <Link href="/mundial-2026" className="gs-sports-nav-item group">
+                <div className="gs-sports-nav-icon">🏆</div>
+                <div className="gs-sports-nav-label">Mundial 2026</div>
               </Link>
             </div>
           </section>

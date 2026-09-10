@@ -987,3 +987,31 @@ Entrega:
 ## Referencia al plan activo de diseño visual
 
 La Fase de cierre pre-diseño visual está cerrada. El trabajo nuevo de diseño, UX y navegación se documenta en [PLAN-DISENO-UX-VISUAL-GUIASPORTS.md](PLAN-DISENO-UX-VISUAL-GUIASPORTS.md). Este documento permanece como referencia histórica y técnica; no se deben añadir aquí nuevas instrucciones visuales ni reabrir A8 sin nueva evidencia.
+
+## Registro de release técnico — Hardening de consultas Supabase (2026-09-10)
+
+**Motivo:** alertas "Unhealthy" de Supabase (`postgrest_logs`, severidad INFO: "Warp server error: Thread killed by timeout manager"), atribuibles a la carga de consultas durante build/revalidación (consultas de hubs sin fecha ni límite, `COUNT(*)` exacto en `/noticias` y límite alto en el sitemap).
+
+**Alcance:** sólo consultas de aplicación. Sin cambios en Supabase, RLS, datos, IDs, URLs, scripts de sincronización ni dependencias.
+
+**Release:**
+- Rama: `fix/supabase-query-hardening`.
+- Commit de código: `4293e85` — `perf(supabase): acotar consultas de eventos y noticias`.
+- Commit base previo (producción anterior): `2c40ce6`.
+- Tag de rollback: `rollback-pre-query-hardening` → apunta a `2c40ce6`.
+- Integración: fast-forward de `main` sobre la rama de hardening.
+
+**Cambios de consultas:**
+- Hubs (`futbol`, `nba`, `mlb`, `f1`): `.gte('fecha', hoy)` + `.limit(500)` + columnas explícitas (`id, fecha, hora, evento, competicion, deporte, canales, ajuste_manual`).
+- `/envivo`: `.eq('fecha', hoy)` + columnas explícitas + `.limit(200)`.
+- `/noticias`: `count: 'estimated'` en lugar de `exact`, con paginación tolerante.
+- `sitemap.ts`: límite de noticias 5000 → 2000.
+
+**Cómo revertir (en orden de preferencia):**
+1. Revertir el commit: `git revert <sha_de_main_con_el_hardening>` y push a `main`; Vercel redespliega el comportamiento anterior.
+2. Restauración exacta del estado previo: `git reset --hard rollback-pre-query-hardening` (local) y `git push --force-with-lease origin main` **sólo** si se autoriza retroceder historial.
+3. Vercel Dashboard → Deployments → deployment de `2c40ce6` → **Instant Rollback**.
+
+**Verificación post-release:** HTTP 200 en `/`, `/envivo`, `/nba`, `/mlb`, `/f1`, `/futbol`, `/noticias` y `/sitemap.xml`; hubs con datos; sin errores de consola; monitorizar las alertas de Supabase tras el deploy.
+
+**Validaciones:** `npm run test` (38/38), `npx tsc --noEmit`, `npm run lint`, `npm run build` y `git diff --check` correctos.

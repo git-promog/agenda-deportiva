@@ -5,7 +5,7 @@
 ## Estado actual
 
 - Fecha de inicio: 2026-09-01.
-- Estado: **Fases 0 a 8 aprobadas; paquete visual local aprobado para release (pendiente de autorización de push/deploy)**.
+- Estado: **Fases 0 a 8 aprobadas; paquete visual publicado en producción el 2026-09-09**.
 - Fase de cierre pre-diseño visual: completada el 27/08/2026.
 - A8: cerrado y documentado en el plan de remediación anterior.
 - Rama local: `main`, limpia y alineada con `origin/main` al crear este documento.
@@ -532,14 +532,14 @@ Criterio de salida: existe un paquete visual local aprobado y listo para revisi�
 
 #### Reporte de consolidación Fase 8 — aprobada
 
-- **Estado de rama:** `main` alineada con `origin/main` (`21bb298`); sin commits locales extra, sin push ni deploy. Producción intacta y operativa.
+- **Estado de rama al consolidar:** `main` estaba alineada con `origin/main` (`21bb298`) antes de crear la rama de release; el paquete se preparó localmente sin push ni deploy.
 - **Alcance del paquete:** 39 archivos modificados en el árbol de trabajo, todos del plan y de superficies visuales (`agenda-web/src/components/**` y `src/app/**`); sin archivos añadidos, borrados ni sin seguimiento. Fuera del diff: `src/data`, `src/lib`, `admin`, `api`, scripts, config de Next, `package.json`/lock (sin dependencias nuevas), `.env.local` (ignorado) y Supabase/RLS.
 - **Paquete visual:** build de producción completado (173 rutas) sobre el código final y servido con `next start`; auditoría final con **overflow 0** en 320/1280 y sin errores de consola en 12 rutas (incluye detalle de noticia y evento). Capturas finales a 375 y 1280 px en `/private/tmp/guiasports-fase8-release/`.
 - **Checklist de staging (propuesto):** revisión visual de capturas por ruta crítica; `git status`/`git diff --check` limitados al alcance; validaciones verdes (`test`, `tsc`, `lint`, `build`); verificación en staging de portada/hero, agenda+filtros+modal, En Vivo, noticias (lista/detalle), hubs (futbol/NBA/MLB/F1), Mundial (partidos/favoritos/sedes), plataformas, foco/teclado y `prefers-reduced-motion`; confirmación de lectura Supabase sin tocar RLS; release mediante rama dedicada con revisión y merge a `main` sólo con autorización explícita, sin deploy automático.
-- **Rollback:** al no haber despliegue de este trabajo, el rollback inmediato es no publicar; producción permanece en `origin/main`. Tras autorizar el commit en rama dedicada, el rollback sería revertir ese commit o volver a desplegar el estado `origin/main` previo (cambios visuales reversibles, sin migraciones de datos).
-- **Preparación de release:** se creó la rama `release/visual-v1` con el commit del paquete visual para revisión. No se hizo push ni deploy.
+- **Rollback:** producción estaba en `origin/main` (`21bb298`) antes del release; el rollback es revertir el commit `5149559` o redesplegar `21bb298` (cambios visuales reversibles, sin migraciones de datos).
+- **Preparación y publicación de release:** se creó la rama `release/visual-v1` con el commit `5149559` del paquete visual, se publicó la rama y se hizo fast-forward de `main` (`21bb298..5149559`) a `origin/main`, disparando el deploy de producción en Vercel. Verificación en producción: HTTP 200 y cambios del release presentes (paginación de noticias, `break-words` en plataformas, `gs-footer-link` en `text-subtle`).
 - **Validaciones:** `npm run test` con 5 archivos y 38 pruebas; `npx tsc --noEmit`, `npm run lint`, `npm run build` (173 rutas) y `git diff --check` correctos. Servidor de preview detenido y puerto 3000 libre.
-- **Estado de fase:** paquete visual local aprobado para release; el push/deploy queda pendiente de autorización explícita del usuario.
+- **Estado de fase:** paquete visual **publicado en producción** el 2026-09-09; rama `main` y `release/visual-v1` publicadas en `origin`. Sin deploy manual adicional.
 
 ## Protocolo de trabajo por sesión
 
@@ -633,15 +633,15 @@ Siguiente sesión recomendada:
 
 ### Paquete visual GuíaSports (Fases 0–8)
 
-Estado: **aprobado por el usuario para release; sin push ni deploy; pendiente únicamente de autorización explícita**.
+Estado: **publicado en producción el 2026-09-09** (rama `main` y `release/visual-v1` en `origin`; deploy de Vercel disparado por el push a `main`).
 
-- **Rama de release:** `release/visual-v1` (creada desde `main`, que permanece alineada con `origin/main` en `21bb298`).
+- **Rama de release:** `release/visual-v1` publicada en `origin`; `main` avanzó por fast-forward de `21bb298` a `5149559` y está publicada.
 - **Contenido:** sistema visual, shell/navegación, portada, tarjetas/modal/detalle, noticias/hubs/Mundial, microinteracciones/rendimiento percibido, QA de accesibilidad y contraste AA, y este plan actualizado.
 - **Checklist de staging:** ver reporte de Fase 8 en este documento.
-- **Rollback:** producción permanece en `origin/main`; revertir el commit de release o redesplegar ese estado.
-- **Puerta de autorización:** cualquier `git push` a `main` o deploy requiere autorización explícita del usuario.
+- **Rollback:** revertir el commit `5149559` o redesplegar `21bb298` (cambios visuales reversibles, sin migraciones de datos).
+- **Puerta de autorización:** cualquier cambio nuevo que requiera push o deploy vuelve a requerir autorización explícita del usuario.
 
-Al reanudar, no hay fases de implementación pendientes: sólo autorización de release o ajustes acotados sobre el paquete aprobado.
+Al reanudar, no hay fases de implementación pendientes: sólo ajustes acotados sobre el paquete publicado.
 
 ## Registro breve de decisiones
 
@@ -663,6 +663,7 @@ Al reanudar, no hay fases de implementación pendientes: sólo autorización de 
 | 2026-09-07 | Se implementa, revisa y aprueba la Fase 6 — Microinteracciones y rendimiento percibido: transiciones contenidas de 160–220 ms en modales, panel de filtros y menú móvil, feedback de presión en chips y favoritos, skeletons con geometría real y semántica de carga, `prefers-reduced-motion` estricto y revisión de imágenes/LCP sin cambios de datos ni dependencias. Se prepara el handoff de Fase 7. |
 | 2026-09-08 | Se implementa, revisa y aprueba la Fase 7 — QA visual, accesibilidad y regresión: auditoría por CDP sin dependencias nuevas, overflow 0 en 320–1280, corrección acotada de dos recortes en móvil (plataformas y paginación de noticias), contraste AA llevado a 0 fallos en 12 rutas y validaciones completas. Se prepara el handoff de Fase 8. |
 | 2026-09-09 | Se consolida y aprueba la Fase 8 — Consolidación y release controlado: alcance confirmado (39 archivos visuales + plan), paquete visual con build 173/173 y capturas finales, checklist de staging y rollback definidos. Se crea la rama `release/visual-v1` con el commit del paquete; el push/deploy queda pendiente de autorización explícita. |
+| 2026-09-09 | Con autorización explícita del usuario, se publica completamente: push de `release/visual-v1` y fast-forward de `main` (`21bb298..5149559`) a `origin`, disparando el deploy de producción en Vercel. Verificación en producción correcta (HTTP 200 y cambios del release presentes). |
 
 ## Registro de sesiones
 
@@ -682,6 +683,7 @@ Al reanudar, no hay fases de implementación pendientes: sólo autorización de 
 | 2026-09-07 | Fase 6 | Aprobada por el usuario; transiciones y microinteracciones, skeletons, movimiento reducido e imágenes revisadas; 38 pruebas, TypeScript, lint, diff check y build 173/173 correctos; handoff preparado para Fase 7 | Sección “Reporte de implementación Fase 6” de este documento |
 | 2026-09-08 | Fase 7 | Aprobada por el usuario; QA visual/accesibilidad/regresión por CDP sin dependencias nuevas, overflow 0, dos recortes móviles corregidos, contraste AA en 0 fallos y build completado; handoff preparado para Fase 8 | Sección “Reporte de implementación Fase 7” de este documento |
 | 2026-09-09 | Fase 8 | Aprobada por el usuario; alcance confirmado (39 archivos visuales + plan), paquete visual con build 173/173, checklist de staging y rollback, y rama `release/visual-v1` con commit local; sin push ni deploy | Sección “Reporte de consolidación Fase 8” de este documento |
+| 2026-09-09 | Release | Publicación completa autorizada por el usuario: `release/visual-v1` y `main` (`5149559`) en `origin`; deploy de producción en Vercel verificado con cambios del release en línea | Sección “Reporte de consolidación Fase 8” de este documento |
 
 ## Prompt de continuidad para la siguiente sesión
 
@@ -693,26 +695,26 @@ Lee primero:
 - agenda-web/AGENTS.md
 - agenda-web/CLAUDE.md
 
-Las Fases 0 a 8 están aprobadas por el usuario: Fase 0 el 2026-09-01, Fases 1–3 el 2026-09-04, Fases 4 y 5 el 2026-09-06, Fase 6 el 2026-09-07, Fase 7 el 2026-09-08 y Fase 8 el 2026-09-09. El paquete visual local está aprobado para release y vive en la rama `release/visual-v1`; `main` sigue alineada con `origin/main` y no ha recibido push ni deploy. La incidencia recurrente del build local quedó documentada: usar un solo `next dev`, detenerlo antes de que el agente ejecute `npm run build`, confirmar que no haya otro proceso de Next y no borrar `.next`, locks ni archivos fuente para resolver una espera. En Next.js 16.2.1 `next dev` usa `.next/dev` por defecto, por lo que un build detenido no debe atribuirse automáticamente a una colisión con dev. El plan técnico de remediación está cerrado. A8 está cerrado. Producción está operativa.
+Las Fases 0 a 8 están aprobadas por el usuario: Fase 0 el 2026-09-01, Fases 1–3 el 2026-09-04, Fases 4 y 5 el 2026-09-06, Fase 6 el 2026-09-07, Fase 7 el 2026-09-08 y Fase 8 el 2026-09-09. El paquete visual fue **publicado en producción** el 2026-09-09: `release/visual-v1` y `main` (`5149559`) están en `origin` y el deploy de Vercel está verificado. La incidencia recurrente del build local quedó documentada: usar un solo `next dev`, detenerlo antes de que el agente ejecute `npm run build`, confirmar que no haya otro proceso de Next y no borrar `.next`, locks ni archivos fuente para resolver una espera. En Next.js 16.2.1 `next dev` usa `.next/dev` por defecto, por lo que un build detenido no debe atribuirse automáticamente a una colisión con dev. El plan técnico de remediación está cerrado. A8 está cerrado. Producción está operativa.
 
 Objetivo de esta sesión:
-Release controlado del paquete visual (o ajustes acotados solicitados por el usuario). No hay fases de implementación pendientes.
+Mantenimiento o ajustes acotados sobre el paquete visual ya publicado. No hay fases de implementación pendientes.
 
 Restricciones:
-- Trabajar sólo en local y dentro del alcance del release o de los ajustes solicitados.
+- Trabajar sólo en local y dentro del alcance de los ajustes solicitados.
 - No reabrir Fases 0–8 salvo una regresión directamente causada por el trabajo actual.
 - No modificar `.env.local`, Supabase, RLS, credenciales de producción, datos ni scripts de sincronización. La configuración local ya fue corregida por el usuario y debe permanecer fuera del diff.
 - No modificar datos, IDs, URLs ni contenido fuente.
 - No exponer secretos ni reabrir A8 o la investigación histórica.
 - No ejecutar agentes en paralelo sobre la misma rama.
 - No introducir dependencias nuevas.
-- No hacer push ni deploy sin autorización explícita.
+- No hacer push ni deploy sin autorización explícita (cualquier cambio nuevo vuelve a requerir autorización).
 
 Alcance:
-- Ejecutar el checklist de staging del reporte de Fase 8.
-- Confirmar que no hubo cambios fuera de alcance.
-- Solicitar autorización explícita antes de cualquier push o deploy.
-- Si el usuario autoriza, publicar mediante la rama `release/visual-v1` (revisión y merge a `main`), sin deploy automático.
+- Mantenimiento o ajustes acotados sobre el paquete visual ya publicado.
+- Confirmar que no hay cambios fuera de alcance.
+- Solicitar autorización explícita antes de cualquier push o deploy nuevo.
+- Si el usuario autoriza, publicar los ajustes mediante la rama de release y `main`, y documentar el resultado.
 
 La dirección aprobada es “guía de transmisión nocturna”:
 - Azul noche como base y superficies slate para separar niveles.
@@ -734,5 +736,5 @@ Ejecuta las validaciones desde agenda-web, registra cualquier limitación de red
 
 La incidencia de datos quedó resuelta localmente y no debe reabrirse como trabajo de Supabase. Antes de ejecutar `npm run build`, confirma que el puerto 3000 esté libre y que no exista otro `next dev`, `next start` o `next build`. Si persiste una espera en `compile`, documenta procesos, lock, diagnóstico, red y entorno sin borrar `.next`, locks ni archivos fuente.
 
-Si el usuario solicita ajustes, mantente dentro del paquete aprobado. Si autoriza el release, publica mediante la rama `release/visual-v1` y documenta el resultado. No hagas push ni deploy sin autorización explícita.
+Si el usuario solicita ajustes, mantente dentro del paquete publicado. Cualquier push o deploy nuevo requiere autorización explícita.
 ```

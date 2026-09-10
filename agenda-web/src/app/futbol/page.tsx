@@ -58,7 +58,7 @@ export default async function FutbolHub() {
 
   const [{ data: eventos }, { data: noticias }] = await Promise.all([
     supabase.from('eventos').select('*').eq('deporte', 'Fútbol').order('fecha', { ascending: true }).order('hora', { ascending: true }),
-    supabase.from('noticias').select('*').order('created_at', { ascending: false }).limit(6),
+    supabase.from('noticias').select('*').order('fecha', { ascending: false }).limit(6),
   ]);
 
   const eventosFutbol = eventos || [];

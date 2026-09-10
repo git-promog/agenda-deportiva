@@ -131,9 +131,9 @@ export default async function CompetitionHub({ params }: Props) {
         .limit(30),
       supabase
         .from('noticias')
-        .select('titulo, slug, fecha, created_at')
+        .select('titulo, slug, fecha')
         .ilike('titulo', `%${hub.query}%`)
-        .order('created_at', { ascending: false })
+        .order('fecha', { ascending: false })
         .limit(6),
       isLigaMx
         ? supabase

@@ -45,7 +45,7 @@ export default async function MlbHub() {
       .order('fecha', { ascending: true })
       .order('hora', { ascending: true })
       .limit(500),
-    supabase.from('noticias').select('*').order('created_at', { ascending: false }).limit(6),
+    supabase.from('noticias').select('*').order('fecha', { ascending: false }).limit(6),
   ]);
 
   const eventosBeisbol = deduplicateEventos((eventos ?? []) as Evento[]);

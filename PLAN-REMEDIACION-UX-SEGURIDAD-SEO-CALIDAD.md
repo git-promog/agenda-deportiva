@@ -1015,3 +1015,13 @@ La Fase de cierre pre-diseño visual está cerrada. El trabajo nuevo de diseño,
 **Verificación post-release:** HTTP 200 en `/`, `/envivo`, `/nba`, `/mlb`, `/f1`, `/futbol`, `/noticias` y `/sitemap.xml`; hubs con datos; sin errores de consola; monitorizar las alertas de Supabase tras el deploy.
 
 **Validaciones:** `npm run test` (38/38), `npx tsc --noEmit`, `npm run lint`, `npm run build` y `git diff --check` correctos.
+
+### Seguimiento — Bug `noticias.created_at` (2026-09-10)
+
+- **Error detectado:** `42703 column noticias.created_at does not exist` (`postgres_logs`, ERROR), generado por consultas de noticias en los hubs (`nba`, `mlb`, `f1`, `futbol`) y en `futbol/[competicion]`.
+- **Causa:** las consultas ordenaban (y una seleccionaba) `created_at`, columna inexistente en `noticias`. Verificado por REST: `order=fecha` → 200; `order=created_at` → 400/42703.
+- **Corrección (sólo aplicación):** ordenar por `fecha` en los cuatro hubs y en `futbol/[competicion]`; se quitó `created_at` del `select` de `futbol/[competicion]`. Sin cambios en Supabase, RLS, datos ni esquema.
+- **Rama:** `fix/noticias-order-column`.
+- **Commit base previo:** `bbf8cea`.
+- **Tag de rollback:** `rollback-pre-noticias-fix` → `bbf8cea`.
+- **Validaciones:** `npm run test` (38/38), `npx tsc --noEmit`, `npm run lint`, `npm run build` y `git diff --check` correctos; consultas corregidas verificadas por REST (HTTP 200).

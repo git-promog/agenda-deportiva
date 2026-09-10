@@ -45,7 +45,7 @@ export default async function F1Hub() {
       .order('fecha', { ascending: true })
       .order('hora', { ascending: true })
       .limit(500),
-    supabase.from('noticias').select('*').order('created_at', { ascending: false }).limit(6),
+    supabase.from('noticias').select('*').order('fecha', { ascending: false }).limit(6),
   ]);
 
   const eventosF1 = deduplicateEventos((eventos ?? []) as Evento[]);

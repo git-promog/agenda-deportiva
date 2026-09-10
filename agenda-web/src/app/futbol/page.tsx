@@ -52,7 +52,14 @@ export default async function FutbolHub() {
   );
 
   const [{ data: eventos }, { data: noticias }] = await Promise.all([
-    supabase.from('eventos').select('*').eq('deporte', 'Fútbol').order('fecha', { ascending: true }).order('hora', { ascending: true }),
+    supabase
+      .from('eventos')
+      .select('id, fecha, hora, evento, competicion, deporte, canales, ajuste_manual')
+      .eq('deporte', 'Fútbol')
+      .gte('fecha', hoyStr)
+      .order('fecha', { ascending: true })
+      .order('hora', { ascending: true })
+      .limit(500),
     supabase.from('noticias').select('*').order('created_at', { ascending: false }).limit(6),
   ]);
 

@@ -41,9 +41,11 @@ export default async function EnVivo() {
 
   const { data: eventos } = await supabase
     .from('eventos')
-    .select('*')
+    .select('id, fecha, hora, evento, competicion, deporte, canales, ajuste_manual')
+    .eq('fecha', hoyStr)
     .order('fecha', { ascending: true })
-    .order('hora', { ascending: true });
+    .order('hora', { ascending: true })
+    .limit(200);
 
   const eventosAgenda = deduplicateEventos((eventos ?? []) as Evento[]);
   const eventosEnVivo = eventosAgenda.filter(e => isEventLive(e.fecha, e.hora));

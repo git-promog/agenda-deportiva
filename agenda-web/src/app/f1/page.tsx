@@ -37,7 +37,14 @@ export default async function F1Hub() {
   );
 
   const [{ data: eventos }, { data: noticias }] = await Promise.all([
-    supabase.from('eventos').select('*').eq('deporte', 'Fórmula 1').order('fecha', { ascending: true }).order('hora', { ascending: true }),
+    supabase
+      .from('eventos')
+      .select('id, fecha, hora, evento, competicion, deporte, canales, ajuste_manual')
+      .eq('deporte', 'Fórmula 1')
+      .gte('fecha', hoyStr)
+      .order('fecha', { ascending: true })
+      .order('hora', { ascending: true })
+      .limit(500),
     supabase.from('noticias').select('*').order('created_at', { ascending: false }).limit(6),
   ]);
 

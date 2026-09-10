@@ -60,15 +60,19 @@ export default async function NoticiasIndex({
 
   const { count: totalNoticias } = await supabase
     .from('noticias')
-    .select('*', { count: 'exact', head: true });
+    .select('id', { count: 'estimated', head: true });
 
   const { data: noticias } = await supabase
     .from('noticias')
-    .select('*')
+    .select('id, titulo, slug, imagen_url, fecha, autor')
     .order('fecha', { ascending: false })
     .range((paginaActual - 1) * NOTICIAS_POR_PAGINA, paginaActual * NOTICIAS_POR_PAGINA - 1);
 
-  const totalPaginas = Math.ceil((totalNoticias || 0) / NOTICIAS_POR_PAGINA);
+  const totalPaginas = Math.max(
+    1,
+    Math.ceil((totalNoticias || 0) / NOTICIAS_POR_PAGINA),
+    noticias && noticias.length === NOTICIAS_POR_PAGINA ? paginaActual + 1 : paginaActual,
+  );
 
   const jsonLd = {
     "@context": "https://schema.org",

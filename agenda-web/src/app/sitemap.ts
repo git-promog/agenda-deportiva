@@ -34,7 +34,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         .from('noticias')
         .select('slug, fecha')
         .order('fecha', { ascending: false })
-        .limit(5000);
+        .limit(2000);
 
       if (error) {
         console.error("Error fetching noticias for sitemap:", error);

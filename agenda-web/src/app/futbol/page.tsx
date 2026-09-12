@@ -8,7 +8,7 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 import EventListWithModal from '@/components/EventListWithModal';
 import { getTodayMexicoString } from '@/lib/mexicoTime';
 
-export const revalidate = 60;
+export const revalidate = 600;
 
 export const metadata: Metadata = {
   title: "Agenda de Fútbol en Vivo Hoy | México | GuíaSports",
@@ -60,7 +60,7 @@ export default async function FutbolHub() {
       .order('fecha', { ascending: true })
       .order('hora', { ascending: true })
       .limit(500),
-    supabase.from('noticias').select('*').order('fecha', { ascending: false }).limit(6),
+    supabase.from('noticias').select('id, titulo, slug, imagen_url, fecha').order('fecha', { ascending: false }).limit(6),
   ]);
 
   const proximos: Evento[] = deduplicateEventos((eventos || []).filter((evento: Evento) => evento.fecha >= hoyStr));

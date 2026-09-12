@@ -3,6 +3,7 @@ import HomeClient from '@/components/HomeClient';
 import { Metadata } from 'next';
 import { getTodayMexicoString, getDateRangeMexico } from '@/lib/mexicoTime';
 import { buildEventUrl, deduplicateEventos } from '@/lib/eventUrls';
+import type { Noticia } from '@/types';
 
 // ISR every 5 minutes (300 seconds) to balance freshness with performance
 export const revalidate = 300; 
@@ -41,7 +42,7 @@ export default async function Home() {
   );
 
   let eventos: HomeEvento[] = [];
-  let noticias = [];
+  let noticias: Noticia[] = [];
   let ultimaAct = "Recargando...";
 
   // Ventana de agenda en home: hoy + 3 días (4 días totales)
@@ -62,7 +63,7 @@ export default async function Home() {
     // 2. Cargar Noticias (Últimas 2 para la portada)
     const { data: notData } = await supabase
       .from('noticias')
-      .select('*')
+      .select('id, titulo, slug, imagen_url, fecha, autor')
       .order('fecha', { ascending: false })
       .limit(5);
     

@@ -9,7 +9,7 @@ import { getTodayMexicoString } from '@/lib/mexicoTime';
 import { deduplicateEventos } from '@/lib/eventUrls';
 import type { Evento, Noticia } from '@/types';
 
-export const revalidate = 60;
+export const revalidate = 600;
 
 export const metadata: Metadata = {
   title: "MLB en Vivo | Horarios y Dónde Ver Béisbol Hoy en México | GuíaSports",
@@ -45,7 +45,7 @@ export default async function MlbHub() {
       .order('fecha', { ascending: true })
       .order('hora', { ascending: true })
       .limit(500),
-    supabase.from('noticias').select('*').order('fecha', { ascending: false }).limit(6),
+    supabase.from('noticias').select('id, titulo, slug, imagen_url, fecha').order('fecha', { ascending: false }).limit(6),
   ]);
 
   const eventosBeisbol = deduplicateEventos((eventos ?? []) as Evento[]);

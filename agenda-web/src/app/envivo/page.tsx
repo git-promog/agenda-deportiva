@@ -7,7 +7,7 @@ import { deduplicateEventos } from '@/lib/eventUrls';
 import { getTodayMexicoString, isEventLive } from '@/lib/mexicoTime';
 import type { Evento } from '@/types';
 
-export const revalidate = 60;
+export const revalidate = 600;
 
 export const metadata: Metadata = {
   title: "En Vivo Ahora | GuíaSports - Deportes en Vivo México",

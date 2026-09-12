@@ -69,6 +69,7 @@ const emojis: { [key: string]: string } = {
 };
 
 const TOP_TEAMS = ["América", "Chivas", "Real Madrid", "Barcelona", "México", "F1", "NBA", "Champions", "Cruz Azul", "Pumas", "Selección"];
+const NOTICIAS_POR_PAGINA = 12;
 
 export default function AdminPanel() {
   const [mounted, setMounted] = useState(false);
@@ -86,6 +87,8 @@ export default function AdminPanel() {
   
   // Estados para Noticias
   const [noticias, setNoticias] = useState<AdminNoticia[]>([]);
+  const [noticiasPagina, setNoticiasPagina] = useState(1);
+  const [noticiasTotalPaginas, setNoticiasTotalPaginas] = useState(1);
   const [isNoticiaModalOpen, setIsNoticiaModalOpen] = useState(false);
   const [editandoNoticia, setEditandoNoticia] = useState<NoticiaEditable>({ titulo: "", contenido: "", imagen_url: "", fecha: "", autor: "" });
 
@@ -187,9 +190,18 @@ export default function AdminPanel() {
     }
   }
 
-  async function cargarNoticias() {
-    const { data } = await supabase.from('noticias').select('*').order('fecha', { ascending: false });
+  async function cargarNoticias(pagina: number = noticiasPagina) {
+    const desde = (pagina - 1) * NOTICIAS_POR_PAGINA;
+    const hasta = desde + NOTICIAS_POR_PAGINA - 1;
+    const { data, count } = await supabase
+      .from('noticias')
+      .select('id, titulo, slug, imagen_url, fecha, autor', { count: 'exact' })
+      .order('fecha', { ascending: false })
+      .range(desde, hasta);
     if (data) setNoticias(data as AdminNoticia[]);
+    if (typeof count === 'number') {
+      setNoticiasTotalPaginas(Math.max(1, Math.ceil(count / NOTICIAS_POR_PAGINA)));
+    }
   }
 
   // --- LOGICA EVENTOS ---
@@ -281,12 +293,21 @@ export default function AdminPanel() {
   }
 
   // --- LOGICA NOTICIAS ---
-  function abrirModalNoticia(noticia?: NoticiaModalInput) {
+  async function abrirModalNoticia(noticia?: NoticiaModalInput) {
     if (noticia) {
+      let contenido = noticia.contenido ?? "";
+      if (noticia.id && noticia.contenido == null) {
+        const { data } = await supabase
+          .from('noticias')
+          .select('contenido')
+          .eq('id', noticia.id)
+          .maybeSingle();
+        if (data) contenido = data.contenido ?? "";
+      }
       setEditandoNoticia({
         id: noticia.id,
         titulo: noticia.titulo,
-        contenido: noticia.contenido ?? "",
+        contenido,
         imagen_url: noticia.imagen_url ?? "",
         fecha: noticia.fecha ?? noticia.fecha_publicacion ?? "",
         autor: noticia.autor ?? "",
@@ -633,6 +654,24 @@ export default function AdminPanel() {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {noticiasTotalPaginas > 1 && (
+              <div className="flex items-center justify-center gap-4">
+                <button
+                  type="button"
+                  disabled={noticiasPagina <= 1}
+                  onClick={() => { const p = noticiasPagina - 1; setNoticiasPagina(p); cargarNoticias(p); }}
+                  className="px-4 py-2.5 bg-slate-900 border border-slate-800 text-slate-300 rounded-xl text-xs font-black uppercase tracking-widest transition-colors hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
+                >Anterior</button>
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Página {noticiasPagina} de {noticiasTotalPaginas}</span>
+                <button
+                  type="button"
+                  disabled={noticiasPagina >= noticiasTotalPaginas}
+                  onClick={() => { const p = noticiasPagina + 1; setNoticiasPagina(p); cargarNoticias(p); }}
+                  className="px-4 py-2.5 bg-slate-900 border border-slate-800 text-slate-300 rounded-xl text-xs font-black uppercase tracking-widest transition-colors hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
+                >Siguiente</button>
               </div>
             )}
           </div>

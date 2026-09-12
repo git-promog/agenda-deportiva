@@ -33,6 +33,28 @@ def normalizar_evento_key(evento, fecha, competicion=None):
         return f"{e}||{f}||{c}"
     return f"{e}||{f}"
 
+# Columnas que el scraper sincroniza contra Supabase.
+COLUMNAS_SINCRONIZADAS = ['fecha', 'hora', 'evento', 'competicion', 'deporte', 'canales',
+                          'destacado', 'destacado_dia', 'estelar_dia', 'destacado_finde',
+                          'carrusel_ig', 'ajuste_manual']
+
+
+def evento_cambio(actual, nuevo):
+    """True solo si algún campo sincronizado cambió respecto a la fila en DB.
+
+    Evita reescribir filas idénticas en cada ejecución (menos WAL, dead tuples
+    y autovacuum), que era una de las causas del agotamiento de Disk IO.
+    """
+    for col in COLUMNAS_SINCRONIZADAS:
+        va = actual.get(col)
+        vn = nuevo.get(col)
+        if isinstance(va, str) or isinstance(vn, str):
+            if (va or "").strip() != (vn or "").strip():
+                return True
+        elif va != vn:
+            return True
+    return False
+
 def identificar_destacados_ia(eventos_hoy):
     """Usa Gemini para identificar los eventos más relevantes del día de forma masiva."""
     if not GEMINI_API_KEY or not eventos_hoy:
@@ -188,13 +210,12 @@ def actualizar_base_de_datos():
         # 3. Clasificación exacta entre Insertar y Actualizar
         print(f"3. Sincronizando {len(eventos_finales)} eventos con la DB...")
 
-        columnas = ['fecha', 'hora', 'evento', 'competicion', 'deporte', 'canales',
-                    'destacado', 'destacado_dia', 'estelar_dia', 'destacado_finde',
-                    'carrusel_ig', 'ajuste_manual']
+        columnas = COLUMNAS_SINCRONIZADAS
 
         datos_actualizar = []  # filas con 'id': actualizan en sitio conservando IDs y URLs
         datos_insertar = []    # filas sin 'id': se insertan como nuevas
         untouched_manuales = 0
+        sin_cambios = 0
 
         for ev in eventos_finales:
             key_exacta = normalizar_evento_key(ev['evento'], ev['fecha'], ev['competicion'])
@@ -212,8 +233,12 @@ def actualizar_base_de_datos():
                 filtrado['canales'] = ", ".join(list(dict.fromkeys(filter(None, canales_limpios))))
 
             if existente:
-                filtrado['id'] = existente['id']
-                datos_actualizar.append(filtrado)
+                # Solo actualizar si hay un cambio real; si no, se deja la fila intacta.
+                if evento_cambio(existente, filtrado):
+                    filtrado['id'] = existente['id']
+                    datos_actualizar.append(filtrado)
+                else:
+                    sin_cambios += 1
             else:
                 datos_insertar.append(filtrado)
 
@@ -246,7 +271,7 @@ def actualizar_base_de_datos():
             for i in range(0, len(ids_duplicados_a_eliminar), 100):
                 supabase.table("eventos").delete().in_("id", ids_duplicados_a_eliminar[i:i+100]).execute()
 
-        print(f"✅ Sincronización completada: {len(datos_insertar)} insertados, {len(datos_actualizar)} actualizados, {len(ids_duplicados_a_eliminar)} duplicados eliminados, {untouched_manuales} manuales intactos.")
+        print(f"✅ Sincronización completada: {len(datos_insertar)} insertados, {len(datos_actualizar)} actualizados, {sin_cambios} sin cambios, {len(ids_duplicados_a_eliminar)} duplicados eliminados, {untouched_manuales} manuales intactos.")
 
         # 4. Actualizar Status
         tz_mx = pytz.timezone('America/Mexico_City')

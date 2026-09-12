@@ -4,6 +4,7 @@ import { getCanonicalTeam, parseNumber, parseDecimal, slugify } from './lib/liga
 
 const DRY_RUN = process.argv.includes('--dry-run');
 const TOURNAMENT_SLUG = 'apertura-2026';
+const SNAPSHOT_RETENTION_RUNS = 30;
 const LIGAMX_BASE_URL = 'https://ligamx.net';
 
 const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '').trim();
@@ -205,6 +206,34 @@ function validateStandings(standings) {
   return warnings;
 }
 
+async function pruneOldSnapshots() {
+  try {
+    const { data: recentRuns, error: runsError } = await supabase
+      .from('ligamx_sync_runs')
+      .select('id')
+      .eq('tournament_slug', TOURNAMENT_SLUG)
+      .order('id', { ascending: false })
+      .limit(SNAPSHOT_RETENTION_RUNS);
+
+    if (runsError) throw runsError;
+
+    const keepIds = (recentRuns || []).map((run) => run.id).filter((id) => id !== null && id !== undefined);
+    if (keepIds.length === 0) return;
+
+    const { error: deleteError } = await supabase
+      .from('ligamx_standings_snapshots')
+      .delete()
+      .eq('tournament_slug', TOURNAMENT_SLUG)
+      .not('run_id', 'in', `(${keepIds.join(',')})`);
+
+    if (deleteError) throw deleteError;
+
+    console.log(`🧹 Snapshots antiguos depurados (retención: últimas ${SNAPSHOT_RETENTION_RUNS} sincronizaciones).`);
+  } catch (err) {
+    console.warn('⚠️ No se pudieron depurar snapshots antiguos:', err.message);
+  }
+}
+
 async function main() {
   console.log(`🚀 Iniciando bot sync-ligamx (Modo: ${DRY_RUN ? 'DRY-RUN' : 'PROD'})...`);
   const startTime = Date.now();
@@ -319,6 +348,9 @@ async function main() {
         })
         .eq('id', runId);
     }
+
+    // Retención: evita que ligamx_standings_snapshots crezca sin límite en cada corrida.
+    await pruneOldSnapshots();
 
     console.log(`✅ Sincronización exitosa en ${(Date.now() - startTime) / 1000}s.`);
   } catch (err) {

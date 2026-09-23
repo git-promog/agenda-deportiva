@@ -28,7 +28,7 @@ export function getMexicoDate(date: Date = new Date()): Date {
 /**
  * Comprueba si un evento está sucediendo "En Vivo" (aproximación basada en hora de inicio y duración estándar de 2 horas).
  */
-export function isEventLive(fecha: string, hora: string): boolean {
+export function isEventLive(fecha: string, hora: string, now: Date = getMexicoDate()): boolean {
   if (!fecha || !hora) return false;
   try {
     const today = getTodayMexicoString();
@@ -38,7 +38,6 @@ export function isEventLive(fecha: string, hora: string): boolean {
     const startHour = parseInt(hoursStr, 10);
     const startMinute = parseInt(minutesStr, 10);
 
-    const now = getMexicoDate();
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
 
@@ -47,6 +46,33 @@ export function isEventLive(fecha: string, hora: string): boolean {
     // Consideramos "En vivo" si inició hace no más de 120 minutos y ya comenzó o está por comenzar en 5 min
     const diff = currentTotalMinutes - startTotalMinutes;
     return diff >= -5 && diff <= 125;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Comprueba si un evento ya finalizó en hora de México (su ventana de 125 min concluyó o su fecha ya pasó).
+ */
+export function isEventPast(fecha: string, hora: string, now: Date = getMexicoDate()): boolean {
+  if (!fecha || !hora) return false;
+  try {
+    const today = getTodayMexicoString();
+    if (fecha < today) return true;
+    if (fecha > today) return false;
+
+    const [hoursStr, minutesStr] = hora.split(':');
+    const startHour = parseInt(hoursStr, 10);
+    const startMinute = parseInt(minutesStr, 10);
+    if (Number.isNaN(startHour) || Number.isNaN(startMinute)) return false;
+
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+
+    const startTotalMinutes = startHour * 60 + startMinute;
+    const currentTotalMinutes = currentHour * 60 + currentMinute;
+    const diff = currentTotalMinutes - startTotalMinutes;
+    return diff > 125;
   } catch {
     return false;
   }

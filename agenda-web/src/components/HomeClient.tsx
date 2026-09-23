@@ -211,48 +211,49 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
               onEnVivo={irAEnVivo}
               onHoy={irAHoy}
               emojis={emojis}
+              filterSlot={
+                <AgendaFilters
+                  filtroFecha={filtroFecha}
+                  fechas={fechasUnicas}
+                  onFechaChange={(f) => { trackFilter('date', f); setFiltroFecha(f); }}
+                  filtroCompeticion={filtroCompeticion}
+                  competiciones={competicionesUnicas}
+                  onCompeticionChange={(c) => { trackFilter('league', c); setFiltroCompeticion(c); }}
+                  soloTvAbierta={soloTvAbierta}
+                  onTvAbiertaChange={(v) => { trackFilter('tv_abierta', v); setSoloTvAbierta(v); }}
+                  activeCount={activeFiltersCount}
+                  onReset={resetFilters}
+                  formatButtonFecha={formatearBotonFecha}
+                />
+              }
             />
+
+            {activeFiltersCount > 0 && (
+              <div className="flex flex-wrap items-center gap-2 pt-1" aria-label="Filtros activos">
+                <div className="gs-filter-summary">
+                  {activeFilters.map((f, i) => (
+                    <span key={i} className="gs-filter-summary-chip">{f}</span>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="gs-button gs-button-quiet !min-h-11 !px-3 !py-1.5 !text-[0.6875rem] !normal-case !tracking-normal"
+                >
+                  <span aria-hidden="true">×</span> Limpiar
+                </button>
+              </div>
+            )}
           </section>
 
           {isDefaultView && eventoHero && (
             <HomeHero evento={eventoHero} tipo={tipoHero} onClick={() => setSelectedEvent(eventoHero)} />
           )}
 
-          <section className="mb-6 mt-6 flex flex-wrap items-center gap-2" aria-label="Filtros activos">
-            <AgendaFilters
-              filtroFecha={filtroFecha}
-              fechas={fechasUnicas}
-              onFechaChange={(f) => { trackFilter('date', f); setFiltroFecha(f); }}
-              filtroCompeticion={filtroCompeticion}
-              competiciones={competicionesUnicas}
-              onCompeticionChange={(c) => { trackFilter('league', c); setFiltroCompeticion(c); }}
-              soloTvAbierta={soloTvAbierta}
-              onTvAbiertaChange={(v) => { trackFilter('tv_abierta', v); setSoloTvAbierta(v); }}
-              activeCount={activeFiltersCount}
-              onReset={resetFilters}
-              formatButtonFecha={formatearBotonFecha}
-            />
-
-            <div className="gs-filter-summary">
-              {activeFilters.map((f, i) => (
-                <span key={i} className="gs-filter-summary-chip">{f}</span>
-              ))}
-            </div>
-
-            {activeFiltersCount > 0 && (
-              <button
-                type="button"
-                onClick={resetFilters}
-                className="gs-button gs-button-quiet !min-h-11 !px-3 !py-1.5 !text-[0.6875rem] !normal-case !tracking-normal"
-              >
-                <span aria-hidden="true">×</span> Limpiar
-              </button>
-            )}
-          </section>
-
           <div id="listado-eventos-principal" className="w-full">
             <AgendaResults
               eventosAgrupados={eventosAgrupados}
+              isSearching={Boolean(busqueda.trim())}
               emptyTitle={eventos.length === 0 ? "Agenda en actualización" : busqueda.trim() ? "Sin coincidencias" : activeFiltersCount > 0 ? "No hay eventos con estos filtros" : "No hay eventos próximos"}
               emptyDescription={eventos.length === 0 ? "Estamos actualizando los horarios. Vuelve a consultar en unos minutos." : busqueda.trim() ? `No encontramos eventos para “${busqueda.trim()}”. Prueba con otro equipo, liga o canal.` : activeFiltersCount > 0 ? "Prueba con otro criterio o limpia los filtros para ver más opciones." : "No hay eventos publicados en la ventana actual."}
               onEventClick={(evento) => {

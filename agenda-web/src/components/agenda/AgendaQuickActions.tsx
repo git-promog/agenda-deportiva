@@ -10,6 +10,7 @@ interface AgendaQuickActionsProps {
   onEnVivo: () => void;
   onHoy: () => void;
   emojis: Record<string, string>;
+  filterSlot?: React.ReactNode;
 }
 
 export default function AgendaQuickActions({
@@ -19,6 +20,7 @@ export default function AgendaQuickActions({
   onEnVivo,
   onHoy,
   emojis,
+  filterSlot,
 }: AgendaQuickActionsProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -51,6 +53,8 @@ export default function AgendaQuickActions({
         >
           <CalendarDays size={15} className="text-lime-400" aria-hidden="true" /> Hoy
         </button>
+
+        {filterSlot}
       </div>
 
       <div className="relative flex items-center" role="group" aria-label="Filtrar por deporte">

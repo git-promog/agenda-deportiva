@@ -50,7 +50,8 @@ export default function EventListWithModal({
   return (
     <>
       <div className="w-full space-y-8 sm:space-y-10">
-        {fechasOrdenadas.map((fecha) => {
+        {fechasOrdenadas.map((fecha, index) => {
+          const esCambioDeDia = index > 0;
           const eventosDelDia = eventosAgrupados[fecha];
           const dateObj = new Date(fecha + 'T12:00:00');
           const dateFormatted = !isNaN(dateObj.getTime())
@@ -62,13 +63,26 @@ export default function EventListWithModal({
             : fecha;
 
           return (
-            <section key={fecha} className="w-full">
-              <div className="flex items-center gap-4 mb-5">
-                <h2 className="text-[10px] sm:text-[11px] font-black text-slate-400 uppercase tracking-[0.18em] sm:tracking-[0.3em] flex items-center gap-2 whitespace-nowrap">
-                  <CalendarDays className="w-4 h-4 text-blue-500 shrink-0" aria-hidden="true" />
-                  {dateFormatted}
-                </h2>
-                <div className="h-px min-w-0 flex-1 bg-slate-800/30" aria-hidden="true"></div>
+            <section key={fecha} className={`w-full ${esCambioDeDia ? 'mt-10 border-t border-blue-500/20 pt-6' : ''}`}>
+              <div className="mb-5 flex items-center gap-3">
+                <div
+                  className={`inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-black uppercase tracking-wider ${
+                    esCambioDeDia
+                      ? 'border border-blue-500/40 bg-blue-950/40 text-blue-300 shadow-sm shadow-blue-950/50'
+                      : 'border border-slate-800 bg-slate-900/60 text-slate-300'
+                  }`}
+                >
+                  <CalendarDays className="h-3.5 w-3.5 shrink-0 text-blue-400" aria-hidden="true" />
+                  <span>{dateFormatted}</span>
+                </div>
+                <div
+                  className={`h-px min-w-0 flex-1 ${
+                    esCambioDeDia
+                      ? 'bg-gradient-to-r from-blue-500/50 via-slate-800 to-transparent'
+                      : 'bg-slate-800/80'
+                  }`}
+                  aria-hidden="true"
+                />
               </div>
 
               <div className="flex flex-col gap-3 w-full">

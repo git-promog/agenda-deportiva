@@ -73,18 +73,24 @@ export default function AgendaFilters({
 
       <AnimatePresence initial={false}>
         {isOpen && (
-          <motion.div
-            key="agenda-filters-panel"
-            id="agenda-filters-panel"
-            role="region"
-            aria-label="Filtros de agenda"
-            className="gs-panel absolute left-0 top-full z-50 mt-2 w-[min(24rem,calc(100vw-2rem))] p-4"
-            style={{ transformOrigin: "top left" }}
-            initial={{ opacity: 0, y: shouldReduceMotion ? 0 : -6, scale: shouldReduceMotion ? 1 : 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: shouldReduceMotion ? 0 : -6, scale: shouldReduceMotion ? 1 : 0.98 }}
-            transition={shouldReduceMotion ? { type: "tween", duration: 0 } : { type: "tween", duration: 0.16, ease: FILTER_PANEL_EASE }}
-          >
+          <>
+            <div
+              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm sm:hidden"
+              onClick={closePanel}
+              aria-hidden="true"
+            />
+            <motion.div
+              key="agenda-filters-panel"
+              id="agenda-filters-panel"
+              role="region"
+              aria-label="Filtros de agenda"
+              className="gs-panel absolute left-0 top-full z-50 mt-2 w-[min(24rem,calc(100vw-2rem))] p-4 max-sm:fixed max-sm:inset-x-4 max-sm:top-24 max-sm:w-auto max-sm:max-h-[80vh] max-sm:overflow-y-auto"
+              style={{ transformOrigin: "top left" }}
+              initial={{ opacity: 0, y: shouldReduceMotion ? 0 : -6, scale: shouldReduceMotion ? 1 : 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: shouldReduceMotion ? 0 : -6, scale: shouldReduceMotion ? 1 : 0.98 }}
+              transition={shouldReduceMotion ? { type: "tween", duration: 0 } : { type: "tween", duration: 0.16, ease: FILTER_PANEL_EASE }}
+            >
           <div className="mb-4 flex items-center justify-between border-b border-slate-800 pb-3">
             <h3 className="flex items-center gap-2 text-sm font-extrabold text-white">
               <Filter size={15} className="text-blue-400" aria-hidden="true" /> Ajusta tu agenda
@@ -169,6 +175,7 @@ export default function AgendaFilters({
             </div>
           )}
           </motion.div>
+          </>
         )}
       </AnimatePresence>
     </div>

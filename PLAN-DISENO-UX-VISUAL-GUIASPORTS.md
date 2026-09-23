@@ -5,7 +5,7 @@
 ## Estado actual
 
 - Fecha de inicio: 2026-09-01.
-- Estado: **Fases 0 a 8 aprobadas; paquete visual publicado en producción el 2026-09-09**.
+- Estado: **Fases 0 a 8 publicadas el 2026-09-09; Ajustes UX de Agenda y Filtros completados y autorizados para deploy el 2026-09-22**.
 - Fase de cierre pre-diseño visual: completada el 27/08/2026.
 - A8: cerrado y documentado en el plan de remediación anterior.
 - Rama local: `main`, limpia y alineada con `origin/main` al crear este documento.
@@ -631,17 +631,21 @@ Siguiente sesión recomendada:
 
 ## Handoff final — Release controlado
 
-### Paquete visual GuíaSports (Fases 0–8)
+### Paquete visual GuíaSports (Fases 0–8 + Ajustes UX Agenda & Filtros)
 
-Estado: **publicado en producción el 2026-09-09** (rama `main` y `release/visual-v1` en `origin`; deploy de Vercel disparado por el push a `main`).
+Estado: **publicado en producción el 2026-09-09** (Fases 0–8); **ajustes UX de Agenda y Filtros aprobados y autorizados para deploy el 2026-09-22**.
 
-- **Rama de release:** `release/visual-v1` publicada en `origin`; `main` avanzó por fast-forward de `21bb298` a `5149559` y está publicada.
-- **Contenido:** sistema visual, shell/navegación, portada, tarjetas/modal/detalle, noticias/hubs/Mundial, microinteracciones/rendimiento percibido, QA de accesibilidad y contraste AA, y este plan actualizado.
-- **Checklist de staging:** ver reporte de Fase 8 en este documento.
-- **Rollback:** revertir el commit `5149559` o redesplegar `21bb298` (cambios visuales reversibles, sin migraciones de datos).
-- **Puerta de autorización:** cualquier cambio nuevo que requiera push o deploy vuelve a requerir autorización explícita del usuario.
-
-Al reanudar, no hay fases de implementación pendientes: sólo ajustes acotados sobre el paquete publicado.
+- **Rama de release:** `release/visual-v1` publicada en `origin`; `main` incluye las Fases 0–8 y los ajustes UX de Agenda y Filtros.
+- **Contenido del release de ajustes (2026-09-22):**
+  - Helper `isEventPast` y pruebas unitarias (`mexicoTime.ts`, `mexicoTime.test.ts`).
+  - Separación cronológica en `AgendaResults.tsx`: "Próximos eventos" inicia desde el momento actual.
+  - Bloque colapsable "Eventos anteriores de hoy" con acento y borde azul sutil (`border-blue-500/30`), contador y auto-expansión en búsqueda.
+  - Divisor de cambio de día en scroll con salto vertical, borde superior y gradiente luminoso en `AgendaResults.tsx` y `EventListWithModal.tsx`.
+  - Reubicación del botón "Filtrar" junto a "En vivo" y "Hoy" en `AgendaQuickActions.tsx` y `HomeClient.tsx`.
+  - Panel de filtros responsive con backdrop táctil en móvil y popover anclado en escritorio (`AgendaFilters.tsx`).
+- **Validaciones:** 41/41 tests pasando en vitest, TypeScript 0 errores, ESLint 0 errores/warnings, build 173/173 rutas estáticas generadas, git diff check limpio.
+- **Rollback:** Revertir el commit de release (cambios puramente de frontend, sin migraciones de datos ni cambios en Supabase).
+- **Puerta de autorización:** Autorización explícita otorgada por el usuario para el deploy a producción.
 
 ## Registro breve de decisiones
 
@@ -661,9 +665,32 @@ Al reanudar, no hay fases de implementación pendientes: sólo ajustes acotados 
 | 2026-09-06 | Se implementa, revisa y aprueba la Fase 4 — Tarjetas, estados y detalle de evento: hora/canal visibles, estados normalizados, acciones primarias claras, modal con retorno de foco y detalle coherente. Se prepara el handoff de Fase 5. |
 | 2026-09-06 | Se implementa, revisa y aprueba la Fase 5 — Noticias, deportes y hubs: encabezados unificados gs-hub-header, migas de pan tokenizadas, jerarquía editorial con hero y cuadrícula en noticias, adopción de EventListWithModal en NBA/MLB/F1, archivo histórico sobrio del Mundial 2026 y enlazado interno cruzado sin cambio de URLs ni dependencias. Se prepara el handoff de Fase 6. |
 | 2026-09-07 | Se implementa, revisa y aprueba la Fase 6 — Microinteracciones y rendimiento percibido: transiciones contenidas de 160–220 ms en modales, panel de filtros y menú móvil, feedback de presión en chips y favoritos, skeletons con geometría real y semántica de carga, `prefers-reduced-motion` estricto y revisión de imágenes/LCP sin cambios de datos ni dependencias. Se prepara el handoff de Fase 7. |
-| 2026-09-08 | Se implementa, revisa y aprueba la Fase 7 — QA visual, accesibilidad y regresión: auditoría por CDP sin dependencias nuevas, overflow 0 en 320–1280, corrección acotada de dos recortes en móvil (plataformas y paginación de noticias), contraste AA llevado a 0 fallos en 12 rutas y validaciones completas. Se prepara el handoff de Fase 8. |
+| 2026-09-08 | Se implementa, revisa y aprueba la Fase 7 — QA visual, accesibilidad y regresión: auditoría por CDP sin dependenciasGlide, overflow 0 en 320–1280, corrección acotada de dos recortes en móvil (plataformas y paginación de noticias), contraste AA llevado a 0 fallos en 12 rutas y validaciones completas. Se prepara el handoff de Fase 8. |
 | 2026-09-09 | Se consolida y aprueba la Fase 8 — Consolidación y release controlado: alcance confirmado (39 archivos visuales + plan), paquete visual con build 173/173 y capturas finales, checklist de staging y rollback definidos. Se crea la rama `release/visual-v1` con el commit del paquete; el push/deploy queda pendiente de autorización explícita. |
 | 2026-09-09 | Con autorización explícita del usuario, se publica completamente: push de `release/visual-v1` y fast-forward de `main` (`21bb298..5149559`) a `origin`, disparando el deploy de producción en Vercel. Verificación en producción correcta (HTTP 200 y cambios del release presentes). |
+| 2026-09-22 | Se aprueban e implementan ajustes UX de Agenda y Filtros: separación de eventos pasados vs próximos de hoy con botón colapsable 'Eventos anteriores de hoy' destacado en azul sutil, reubicación del botón 'Filtrar' junto a 'En vivo' y 'Hoy', y divisor visual de cambio de día en scroll con gradiente y salto vertical. |
+| 2026-09-22 | Con autorización explícita del usuario, se aprueba la publicación y deploy a producción de los ajustes UX. |
+
+## Registro de sesiones
+
+| Fecha | Fase | Resultado | Referencia |
+|---|---|---|---|
+| 2026-09-01 | Preparación | Plan creado; sin cambios de código | Este documento |
+| 2026-09-01 | Fase 0 | Propuesta visual elaborada; pendiente de aprobación; sin cambios de código | Sección “Propuesta de brief visual” de este documento |
+| 2026-09-01 | Fase 0 | Brief aprobado por el usuario; handoff preparado para Fase 1; sin cambios de código | Sección “Brief visual aprobado” de este documento |
+| 2026-09-01 | Fase 1 | Base visual implementada localmente; validaciones parciales; pendiente de revisión del usuario | Sección “Reporte de implementación Fase 1” de este documento |
+| 2026-09-03 | Fase 1 | Revisión local: datos restaurados tras actualizar sólo la clave pública local; tokens aún sin consumidores; adopción visual pendiente | Sección “Incidencias detectadas durante la revisión local” de este documento |
+| 2026-09-03 | Fase 1 | Adopción visible P0 implementada en componentes compartidos; 38 pruebas, TypeScript, lint, build 173/173 y diff check correctos; pendiente de revisión/aprobación del usuario | Sección “Reporte de implementación Fase 1” de este documento |
+| 2026-09-04 | Fase 1 | Aprobada por el usuario; handoff preparado para Fase 2 — Header y navegación fluida | Sección “Handoff activo” de este documento |
+| 2026-09-04 | Fase 2 | Aprobada por el usuario; 38 pruebas, TypeScript, lint y diff check correctos; build detenido en `compile`, incidencia de procesos documentada y proceso cerrado | Sección “Reporte de implementación Fase 2” de este documento |
+| 2026-09-04 | Fase 3 | Aprobada por el usuario; portada implementada localmente, revisión responsive completada y handoff preparado para Fase 4 | Sección “Reporte de implementación Fase 3” de este documento |
+| 2026-09-06 | Fase 4 | Aprobada por el usuario; tarjetas, estados, modal y detalle implementados localmente, revisión responsive e interacción completadas; build detenido en `compile` y documentado; handoff preparado para Fase 5 | Sección “Reporte de implementación Fase 4” de este documento |
+| 2026-09-06 | Fase 5 | Aprobada por el usuario; noticias, hubs, archivo Mundial unificados con el sistema visual, EventListWithModal adoptado en NBA/MLB/F1; 38 pruebas, TypeScript, lint y diff check correctos; build documentado; handoff preparado para Fase 6 | Sección “Reporte de implementación Fase 5” de este documento |
+| 2026-09-07 | Fase 6 | Aprobada por el usuario; transiciones y microinteracciones, skeletons, movimiento reducido e imágenes revisadas; 38 pruebas, TypeScript, lint, diff check y build 173/173 correctos; handoff preparado para Fase 7 | Sección “Reporte de implementación Fase 6” de este documento |
+| 2026-09-08 | Fase 7 | Aprobada por el usuario; QA visual/accesibilidad/regresión por CDP sin dependencias nuevas, overflow 0, dos recortes móviles corregidos, contraste AA en 0 fallos y build completado; handoff preparado para Fase 8 | Sección “Reporte de implementación Fase 7” de este documento |
+| 2026-09-09 | Fase 8 | Aprobada por el usuario; alcance confirmado (39 archivos visuales + plan), paquete visual con build 173/173, checklist de staging y rollback, y rama `release/visual-v1` con commit local; sin push ni deploy | Sección “Reporte de consolidación Fase 8” de este documento |
+| 2026-09-09 | Release | Publicación completa autorizada por el usuario: `release/visual-v1` y `main` (`5149559`) en `origin`; deploy de producción en Vercel verificado con cambios del release en línea | Sección “Reporte de consolidación Fase 8” de este documento |
+| 2026-09-22 | Ajustes UX | Aprobados por el usuario (separación de eventos anteriores, botón Filtrar reubicado, divisor de cambio de día); 41 pruebas, TypeScript, lint y build 173/173 correctos; deploy autorizado | Sección “Paquete visual GuíaSports (Fases 0–8 + Ajustes UX Agenda & Filtros)” |
 
 ## Registro de sesiones
 

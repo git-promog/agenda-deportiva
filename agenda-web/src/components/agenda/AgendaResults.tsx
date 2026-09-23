@@ -1,11 +1,11 @@
 "use client";
 
-import React from "react";
-import { AlertCircle, CalendarDays, Filter, Radio, RotateCcw } from "lucide-react";
+import React, { useState } from "react";
+import { AlertCircle, CalendarDays, ChevronDown, ChevronUp, Clock, Filter, Radio, RotateCcw } from "lucide-react";
 import AdPlacement from "@/components/AdPlacement";
 import EventCard from "./EventCard";
 import { Evento } from "@/types";
-import { formatMexicoDate, isEventLive } from "@/lib/mexicoTime";
+import { formatMexicoDate, getTodayMexicoString, isEventLive, isEventPast } from "@/lib/mexicoTime";
 
 interface AgendaResultsProps {
   eventosAgrupados: Record<string, Evento[]>;
@@ -16,6 +16,7 @@ interface AgendaResultsProps {
   emptyDescription?: string;
   loading?: boolean;
   error?: string | null;
+  isSearching?: boolean;
 }
 
 function ResultCards({
@@ -89,7 +90,18 @@ export default function AgendaResults({
   emptyDescription = "Prueba con otro criterio o limpia los filtros para ver la agenda completa.",
   loading = false,
   error = null,
+  isSearching = false,
 }: AgendaResultsProps) {
+  const [prevSearching, setPrevSearching] = useState(isSearching);
+  const [mostrarAnteriores, setMostrarAnteriores] = useState(false);
+
+  if (isSearching !== prevSearching) {
+    setPrevSearching(isSearching);
+    if (isSearching) {
+      setMostrarAnteriores(true);
+    }
+  }
+
   if (loading) return <LoadingState />;
 
   if (error) {
@@ -105,13 +117,41 @@ export default function AgendaResults({
     );
   }
 
+  const todayStr = getTodayMexicoString();
   const fechas = Object.keys(eventosAgrupados).sort();
-  const liveEvents = fechas.flatMap((fecha) => eventosAgrupados[fecha]).filter((evento) => isEventLive(evento.fecha, evento.hora));
+
+  // 1. Eventos en vivo (todas las fechas de la ventana activa)
+  const liveEvents = fechas
+    .flatMap((fecha) => eventosAgrupados[fecha])
+    .filter((evento) => isEventLive(evento.fecha, evento.hora));
+
+  // 2. Eventos de hoy que ya concluyeron
+  const pastEventsToday = (eventosAgrupados[todayStr] || []).filter(
+    (evento) => !isEventLive(evento.fecha, evento.hora) && isEventPast(evento.fecha, evento.hora)
+  );
+
+  // 3. Próximos eventos (a partir del momento actual para hoy, más fechas futuras)
   const upcomingGroups = fechas
-    .map((fecha) => ({ fecha, eventos: eventosAgrupados[fecha].filter((evento) => !isEventLive(evento.fecha, evento.hora)) }))
+    .filter((fecha) => fecha >= todayStr)
+    .map((fecha) => {
+      const eventosDeFecha = eventosAgrupados[fecha] || [];
+      const eventos =
+        fecha === todayStr
+          ? eventosDeFecha.filter(
+              (evento) => !isEventLive(evento.fecha, evento.hora) && !isEventPast(evento.fecha, evento.hora)
+            )
+          : eventosDeFecha.filter((evento) => !isEventLive(evento.fecha, evento.hora));
+
+      return { fecha, eventos };
+    })
     .filter(({ eventos }) => eventos.length > 0);
 
-  if (fechas.length === 0) {
+  const totalEventosVisibles =
+    liveEvents.length +
+    upcomingGroups.reduce((total, group) => total + group.eventos.length, 0) +
+    pastEventsToday.length;
+
+  if (fechas.length === 0 || totalEventosVisibles === 0) {
     return (
       <div className="gs-state" role="status">
         <Filter className="mx-auto mb-3 h-8 w-8 text-slate-500" aria-hidden="true" />
@@ -123,6 +163,8 @@ export default function AgendaResults({
       </div>
     );
   }
+
+  const totalProximos = upcomingGroups.reduce((total, group) => total + group.eventos.length, 0);
 
   return (
     <div className="w-full">
@@ -136,23 +178,93 @@ export default function AgendaResults({
         </section>
       )}
 
-      {upcomingGroups.length > 0 && (
+      {(upcomingGroups.length > 0 || pastEventsToday.length > 0) && (
         <section className="gs-results-section" aria-labelledby="agenda-upcoming-title">
-          <h2 id="agenda-upcoming-title" className="gs-results-heading">
-            <CalendarDays size={16} className="text-blue-400" aria-hidden="true" /> Próximos eventos
-            <span className="gs-results-heading-count">
-              {upcomingGroups.reduce((total, group) => total + group.eventos.length, 0)} en agenda
-            </span>
-          </h2>
-          {upcomingGroups.map(({ fecha, eventos }) => (
-            <div key={fecha}>
-              <h3 className="gs-results-date-heading">
-                <CalendarDays className="h-3.5 w-3.5 text-blue-400" aria-hidden="true" />
-                {formatMexicoDate(fecha, "long")}
-              </h3>
-              <ResultCards eventos={eventos} onEventClick={onEventClick} onFiltrarLiga={onFiltrarLiga} />
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 id="agenda-upcoming-title" className="gs-results-heading">
+              <CalendarDays size={16} className="text-blue-400" aria-hidden="true" /> Próximos eventos
+              {totalProximos > 0 && (
+                <span className="gs-results-heading-count">
+                  {totalProximos} en agenda
+                </span>
+              )}
+            </h2>
+          </div>
+
+          {pastEventsToday.length > 0 && (
+            <div className="mb-6 mt-1">
+              <button
+                type="button"
+                onClick={() => setMostrarAnteriores((prev) => !prev)}
+                className={`gs-button w-full justify-between !min-h-11 !py-2.5 !px-4 text-xs transition-all ${
+                  mostrarAnteriores
+                    ? "border-blue-500/60 bg-blue-950/30 text-white shadow-sm shadow-blue-950/50"
+                    : "border-blue-500/30 bg-slate-900/80 text-slate-200 hover:border-blue-400/60 hover:bg-blue-950/20"
+                }`}
+                aria-expanded={mostrarAnteriores}
+                aria-controls="eventos-anteriores-hoy"
+              >
+                <span className="flex items-center gap-2 font-semibold">
+                  <Clock size={14} className="text-blue-400" aria-hidden="true" />
+                  <span>Eventos anteriores de hoy</span>
+                  <span className="rounded-full border border-blue-500/30 bg-blue-950/60 px-2 py-0.5 text-[11px] font-bold text-blue-300">
+                    {pastEventsToday.length}
+                  </span>
+                </span>
+                <span className="flex items-center gap-1.5 text-[11px] font-bold text-blue-400">
+                  {mostrarAnteriores ? "Ocultar" : "Ver partidos"}
+                  {mostrarAnteriores ? <ChevronUp size={14} aria-hidden="true" /> : <ChevronDown size={14} aria-hidden="true" />}
+                </span>
+              </button>
+
+              {mostrarAnteriores && (
+                <div id="eventos-anteriores-hoy" className="mt-3 space-y-3 rounded-2xl border border-blue-500/30 bg-slate-950/60 p-3 sm:p-4">
+                  <div className="flex items-center justify-between border-b border-blue-500/20 pb-2 text-[11px] font-bold uppercase tracking-wider text-blue-300/80">
+                    <span>Partidos concluidos de hoy</span>
+                    <span>Hora de México</span>
+                  </div>
+                  <ResultCards eventos={pastEventsToday} onEventClick={onEventClick} onFiltrarLiga={onFiltrarLiga} />
+                </div>
+              )}
             </div>
-          ))}
+          )}
+
+          {upcomingGroups.length > 0 ? (
+            <div className="space-y-6">
+              {upcomingGroups.map(({ fecha, eventos }, index) => {
+                const esCambioDeDia = index > 0;
+                return (
+                  <div key={fecha} className={esCambioDeDia ? "mt-10 border-t border-blue-500/20 pt-6" : ""}>
+                    <div className="mb-4 flex items-center gap-3">
+                      <div
+                        className={`inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-black uppercase tracking-wider ${
+                          esCambioDeDia
+                            ? "border border-blue-500/40 bg-blue-950/40 text-blue-300 shadow-sm shadow-blue-950/50"
+                            : "border border-slate-800 bg-slate-900/60 text-slate-300"
+                        }`}
+                      >
+                        <CalendarDays className="h-3.5 w-3.5 text-blue-400" aria-hidden="true" />
+                        <span>{formatMexicoDate(fecha, "long")}</span>
+                      </div>
+                      <div
+                        className={`h-px flex-1 ${
+                          esCambioDeDia
+                            ? "bg-gradient-to-r from-blue-500/50 via-slate-800 to-transparent"
+                            : "bg-slate-800/80"
+                        }`}
+                        aria-hidden="true"
+                      />
+                    </div>
+                    <ResultCards eventos={eventos} onEventClick={onEventClick} onFiltrarLiga={onFiltrarLiga} />
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-5 text-center text-sm text-slate-400">
+              No hay más eventos programados por comenzar hoy.
+            </div>
+          )}
         </section>
       )}
     </div>

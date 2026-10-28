@@ -224,7 +224,14 @@ export default function SportEventModal({ evento, isOpen, onClose }: Props) {
                     {status === 'live' && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current" aria-hidden="true" />}
                     {statusLabel}
                   </span>
-                  <span className="text-xs text-slate-500">{activeEvento.deporte}</span>
+                  <span className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700/60 bg-slate-900/50 px-2.5 py-1 text-[11px] font-bold text-slate-300">
+                    <Calendar size={12} className="text-blue-300" aria-hidden="true" />
+                    {new Date(activeEvento.fecha + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700/60 bg-slate-900/50 px-2.5 py-1 text-[11px] font-bold text-slate-300">
+                    <Clock size={12} className={status === 'live' ? 'text-red-300' : 'text-lime-300'} aria-hidden="true" />
+                    {activeEvento.hora || 'Por definir'}
+                  </span>
                 </div>
                 <h2 id="sport-event-modal-title" className="line-clamp-3 text-xl font-black leading-tight text-white md:text-2xl">
                   {activeEvento.evento}
@@ -245,7 +252,7 @@ export default function SportEventModal({ evento, isOpen, onClose }: Props) {
                     </div>
                     <span className="line-clamp-2 text-center text-sm font-bold text-white">{teams[0].trim()}</span>
                   </div>
-                  <div className="text-xs font-black text-slate-500">VS</div>
+                  <div className="text-xs font-black text-slate-400">VS</div>
                   <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
                     <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-white/10 bg-slate-800 text-xl font-black text-slate-400 sm:h-16 sm:w-16 sm:text-2xl">
                       {teams[1].trim().substring(0, 2).toUpperCase()}
@@ -258,25 +265,13 @@ export default function SportEventModal({ evento, isOpen, onClose }: Props) {
               )}
 
               <div className="mb-7 grid gap-3">
-                <div className="flex items-center gap-4 rounded-2xl border border-blue-400/20 bg-blue-500/10 p-4">
-                  <div className="rounded-xl bg-blue-500/20 p-2">
-                    <Calendar size={20} className="text-blue-300" />
+                <div className={`flex items-center gap-4 rounded-2xl border p-4 ${transmissionUnconfirmed ? 'border-slate-700/60 bg-slate-800/50' : 'border-blue-400/20 bg-blue-500/10'}`}>
+                  <div className={`rounded-xl p-2 ${transmissionUnconfirmed ? 'bg-slate-700/70' : 'bg-blue-500/20'}`}>
+                    <Tv size={20} className={transmissionUnconfirmed ? 'text-slate-300' : 'text-blue-300'} />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-blue-200/70">Fecha</p>
-                    <p className="text-sm font-bold capitalize text-white">
-                      {new Date(activeEvento.fecha + 'T12:00:00').toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}
-                    </p>
-                  </div>
-                </div>
-
-                <div className={`flex items-center gap-4 rounded-2xl border p-4 ${status === 'live' ? 'border-red-400/30 bg-red-500/10' : 'border-lime-400/20 bg-lime-500/10'}`}>
-                  <div className={`rounded-xl p-2 ${status === 'live' ? 'bg-red-500/20' : 'bg-lime-500/20'}`}>
-                    <Clock size={20} className={status === 'live' ? 'text-red-300' : 'text-lime-300'} />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{statusLabel}</p>
-                    <p className={`text-lg font-black ${status === 'live' ? 'text-red-200' : 'text-white'}`}>{activeEvento.hora || 'Por definir'}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Dónde verlo</p>
+                    <p className="text-sm font-bold text-white">{channelLabel}</p>
                   </div>
                 </div>
 
@@ -285,18 +280,9 @@ export default function SportEventModal({ evento, isOpen, onClose }: Props) {
                     <Radio size={20} className="text-slate-300" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Competición</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Competición</p>
                     <p className="text-sm font-bold text-white">{activeEvento.competicion}</p>
-                  </div>
-                </div>
-
-                <div className={`flex items-center gap-4 rounded-2xl border p-4 ${transmissionUnconfirmed ? 'border-slate-700/60 bg-slate-800/50' : 'border-blue-400/20 bg-blue-500/10'}`}>
-                  <div className={`rounded-xl p-2 ${transmissionUnconfirmed ? 'bg-slate-700/70' : 'bg-blue-500/20'}`}>
-                    <Tv size={20} className={transmissionUnconfirmed ? 'text-slate-300' : 'text-blue-300'} />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Dónde verlo</p>
-                    <p className="text-sm font-bold text-white">{channelLabel}</p>
+                    <p className="mt-1 text-xs text-slate-400">{activeEvento.deporte}</p>
                   </div>
                 </div>
               </div>

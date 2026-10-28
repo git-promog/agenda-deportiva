@@ -1,19 +1,23 @@
 "use client";
 
 import React, { useState } from "react";
-import { AlertCircle, CalendarDays, ChevronDown, ChevronUp, Clock, Filter, Radio, RotateCcw } from "lucide-react";
+import { AlertCircle, CalendarDays, ChevronDown, ChevronUp, Clock, Filter, Radio, RotateCcw, Search } from "lucide-react";
 import AdPlacement from "@/components/AdPlacement";
 import EventCard from "./EventCard";
 import { Evento } from "@/types";
-import { formatMexicoDate, getTodayMexicoString, isEventLive, isEventPast } from "@/lib/mexicoTime";
+import { formatMexicoDate, getMexicoDate, getTodayMexicoString, isEventLive, isEventPast } from "@/lib/mexicoTime";
 
 interface AgendaResultsProps {
   eventosAgrupados: Record<string, Evento[]>;
+  now: number;
   onEventClick: (evento: Evento) => void;
   onFiltrarLiga: (liga: string) => void;
   onReset: () => void;
   emptyTitle?: string;
   emptyDescription?: string;
+  emptyIcon?: "search" | "filter" | "calendar" | "live";
+  emptyActionLabel?: string;
+  onEmptyAction?: () => void;
   loading?: boolean;
   error?: string | null;
   isSearching?: boolean;
@@ -21,22 +25,25 @@ interface AgendaResultsProps {
 
 function ResultCards({
   eventos,
+  now,
   onEventClick,
   onFiltrarLiga,
 }: {
   eventos: Evento[];
+  now: number;
   onEventClick: (evento: Evento) => void;
   onFiltrarLiga: (liga: string) => void;
 }) {
   return (
     <div className="flex w-full flex-col gap-3">
       {eventos.map((evento, index, arr) => {
-        const live = isEventLive(evento.fecha, evento.hora);
+        const live = isEventLive(evento.fecha, evento.hora, getMexicoDate(new Date(now)));
         return (
           <div key={evento.id} id={`evento-${evento.id}`} data-envivo={live ? "true" : "false"} className="w-full">
             <EventCard
               evento={evento}
               isLive={live}
+              now={now}
               onFiltrarLiga={onFiltrarLiga}
               onClick={() => onEventClick(evento)}
             />
@@ -83,11 +90,15 @@ function LoadingState() {
 
 export default function AgendaResults({
   eventosAgrupados,
+  now,
   onEventClick,
   onFiltrarLiga,
   onReset,
   emptyTitle = "Sin resultados",
   emptyDescription = "Prueba con otro criterio o limpia los filtros para ver la agenda completa.",
+  emptyIcon = "filter",
+  emptyActionLabel,
+  onEmptyAction,
   loading = false,
   error = null,
   isSearching = false,
@@ -118,16 +129,17 @@ export default function AgendaResults({
   }
 
   const todayStr = getTodayMexicoString();
+  const nowDate = getMexicoDate(new Date(now));
   const fechas = Object.keys(eventosAgrupados).sort();
 
   // 1. Eventos en vivo (todas las fechas de la ventana activa)
   const liveEvents = fechas
     .flatMap((fecha) => eventosAgrupados[fecha])
-    .filter((evento) => isEventLive(evento.fecha, evento.hora));
+    .filter((evento) => isEventLive(evento.fecha, evento.hora, nowDate));
 
   // 2. Eventos de hoy que ya concluyeron
   const pastEventsToday = (eventosAgrupados[todayStr] || []).filter(
-    (evento) => !isEventLive(evento.fecha, evento.hora) && isEventPast(evento.fecha, evento.hora)
+    (evento) => !isEventLive(evento.fecha, evento.hora, nowDate) && isEventPast(evento.fecha, evento.hora, nowDate)
   );
 
   // 3. Próximos eventos (a partir del momento actual para hoy, más fechas futuras)
@@ -138,9 +150,9 @@ export default function AgendaResults({
       const eventos =
         fecha === todayStr
           ? eventosDeFecha.filter(
-              (evento) => !isEventLive(evento.fecha, evento.hora) && !isEventPast(evento.fecha, evento.hora)
+              (evento) => !isEventLive(evento.fecha, evento.hora, nowDate) && !isEventPast(evento.fecha, evento.hora, nowDate)
             )
-          : eventosDeFecha.filter((evento) => !isEventLive(evento.fecha, evento.hora));
+          : eventosDeFecha.filter((evento) => !isEventLive(evento.fecha, evento.hora, nowDate));
 
       return { fecha, eventos };
     })
@@ -154,12 +166,22 @@ export default function AgendaResults({
   if (fechas.length === 0 || totalEventosVisibles === 0) {
     return (
       <div className="gs-state" role="status">
-        <Filter className="mx-auto mb-3 h-8 w-8 text-slate-500" aria-hidden="true" />
+        {emptyIcon === "search" ? (
+          <Search className="mx-auto mb-3 h-8 w-8 text-slate-500" aria-hidden="true" />
+        ) : emptyIcon === "live" ? (
+          <Radio className="mx-auto mb-3 h-8 w-8 text-slate-500" aria-hidden="true" />
+        ) : emptyIcon === "calendar" ? (
+          <CalendarDays className="mx-auto mb-3 h-8 w-8 text-slate-500" aria-hidden="true" />
+        ) : (
+          <Filter className="mx-auto mb-3 h-8 w-8 text-slate-500" aria-hidden="true" />
+        )}
         <h2 className="mb-2 text-sm font-extrabold text-white">{emptyTitle}</h2>
         <p className="mx-auto mb-4 max-w-sm text-sm leading-relaxed text-slate-400">{emptyDescription}</p>
-        <button type="button" onClick={onReset} className="gs-button gs-button-quiet mx-auto">
-          <RotateCcw size={14} aria-hidden="true" /> Limpiar filtros
-        </button>
+        {onEmptyAction && emptyActionLabel && (
+          <button type="button" onClick={onEmptyAction} className="gs-button gs-button-quiet mx-auto">
+            <RotateCcw size={14} aria-hidden="true" /> {emptyActionLabel}
+          </button>
+        )}
       </div>
     );
   }
@@ -174,7 +196,7 @@ export default function AgendaResults({
             <Radio size={16} aria-hidden="true" /> En vivo ahora
             <span className="gs-results-heading-count">{liveEvents.length} {liveEvents.length === 1 ? "evento" : "eventos"}</span>
           </h2>
-          <ResultCards eventos={liveEvents} onEventClick={onEventClick} onFiltrarLiga={onFiltrarLiga} />
+          <ResultCards eventos={liveEvents} now={now} onEventClick={onEventClick} onFiltrarLiga={onFiltrarLiga} />
         </section>
       )}
 
@@ -223,7 +245,7 @@ export default function AgendaResults({
                     <span>Partidos concluidos de hoy</span>
                     <span>Hora de México</span>
                   </div>
-                  <ResultCards eventos={pastEventsToday} onEventClick={onEventClick} onFiltrarLiga={onFiltrarLiga} />
+                  <ResultCards eventos={pastEventsToday} now={now} onEventClick={onEventClick} onFiltrarLiga={onFiltrarLiga} />
                 </div>
               )}
             </div>
@@ -255,7 +277,7 @@ export default function AgendaResults({
                         aria-hidden="true"
                       />
                     </div>
-                    <ResultCards eventos={eventos} onEventClick={onEventClick} onFiltrarLiga={onFiltrarLiga} />
+                    <ResultCards eventos={eventos} now={now} onEventClick={onEventClick} onFiltrarLiga={onFiltrarLiga} />
                   </div>
                 );
               })}

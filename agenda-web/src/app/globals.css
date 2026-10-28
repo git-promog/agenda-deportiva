@@ -376,7 +376,7 @@ body {
   .gs-menu-meta {
     border-top: 1px solid var(--gs-color-border);
     padding: var(--gs-space-3) var(--gs-space-1) 0;
-    color: var(--gs-color-text-faint);
+    color: var(--gs-color-text-subtle);
     font-size: 0.5625rem;
     font-weight: 900;
     letter-spacing: 0.12em;
@@ -1081,10 +1081,9 @@ body {
     align-items: center;
     flex-wrap: wrap;
     gap: var(--gs-space-2);
-    font-size: 0.6875rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
     color: var(--gs-color-text-faint);
     margin-bottom: var(--gs-space-6);
   }
@@ -1104,8 +1103,10 @@ body {
   }
 
   .gs-breadcrumbs-current {
-    color: var(--gs-color-text);
-    font-weight: 800;
+    min-width: 0;
+    color: var(--gs-color-text-muted);
+    font-weight: 600;
+    overflow-wrap: anywhere;
   }
 
   .gs-hub-header {
@@ -1138,10 +1139,8 @@ body {
   .gs-hub-title {
     font-size: clamp(1.75rem, 5vw, 2.75rem);
     font-weight: 900;
-    letter-spacing: -0.04em;
-    line-height: 1;
-    text-transform: uppercase;
-    font-style: italic;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
     color: var(--gs-color-text);
   }
 
@@ -1159,10 +1158,9 @@ body {
 
   .gs-hub-subtitle {
     color: var(--gs-color-text-subtle);
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.5;
     margin-top: var(--gs-space-1);
   }
 
@@ -1255,10 +1253,8 @@ body {
     font-size: clamp(1.25rem, 3.5vw, 1.875rem);
     font-weight: 900;
     line-height: 1.15;
-    font-style: italic;
-    text-transform: uppercase;
     color: var(--gs-color-text);
-    letter-spacing: -0.03em;
+    letter-spacing: -0.02em;
   }
 
   .gs-news-grid {
@@ -1313,10 +1309,8 @@ body {
     font-size: 1.0625rem;
     font-weight: 900;
     line-height: 1.25;
-    font-style: italic;
-    text-transform: uppercase;
     color: var(--gs-color-text);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
   }
 
   .gs-news-meta {
@@ -1400,6 +1394,13 @@ body {
 
   .gs-home-hero-content {
     padding: var(--gs-space-8);
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .gs-nav-link {
+    padding-right: var(--gs-space-2);
+    padding-left: var(--gs-space-2);
   }
 }
 

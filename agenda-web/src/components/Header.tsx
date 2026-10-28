@@ -1,35 +1,34 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type MouseEvent } from 'react';
 import Link from 'next/link';
 import NextImage from 'next/image';
-import { usePathname, useRouter } from 'next/navigation';
-import { Newspaper, Radio, Mail, Users, Tv } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { Newspaper, Radio, Mail, Users, Tv, Search } from 'lucide-react';
 import { trackEvent } from '@/lib/analytics';
 
-interface HeaderProps {
-  ultimaAct?: string;
-  showSearch?: boolean;
-  busqueda?: string;
-  onBusquedaChange?: (value: string) => void;
-}
+const AGENDA_ROUTES = ['/', '/evento', '/futbol', '/nba', '/mlb', '/f1', '/mundial-2026'];
 
-export default function Header({ ultimaAct, showSearch = false, busqueda = '', onBusquedaChange }: HeaderProps) {
+export default function Header() {
   const [scrollProgress, setScrollProgress] = useState(0);
   const pathname = usePathname();
-  const router = useRouter();
 
-  const isActiveRoute = (href: string) => href === '/' ? pathname === '/' : pathname.startsWith(href);
+  const isActiveRoute = (href: string) =>
+    href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`);
+  const isAgendaRoute = AGENDA_ROUTES.some((href) =>
+    href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`)
+  );
   const isLiveRoute = pathname.startsWith('/envivo');
   const isAboutRoute = pathname.startsWith('/quienes-somos') || pathname.startsWith('/team');
+  const isAdminRoute = pathname.startsWith('/admin');
 
-  const handleLiveNavigation = () => {
-    trackEvent('nav_click', { destination: 'envivo' });
-    if (pathname === '/') {
-      window.dispatchEvent(new CustomEvent('scroll-to-live'));
-    } else {
-      router.push('/envivo');
-    }
+  const handleSearchNavigation = (event: MouseEvent<HTMLAnchorElement>) => {
+    trackEvent('nav_click', { destination: 'search' });
+    if (pathname !== '/') return;
+    event.preventDefault();
+    const input = document.getElementById('buscar') as HTMLInputElement | null;
+    input?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    input?.focus({ preventScroll: true });
   };
 
   useEffect(() => {
@@ -44,6 +43,8 @@ export default function Header({ ultimaAct, showSearch = false, busqueda = '', o
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  if (isAdminRoute) return null;
+
   return (
     <>
       <div className="gs-progress-track fixed top-0 left-0 z-[60] w-full" aria-hidden="true">
@@ -55,24 +56,33 @@ export default function Header({ ultimaAct, showSearch = false, busqueda = '', o
             <Link href="/" aria-label="GuíaSports, inicio" className="gs-brand inline-flex min-h-11 shrink-0 items-center">
               <NextImage src="/GuiaSports-logo.svg" alt="GuíaSports" width={200} height={50} className="h-10 w-auto" priority />
             </Link>
-            <div className="hidden sm:flex flex-col items-end">
-              <div className="gs-region-badge mb-1">México</div>
-              {ultimaAct && (
-                <div className="gs-update-status flex items-center gap-1.5">
-                  <div className="gs-status-dot" aria-hidden="true"></div> {ultimaAct}
-                </div>
-              )}
+            <div className="hidden sm:flex items-center gap-3">
+              <Link
+                href="/#buscar"
+                onClick={handleSearchNavigation}
+                className="gs-button-icon hidden min-h-11 min-w-11 md:inline-flex"
+                aria-label="Buscar eventos"
+                title="Buscar eventos"
+              >
+                <Search size={16} aria-hidden="true" />
+              </Link>
+              <div className="gs-region-badge">México</div>
             </div>
           </div>
 
           {/* Desktop Navigation */}
           <nav aria-label="Navegación principal" className="gs-desktop-nav hidden md:flex items-center">
-            <Link href="/" aria-current={isActiveRoute('/') ? 'page' : undefined} className={`gs-nav-link ${isActiveRoute('/') ? 'gs-nav-link-active' : ''}`}>
+            <Link href="/" aria-current={pathname === '/' ? 'page' : isAgendaRoute ? 'true' : undefined} className={`gs-nav-link ${isAgendaRoute ? 'gs-nav-link-active' : ''}`}>
               <Radio size={14} aria-hidden="true" /> Agenda
             </Link>
-            <button type="button" aria-label="Ver eventos en vivo" aria-current={isLiveRoute ? 'page' : undefined} onClick={handleLiveNavigation} className={`gs-nav-link gs-nav-link-live ${isLiveRoute ? 'gs-nav-link-active' : ''}`}>
+            <Link
+              href="/envivo"
+              aria-current={isLiveRoute ? 'page' : undefined}
+              onClick={() => trackEvent('nav_click', { destination: 'envivo' })}
+              className={`gs-nav-link gs-nav-link-live ${isLiveRoute ? 'gs-nav-link-active' : ''}`}
+            >
               <span className="gs-status-dot gs-status-dot-live" aria-hidden="true"></span> En Vivo
-            </button>
+            </Link>
             <Link 
               href="/noticias" 
               aria-current={isActiveRoute('/noticias') ? 'page' : undefined}
@@ -107,29 +117,6 @@ export default function Header({ ultimaAct, showSearch = false, busqueda = '', o
             </Link>
           </nav>
 
-          {showSearch && (
-            <div className="relative mb-4 w-full px-1">
-              <label htmlFor="buscar" className="sr-only">Buscar equipos o ligas</label>
-              <input 
-                id="buscar" 
-                type="text" 
-                placeholder="Busca equipos o ligas..." 
-                className="gs-field py-3 pr-12"
-                value={busqueda} 
-                onChange={(e) => onBusquedaChange?.(e.target.value)} 
-              />
-              {busqueda && (
-                <button 
-                  type="button"
-                  onClick={() => onBusquedaChange?.('')} 
-                  className="gs-button-icon absolute right-2 top-1/2 -translate-y-1/2"
-                  aria-label="Limpiar búsqueda"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          )}
         </div>
       </header>
     </>

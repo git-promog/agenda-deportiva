@@ -9,6 +9,8 @@ interface AgendaQuickActionsProps {
   onDeporteChange: (deporte: string) => void;
   onEnVivo: () => void;
   onHoy: () => void;
+  enVivoActivo: boolean;
+  hoyActivo: boolean;
   emojis: Record<string, string>;
   filterSlot?: React.ReactNode;
 }
@@ -19,6 +21,8 @@ export default function AgendaQuickActions({
   onDeporteChange,
   onEnVivo,
   onHoy,
+  enVivoActivo,
+  hoyActivo,
   emojis,
   filterSlot,
 }: AgendaQuickActionsProps) {
@@ -40,7 +44,8 @@ export default function AgendaQuickActions({
         <button
           type="button"
           onClick={onEnVivo}
-          className="gs-button gs-button-live"
+          aria-pressed={enVivoActivo}
+          className={`gs-button ${enVivoActivo ? "gs-button-live" : "gs-button-quiet !text-red-300"}`}
         >
           <Radio size={15} aria-hidden="true" />
           En vivo
@@ -49,7 +54,8 @@ export default function AgendaQuickActions({
         <button
           type="button"
           onClick={onHoy}
-          className="gs-button gs-button-quiet"
+          aria-pressed={hoyActivo}
+          className={`gs-button ${hoyActivo ? "border-lime-400/40 bg-lime-400/10 text-lime-300" : "gs-button-quiet"}`}
         >
           <CalendarDays size={15} className="text-lime-400" aria-hidden="true" /> Hoy
         </button>

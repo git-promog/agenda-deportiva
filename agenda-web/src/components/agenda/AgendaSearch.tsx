@@ -21,14 +21,17 @@ export default function AgendaSearch({ value, onChange, placeholder = "Busca equ
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="gs-field !min-h-[3.25rem] !border-0 !bg-transparent !py-3 !pl-11 !pr-11 text-base"
+        className="gs-field !min-h-[3.25rem] !border-0 !bg-transparent !py-3 !pl-11 !pr-14 text-base"
         aria-label="Buscar eventos deportivos"
+        aria-controls="listado-eventos-principal"
+        autoComplete="off"
+        enterKeyHint="search"
       />
       {value && (
         <button
           type="button"
           onClick={() => onChange("")}
-          className="gs-button-icon absolute right-3 top-1/2 -translate-y-1/2 !min-h-9 !min-w-9 !rounded-lg"
+          className="gs-button-icon absolute right-3 top-1/2 -translate-y-1/2 !min-h-11 !min-w-11 !rounded-lg"
           aria-label="Limpiar búsqueda"
         >
           <X size={15} aria-hidden="true" />

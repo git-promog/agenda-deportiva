@@ -17,6 +17,7 @@ const EMOJIS: { [key: string]: string } = {
 interface Props {
   evento: Evento;
   isLive: boolean;
+  now: number;
   onFiltrarLiga?: (liga: string) => void;
   onClick?: () => void;
 }
@@ -29,11 +30,11 @@ function isTransmissionUnconfirmed(canales: string) {
   return !canales.trim() || UNCONFIRMED_CHANNEL_PATTERN.test(canales);
 }
 
-function getEventStatus(fecha: string, hora: string, isLive: boolean): EventStatus {
+function getEventStatus(fecha: string, hora: string, isLive: boolean, nowMs: number): EventStatus {
   if (isLive) return 'live';
 
   const start = new Date(`${fecha}T${hora || '00:00'}:00-06:00`);
-  return Number.isNaN(start.getTime()) || start.getTime() > Date.now() ? 'upcoming' : 'finished';
+  return Number.isNaN(start.getTime()) || start.getTime() > nowMs ? 'upcoming' : 'finished';
 }
 
 function formatEventDate(fecha: string) {
@@ -70,10 +71,10 @@ function formatChannels(canalesStr: string, unconfirmed: boolean) {
   });
 }
 
-export default function SportEventCard({ evento, isLive, onFiltrarLiga, onClick }: Props) {
+export default function SportEventCard({ evento, isLive, now, onFiltrarLiga, onClick }: Props) {
   const eventPath = buildEventPath(evento);
   const eventUrl = buildEventUrl(evento);
-  const status = getEventStatus(evento.fecha, evento.hora, isLive);
+  const status = getEventStatus(evento.fecha, evento.hora, isLive, now);
   const statusLabel = getStatusLabel(status);
   const transmissionUnconfirmed = isTransmissionUnconfirmed(evento.canales);
   const teams = evento.evento.split(/ vs /i);
@@ -81,32 +82,16 @@ export default function SportEventCard({ evento, isLive, onFiltrarLiga, onClick 
 
   return (
     <article className={`group gs-card gs-card-interactive relative overflow-hidden p-4 md:p-5 ${status === 'live' ? 'border-red-500/60 hover:border-red-400/70' : 'border-slate-800/80'}`}>
-      <header className="flex items-center justify-between gap-3 border-b border-white/10 pb-3">
-        <span className={`gs-badge normal-case tracking-normal ${status === 'live' ? 'gs-badge-live' : status === 'finished' ? 'gs-badge-finished' : 'gs-badge-upcoming'}`}>
-          {status === 'live' && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current" aria-hidden="true" />}
-          {statusLabel}
-        </span>
-        <div className="min-w-0 max-w-[55%] text-right">
-          {onFiltrarLiga ? (
-            <button
-              type="button"
-              onClick={(e) => { e.stopPropagation(); onFiltrarLiga(evento.competicion); }}
-              className="min-h-11 max-w-full truncate rounded-lg px-2 text-[10px] font-bold text-slate-400 transition-colors hover:text-blue-300"
-              title={`Filtrar por ${evento.competicion}`}
-            >
-              {evento.competicion}
-            </button>
-          ) : (
-            <span className="block truncate px-2 text-[10px] font-bold text-slate-400">{evento.competicion}</span>
-          )}
-        </div>
-      </header>
-
-      <div className="flex flex-col gap-4 pt-4 md:flex-row md:items-center">
-        <div className="flex shrink-0 items-center gap-3 border-b border-white/10 pb-4 md:min-w-[118px] md:flex-col md:items-start md:border-b-0 md:border-r md:pb-0 md:pr-5">
-          <div className="text-2xl opacity-80 md:text-3xl" aria-hidden="true">{EMOJIS[evento.deporte] || "🏆"}</div>
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">{status === 'live' ? 'Ahora' : 'Inicio'}</p>
+      <div className="flex flex-col gap-4 md:flex-row md:items-center">
+        <div className="flex shrink-0 items-center gap-3 border-b border-white/10 pb-4 md:min-w-[150px] md:flex-col md:items-start md:border-b-0 md:border-r md:pb-0 md:pr-5">
+          <div className="contents md:flex md:items-center md:gap-3">
+            <div className="order-1 text-2xl opacity-80 md:text-3xl" aria-hidden="true">{EMOJIS[evento.deporte] || "🏆"}</div>
+            <span className={`gs-badge order-3 ml-auto whitespace-nowrap normal-case tracking-normal md:ml-0 ${status === 'live' ? 'gs-badge-live' : status === 'finished' ? 'gs-badge-finished' : 'gs-badge-upcoming'}`}>
+              {status === 'live' && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current" aria-hidden="true" />}
+              {statusLabel}
+            </span>
+          </div>
+          <div className="order-2 md:mt-2">
             <div className={`flex items-center gap-2 text-2xl font-black tracking-tight ${status === 'live' ? 'text-red-300' : 'text-white'}`}>
               <Clock size={17} aria-hidden="true" />
               <span className="gs-time">{evento.hora || 'Por definir'}</span>
@@ -131,7 +116,7 @@ export default function SportEventCard({ evento, isLive, onFiltrarLiga, onClick 
                     {teams[0].trim().substring(0, 2).toUpperCase()}
                   </span>
                 </span>
-                <span className="select-none text-[10px] font-bold text-slate-500" aria-hidden="true">VS</span>
+                <span className="select-none text-[10px] font-bold text-slate-400" aria-hidden="true">VS</span>
                 <span className="flex min-w-0 flex-1 items-center gap-2">
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-white/10 bg-slate-800 text-[10px] font-black text-slate-300" aria-hidden="true">
                     {teams[1].trim().substring(0, 2).toUpperCase()}
@@ -149,6 +134,23 @@ export default function SportEventCard({ evento, isLive, onFiltrarLiga, onClick 
               <Tv size={14} aria-hidden="true" /> Dónde verlo
             </span>
             {formatChannels(evento.canales, transmissionUnconfirmed)}
+          </div>
+
+          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-slate-400">
+            <span className="font-bold uppercase tracking-[0.08em] text-slate-400">{evento.deporte}</span>
+            <span aria-hidden="true">·</span>
+            {onFiltrarLiga ? (
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); onFiltrarLiga(evento.competicion); }}
+                className="min-h-11 max-w-full truncate rounded-lg px-1 font-semibold text-slate-400 transition-colors hover:text-blue-300"
+                title={`Filtrar por ${evento.competicion}`}
+              >
+                {evento.competicion}
+              </button>
+            ) : (
+              <span className="max-w-full truncate font-semibold">{evento.competicion}</span>
+            )}
           </div>
         </div>
 
@@ -171,16 +173,6 @@ export default function SportEventCard({ evento, isLive, onFiltrarLiga, onClick 
             </Link>
           )}
           <div className="flex shrink-0 items-center gap-2">
-            {onClick && (
-              <Link
-                href={eventPath}
-                onClick={(e) => e.stopPropagation()}
-                className="gs-button-icon"
-                aria-label={`Ver página de ${evento.evento}`}
-              >
-                <ExternalLink size={14} aria-hidden="true" />
-              </Link>
-            )}
             <ShareButton
               titulo={evento.evento}
               url={eventUrl}

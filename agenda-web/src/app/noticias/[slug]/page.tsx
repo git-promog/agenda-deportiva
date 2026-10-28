@@ -454,7 +454,7 @@ function renderArticleContent(content: string) {
       if (isSpecialSection) {
         elements.push(
           <div key={`special-${elements.length}`} id={id} className="scroll-mt-24 my-8 p-6 bg-slate-900/80 border border-slate-700/60 rounded-2xl relative overflow-hidden group hover:border-slate-600 transition-colors shadow-lg">
-            <h2 className="text-lg font-black italic uppercase text-white mb-5 flex items-center gap-3">
+            <h2 className="text-lg font-black text-white mb-5 flex items-center gap-3">
               {headingInfo.icon}
               {cleanTitle}
             </h2>
@@ -470,7 +470,7 @@ function renderArticleContent(content: string) {
                     subElements.push(
                       <div key={`sub-${nextIdx}`} className="flex justify-between items-center border-b border-slate-800 py-3 last:border-0">
                         <span className="text-xs font-bold uppercase text-slate-400 tracking-wider">{subLine.substring(0, colonIdx)}</span>
-                        <span className="text-sm font-black text-[var(--gs-color-lime)] italic">{subLine.substring(colonIdx + 1).trim()}</span>
+                        <span className="text-sm font-black text-[var(--gs-color-lime)]">{subLine.substring(colonIdx + 1).trim()}</span>
                       </div>
                     );
                   } else {
@@ -486,7 +486,7 @@ function renderArticleContent(content: string) {
         );
       } else {
         elements.push(
-          <h2 key={`h2-${elements.length}`} id={id} className="scroll-mt-24 text-xl md:text-2xl font-black italic uppercase text-white mt-10 mb-5 tracking-tight flex items-center gap-3 border-l-4 border-blue-500 pl-4 py-1 bg-blue-950/20 rounded-r-lg group hover:bg-blue-950/30 transition-colors">
+          <h2 key={`h2-${elements.length}`} id={id} className="scroll-mt-24 text-xl md:text-2xl font-black text-white mt-10 mb-5 tracking-tight flex items-center gap-3 border-l-4 border-blue-500 pl-4 py-1 bg-blue-950/20 rounded-r-lg group hover:bg-blue-950/30 transition-colors">
             {headingInfo.icon}
             {cleanTitle}
           </h2>
@@ -611,8 +611,8 @@ export default async function NoticiaDetalle({ params }: Props) {
     return (
       <div className="min-h-screen bg-[#020617] text-slate-100 flex flex-col items-center justify-center p-10 text-center">
         <NextImage src="/GuiaSports-logo.svg" alt="GuíaSports" width={150} height={50} className="mb-10 opacity-20" />
-        <h1 className="text-3xl font-black uppercase italic mb-4">Noticia no encontrada</h1>
-        <p className="text-slate-500 text-sm mb-8 max-w-md">La noticia que buscas no existe o fue removida. Pero tenemos más contenido deportivo para ti.</p>
+        <h1 className="text-3xl font-black mb-4">Noticia no encontrada</h1>
+        <p className="text-slate-400 text-sm mb-8 max-w-md">La noticia que buscas no existe o fue removida. Pero tenemos más contenido deportivo para ti.</p>
         
         {noticiasRecientes && noticiasRecientes.length > 0 && (
           <div className="w-full max-w-lg mb-8">
@@ -620,8 +620,8 @@ export default async function NoticiaDetalle({ params }: Props) {
             <div className="space-y-3 text-left">
               {noticiasRecientes.map((n: NoticiaRelacionada) => (
                 <Link key={n.slug} href={`/noticias/${n.slug}`} className="block bg-slate-900/50 border border-slate-800 p-4 rounded-xl hover:border-blue-500/30 transition-all group">
-                  <h3 className="text-sm font-black italic uppercase text-slate-200 group-hover:text-white leading-tight">{n.titulo}</h3>
-                  <p className="text-[9px] text-slate-500 uppercase font-bold mt-1">{n.fecha}</p>
+                  <h3 className="text-sm font-black text-slate-200 group-hover:text-white leading-tight">{n.titulo}</h3>
+                  <p className="text-[9px] text-slate-400 uppercase font-bold mt-1">{n.fecha}</p>
                 </Link>
               ))}
             </div>
@@ -751,7 +751,7 @@ export default async function NoticiaDetalle({ params }: Props) {
             )}
           </div>
           
-          <h1 className="text-3xl md:text-5xl font-black italic uppercase leading-[0.98] tracking-tighter mb-6 text-white">
+          <h1 className="text-3xl md:text-5xl font-black leading-[0.98] tracking-tight mb-6 text-white">
             {noticia.titulo}
           </h1>
 
@@ -766,7 +766,7 @@ export default async function NoticiaDetalle({ params }: Props) {
             </div>
             <div className="h-4 w-px bg-slate-800 hidden sm:block"></div>
             <div className="flex items-center gap-2">
-              <span className="text-slate-500">Por:</span>
+              <span className="text-slate-400">Por:</span>
               <Link href={`/autores/${autor.id}`} className="text-blue-400 hover:text-blue-300 hover:underline transition-colors font-black">
                 {autor.name}
               </Link>
@@ -799,7 +799,7 @@ export default async function NoticiaDetalle({ params }: Props) {
 
         {/* COMPONENTE FAQ_SECTION */}
         <section className="mt-16 mb-12 border-t border-slate-800 pt-10">
-          <h2 className="text-2xl md:text-3xl font-black italic uppercase text-white mb-8 flex items-center gap-3 border-l-4 border-blue-600 pl-4 py-1">
+          <h2 className="text-2xl md:text-3xl font-black text-white mb-8 flex items-center gap-3 border-l-4 border-blue-600 pl-4 py-1">
             Preguntas Frecuentes
           </h2>
           <div className="space-y-4" id="faq-accordion-container">
@@ -810,7 +810,7 @@ export default async function NoticiaDetalle({ params }: Props) {
                 className="group bg-slate-900/30 border border-slate-800/80 rounded-3xl overflow-hidden hover:border-blue-500/20 transition-all [&_summary::-webkit-details-marker]:hidden"
               >
                 <summary className="flex items-center justify-between p-6 cursor-pointer select-none">
-                  <h3 className="text-sm md:text-base font-black italic uppercase text-blue-400 group-hover:text-blue-300 transition-colors pr-4">
+                  <h3 className="text-sm md:text-base font-black text-blue-400 group-hover:text-blue-300 transition-colors pr-4">
                     ¿{faq.question.replace(/^¿|\?$/g, '').trim()}?
                   </h3>
                   <div className="shrink-0 w-8 h-8 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 group-open:rotate-90 group-open:bg-blue-600 group-open:text-white transition-all duration-300">
@@ -854,8 +854,8 @@ export default async function NoticiaDetalle({ params }: Props) {
             <div className="space-y-3">
               {noticiasRelacionadas.map((n: NoticiaRelacionada & { score: number }) => (
                 <Link key={n.slug} href={`/noticias/${n.slug}`} className="block bg-slate-900/30 border border-slate-800/50 p-5 rounded-2xl hover:border-blue-500/30 hover:bg-slate-900/60 transition-all group">
-                  <h3 className="text-sm font-black italic uppercase text-slate-200 group-hover:text-white leading-tight mb-1">{n.titulo}</h3>
-                  <p className="text-[9px] text-slate-500 uppercase font-bold tracking-widest">{n.fecha} • Leer más →</p>
+                  <h3 className="text-sm font-black text-slate-200 group-hover:text-white leading-tight mb-1">{n.titulo}</h3>
+                  <p className="text-[9px] text-slate-400 uppercase font-bold tracking-widest">{n.fecha} • Leer más →</p>
                 </Link>
               ))}
             </div>
@@ -865,7 +865,7 @@ export default async function NoticiaDetalle({ params }: Props) {
         {/* ULTIMAS NOTICIAS CAROUSEL */}
         {noticiasCandidatas && noticiasCandidatas.length > 0 && (
           <section className="my-16 border-t border-slate-800 pt-10">
-            <h2 className="text-xl md:text-2xl font-black italic uppercase text-white mb-6 flex items-center gap-2">
+            <h2 className="text-xl md:text-2xl font-black text-white mb-6 flex items-center gap-2">
               <Newspaper className="w-5 h-5 text-blue-500" /> Últimas Noticias
             </h2>
             <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
@@ -891,11 +891,11 @@ export default async function NoticiaDetalle({ params }: Props) {
                     )}
                   </div>
                   <div className="p-4 flex-grow flex flex-col justify-between">
-                    <h4 className="text-xs font-black italic uppercase text-slate-200 group-hover:text-white line-clamp-2 leading-snug mb-3">
+                    <h4 className="text-xs font-black text-slate-200 group-hover:text-white line-clamp-2 leading-snug mb-3">
                       {n.titulo}
                     </h4>
                     <div className="flex items-center justify-between mt-auto">
-                      <span className="text-[8px] text-slate-500 font-bold uppercase tracking-widest">
+                      <span className="text-[8px] text-slate-400 font-bold uppercase tracking-widest">
                         {n.fecha}
                       </span>
                       <span className="text-[9px] text-blue-400 font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
@@ -912,7 +912,7 @@ export default async function NoticiaDetalle({ params }: Props) {
         {/* BANNER INFERIOR Y COMPARTIR */}
         <div className="p-6 md:p-8 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6 shadow-lg relative overflow-hidden">
           <div className="text-center md:text-left relative z-10">
-            <h2 className="text-white font-black uppercase italic text-lg leading-tight">¿Te sirvió esta previa?</h2>
+            <h2 className="text-white font-black text-lg leading-tight">¿Te sirvió esta previa?</h2>
             <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mt-1">Comparte los horarios y canales de transmisión con otros aficionados</p>
           </div>
           <div className="relative z-10 w-full md:w-auto shrink-0">

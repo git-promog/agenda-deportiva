@@ -37,6 +37,7 @@ export default function AgendaFilters({
   const [isOpen, setIsOpen] = useState(false);
   const [busquedaCompeticion, setBusquedaCompeticion] = useState("");
   const panelRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const closePanel = () => {
     setIsOpen(false);
@@ -48,8 +49,22 @@ export default function AgendaFilters({
       if (panelRef.current && !panelRef.current.contains(e.target as Node)) closePanel();
     };
 
-    if (isOpen) document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        closePanel();
+        triggerRef.current?.focus();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, [isOpen]);
 
   const competicionesFiltradas = competiciones.filter((c) =>
@@ -59,6 +74,7 @@ export default function AgendaFilters({
   return (
     <div className="relative" ref={panelRef}>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => (isOpen ? closePanel() : setIsOpen(true))}
         className={`gs-button ${isOpen || activeCount > 0 ? "gs-button-secondary" : "gs-button-quiet"}`}
@@ -112,7 +128,7 @@ export default function AgendaFilters({
                     type="button"
                     onClick={() => onFechaChange(f)}
                     aria-pressed={filtroFecha === f}
-                    className={`gs-chip ${filtroFecha === f ? "border-lime-400/40 bg-lime-400/10 text-lime-300" : "hover:border-slate-600 hover:text-slate-200"}`}
+                    className={`gs-chip min-h-11 ${filtroFecha === f ? "border-lime-400/40 bg-lime-400/10 text-lime-300" : "hover:border-slate-600 hover:text-slate-200"}`}
                   >
                     {formatButtonFecha(f)}
                   </button>
@@ -143,7 +159,7 @@ export default function AgendaFilters({
                       type="button"
                       onClick={() => onCompeticionChange(c)}
                       aria-pressed={filtroCompeticion === c}
-                      className={`w-full rounded-lg px-3 py-2.5 text-left text-sm font-semibold transition-colors ${filtroCompeticion === c ? "bg-blue-400/10 text-blue-300" : "text-slate-400 hover:bg-slate-900 hover:text-slate-200"}`}
+                      className={`min-h-11 w-full rounded-lg px-3 py-2.5 text-left text-sm font-semibold transition-colors ${filtroCompeticion === c ? "bg-blue-400/10 text-blue-300" : "text-slate-400 hover:bg-slate-900 hover:text-slate-200"}`}
                     >
                       {c === "Todos" ? "Todas las ligas" : c}
                     </button>

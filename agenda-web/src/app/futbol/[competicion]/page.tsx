@@ -9,6 +9,7 @@ import LigaMxSeoFaq from '@/components/ligamx/LigaMxSeoFaq';
 import { LIGA_MX_FAQS } from '@/lib/ligamx-faqs';
 import EventListWithModal from '@/components/EventListWithModal';
 import { getTodayMexicoString } from '@/lib/mexicoTime';
+import { getServerNow } from '@/lib/serverNow';
 
 const COMPETITION_HUBS = {
   'liga-mx': {
@@ -101,6 +102,7 @@ export default async function CompetitionHub({ params }: Props) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const hoyStr = getTodayMexicoString();
+  const now = getServerNow();
 
   let eventos: Evento[] = [];
   let noticias: NoticiaResumen[] = [];
@@ -244,6 +246,7 @@ export default async function CompetitionHub({ params }: Props) {
           <section className="mb-12">
             <EventListWithModal
               eventos={eventos}
+              now={now}
               emptyMessage="No hay partidos próximos registrados para esta competición. Revisa la agenda general para más eventos."
             />
           </section>

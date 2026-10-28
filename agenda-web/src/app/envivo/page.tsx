@@ -1,10 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
 import { Metadata } from 'next';
-import { Radio, Tv, Clock, CalendarDays, ChevronLeft } from 'lucide-react';
-import Header from '@/components/Header';
+import { Radio, Clock, CalendarDays, ChevronLeft } from 'lucide-react';
+import EventListWithModal from '@/components/EventListWithModal';
 import { deduplicateEventos } from '@/lib/eventUrls';
-import { getTodayMexicoString, isEventLive } from '@/lib/mexicoTime';
+import { getMexicoDate, getTodayMexicoString, isEventLive } from '@/lib/mexicoTime';
+import { getServerNow } from '@/lib/serverNow';
 import type { Evento } from '@/types';
 
 export const revalidate = 600;
@@ -24,15 +25,10 @@ export const metadata: Metadata = {
   },
 };
 
-const emojis: { [key: string]: string } = {
-  "Fútbol": "⚽️", "Básquetbol": "🏀", "Béisbol": "⚾️", "Fórmula 1": "🏎️", 
-  "Motorismo": "🏍️", "Tenis": "🎾", "Fútbol Americano": "🏈", "Rugby": "🏉", 
-  "Hockey": "🏒", "Combate": "🥊", "Ciclismo": "🚴", "Voleibol": "🏐", 
-  "Golf": "⛳️", "Natación": "🏊", "Fútbol Sala": "👟", "Otros": "🏆"
-};
-
 export default async function EnVivo() {
   const hoyStr = getTodayMexicoString();
+  const nowMs = getServerNow();
+  const nowDate = getMexicoDate(new Date(nowMs));
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -48,18 +44,16 @@ export default async function EnVivo() {
     .limit(200);
 
   const eventosAgenda = deduplicateEventos((eventos ?? []) as Evento[]);
-  const eventosEnVivo = eventosAgenda.filter(e => isEventLive(e.fecha, e.hora));
+  const eventosEnVivo = eventosAgenda.filter(e => isEventLive(e.fecha, e.hora, nowDate));
 
-  const eventosProximos = eventosAgenda
-    .filter(e => {
-      if (e.fecha !== hoyStr) return false;
-      const [h, m] = e.hora.split(':').map(Number);
-      const horaEvento = new Date();
-      horaEvento.setHours(h, m, 0);
-      const ahora = new Date();
-      const dif = horaEvento.getTime() - ahora.getTime();
-      return dif > 0 && dif < (60 * 60 * 1000);
-    });
+  const eventosProximos = eventosAgenda.filter(e => {
+    if (e.fecha !== hoyStr) return false;
+    const [h, m] = e.hora.split(':').map(Number);
+    const horaEvento = new Date(nowDate);
+    horaEvento.setHours(h, m, 0);
+    const dif = horaEvento.getTime() - nowDate.getTime();
+    return dif > 0 && dif < (60 * 60 * 1000);
+  });
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -77,8 +71,6 @@ export default async function EnVivo() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-24">
-        <Header />
-
         <div className="max-w-4xl mx-auto px-4 pt-10">
           <Link href="/" className="flex items-center gap-2 text-blue-500 text-[10px] font-black uppercase tracking-widest mb-8 hover:text-blue-400 group transition-colors w-fit">
             <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> 
@@ -110,33 +102,7 @@ export default async function EnVivo() {
                   {eventosEnVivo.length} evento{eventosEnVivo.length > 1 ? 's' : ''} en vivo
                 </span>
               </div>
-              {eventosEnVivo.map((evento) => (
-                <div key={evento.id} className="group bg-gradient-to-r from-red-600/10 to-red-900/5 border border-red-500/20 rounded-2xl p-5 hover:border-red-500/40 transition-all duration-300 relative overflow-hidden">
-                  <div className="absolute top-3 right-3">
-                    <span className="flex items-center gap-1.5 bg-red-600 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">
-                      <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
-                      LIVE
-                    </span>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <div className="bg-[#020617] border border-slate-800 w-14 h-14 flex items-center justify-center rounded-2xl text-3xl shrink-0">
-                      {emojis[evento.deporte] || "🏆"}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[9px] font-black text-red-400 uppercase tracking-widest mb-1">{evento.competicion}</div>
-                      <h3 className="text-lg font-black italic uppercase text-white leading-tight mb-2">{evento.evento}</h3>
-                      <div className="flex flex-wrap items-center gap-4">
-                        <span className="flex items-center gap-1.5 text-[10px] font-bold text-[#a3e635] bg-[#a3e635]/10 px-3 py-1 rounded-lg border border-[#a3e635]/20">
-                          <Tv size={12} /> {evento.canales}
-                        </span>
-                        <span className="flex items-center gap-1.5 text-[10px] font-mono font-bold text-slate-400">
-                          <Clock size={12} /> {evento.hora}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
+              <EventListWithModal eventos={eventosEnVivo} now={nowMs} />
             </div>
           ) : (
             <div className="bg-slate-900/50 border border-slate-800 rounded-[32px] p-12 text-center">
@@ -151,24 +117,7 @@ export default async function EnVivo() {
               <h2 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] mb-6 flex items-center gap-2">
                 <Clock className="w-4 h-4" /> Próximos a iniciar
               </h2>
-              <div className="space-y-3">
-                {eventosProximos.map((evento) => (
-                  <div key={`prox-${evento.id}`} className="group bg-slate-900/30 border border-slate-800/50 rounded-xl p-4 hover:border-blue-500/30 transition-all">
-                    <div className="flex items-center gap-4">
-                      <div className="bg-[#020617] border border-slate-800 w-10 h-10 flex items-center justify-center rounded-xl text-xl shrink-0">
-                        {emojis[evento.deporte] || "🏆"}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{evento.competicion}</div>
-                        <h3 className="text-sm font-black italic uppercase text-slate-300 leading-tight">{evento.evento}</h3>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold text-blue-400 shrink-0">
-                        <Clock size={12} /> {evento.hora}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <EventListWithModal eventos={eventosProximos} now={nowMs} />
             </div>
           )}
 

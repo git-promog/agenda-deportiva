@@ -183,12 +183,17 @@ export default async function EventoDetalle({ params }: Props) {
           />
 
           <header className="mb-8">
-            <div className="mb-4 flex flex-wrap items-center gap-3">
+            <div className="mb-4 flex flex-wrap items-center gap-2">
               <span className={`gs-badge normal-case tracking-normal ${status === 'live' ? 'gs-badge-live' : status === 'finished' ? 'gs-badge-finished' : 'gs-badge-upcoming'}`}>
                 {status === 'live' && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current" aria-hidden="true" />}
                 {statusLabel}
               </span>
-              <span className="text-sm text-slate-500">{evento.deporte}</span>
+              <span className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700/60 bg-slate-900/50 px-3 py-1.5 text-xs font-bold text-slate-300">
+                <Calendar size={14} className="text-blue-300" aria-hidden="true" /> {formatDate(evento.fecha)}
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700/60 bg-slate-900/50 px-3 py-1.5 text-xs font-bold text-slate-300">
+                <Clock size={14} className={status === 'live' ? 'text-red-300' : 'text-lime-300'} aria-hidden="true" /> {evento.hora || 'Por definir'}
+              </span>
             </div>
             <h1 className="mb-5 text-4xl font-black leading-[0.98] tracking-tight text-white md:text-6xl">
               {evento.evento}
@@ -199,35 +204,20 @@ export default async function EventoDetalle({ params }: Props) {
           </header>
 
           <section className="mb-8 grid gap-3">
-            <div className="flex items-start gap-4 rounded-2xl border border-blue-400/20 bg-blue-500/10 p-5">
-              <Calendar className="mt-1 shrink-0 text-blue-300" size={20} />
+            <div className={`flex items-start gap-4 rounded-2xl border p-5 ${transmissionUnconfirmed ? 'border-slate-700/60 bg-slate-900/50' : 'border-blue-400/20 bg-blue-500/10'}`}>
+              <Tv className={`mt-1 shrink-0 ${transmissionUnconfirmed ? 'text-slate-300' : 'text-blue-300'}`} size={20} />
               <div>
-                <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-blue-200/70">Fecha</p>
-                <p className="font-bold capitalize text-white">{formatDate(evento.fecha)}</p>
-              </div>
-            </div>
-
-            <div className={`flex items-start gap-4 rounded-2xl border p-5 ${status === 'live' ? 'border-red-400/30 bg-red-500/10' : 'border-lime-400/20 bg-lime-500/10'}`}>
-              <Clock className={`mt-1 shrink-0 ${status === 'live' ? 'text-red-300' : 'text-lime-300'}`} size={20} />
-              <div>
-                <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">{statusLabel} · hora en México</p>
-                <p className={`text-xl font-black ${status === 'live' ? 'text-red-200' : 'text-white'}`}>{evento.hora || 'Por definir'}</p>
+                <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">Dónde verlo</p>
+                <p className="font-bold text-white">{channelLabel}</p>
               </div>
             </div>
 
             <div className="flex items-start gap-4 rounded-2xl border border-slate-700/60 bg-slate-900/50 p-5">
               <Radio className="mt-1 shrink-0 text-slate-300" size={20} />
               <div>
-                <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">Competición</p>
+                <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">Competición</p>
                 <p className="font-bold text-white">{evento.competicion}</p>
-              </div>
-            </div>
-
-            <div className={`flex items-start gap-4 rounded-2xl border p-5 ${transmissionUnconfirmed ? 'border-slate-700/60 bg-slate-900/50' : 'border-blue-400/20 bg-blue-500/10'}`}>
-              <Tv className={`mt-1 shrink-0 ${transmissionUnconfirmed ? 'text-slate-300' : 'text-blue-300'}`} size={20} />
-              <div>
-                <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">Dónde verlo</p>
-                <p className="font-bold text-white">{channelLabel}</p>
+                <p className="mt-1 text-xs text-slate-400">{evento.deporte}</p>
               </div>
             </div>
           </section>
@@ -259,7 +249,7 @@ export default async function EventoDetalle({ params }: Props) {
           </div>
 
           <div className="mt-8">
-            <a href={eventUrl} className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-blue-400 transition-colors">
+            <a href={eventUrl} className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-blue-400 transition-colors">
               URL canónica del evento <ExternalLink size={12} />
             </a>
           </div>

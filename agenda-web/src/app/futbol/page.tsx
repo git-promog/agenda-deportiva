@@ -7,6 +7,7 @@ import { deduplicateEventos } from '@/lib/eventUrls';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import EventListWithModal from '@/components/EventListWithModal';
 import { getTodayMexicoString } from '@/lib/mexicoTime';
+import { getServerNow } from '@/lib/serverNow';
 
 export const revalidate = 600;
 
@@ -45,6 +46,7 @@ interface Noticia {
 
 export default async function FutbolHub() {
   const hoyStr = getTodayMexicoString();
+  const now = getServerNow();
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -116,6 +118,7 @@ export default async function FutbolHub() {
 
           <EventListWithModal
             eventos={proximos}
+            now={now}
             emptyMessage="No hay partidos de fútbol próximos registrados. Vuelve pronto para ver la cartelera actualizada."
           />
 

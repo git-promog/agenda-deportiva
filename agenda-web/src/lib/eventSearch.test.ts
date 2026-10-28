@@ -74,4 +74,35 @@ describe('searchEvents', () => {
 
     expect(searchEvents(eventos, 'Liga MX').map((evento) => evento.id)).toEqual(['liga-mx']);
   });
+
+  it('no mezcla toda la agenda con una consulta de una letra o un conector', () => {
+    const eventos = [
+      makeEvent({ id: 'futbol', evento: 'América vs Cruz Azul', deporte: 'Fútbol' }),
+      makeEvent({ id: 'beisbol', evento: 'Diablos vs Sultanes', deporte: 'Béisbol' }),
+      makeEvent({ id: 'vs', evento: 'Equipo A vs Equipo B', deporte: 'Tenis' }),
+    ];
+
+    expect(searchEvents(eventos, 'a')).toEqual([]);
+    expect(searchEvents(eventos, 'vs')).toEqual([]);
+  });
+
+  it('busca canales cortos por palabra completa y evita fragmentos', () => {
+    const eventos = [
+      makeEvent({ id: 'canal-5', evento: 'Partido abierto', canales: 'Canal 5' }),
+      makeEvent({ id: 'canal-50', evento: 'Partido alterno', canales: 'Canal 50' }),
+      makeEvent({ id: 'tudn', evento: 'Partido de paga', canales: 'TUDN' }),
+    ];
+
+    expect(searchEvents(eventos, '5').map((evento) => evento.id)).toEqual(['canal-5']);
+    expect(searchEvents(eventos, 'canal 5').map((evento) => evento.id)).toEqual(['canal-5']);
+  });
+
+  it('encuentra TV como palabra completa en el canal', () => {
+    const eventos = [
+      makeEvent({ id: 'apple', evento: 'Partido MLS', canales: 'Apple TV+' }),
+      makeEvent({ id: 'tudn', evento: 'Partido Liga MX', canales: 'TUDN' }),
+    ];
+
+    expect(searchEvents(eventos, 'tv').map((evento) => evento.id)).toEqual(['apple']);
+  });
 });

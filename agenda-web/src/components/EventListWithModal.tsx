@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CalendarDays } from 'lucide-react';
+import { CalendarDays, ChevronDown, ChevronUp, Clock } from 'lucide-react';
 import SportEventCard from '@/components/SportEventCard';
 import SportEventModal from '@/components/SportEventModal';
 import { trackEvent } from '@/lib/analytics';
-import { isEventLive } from '@/lib/mexicoTime';
+import { formatMexicoDate, getMexicoDate, getTodayMexicoString, isEventLive, isEventPast } from '@/lib/mexicoTime';
 
 interface Evento {
   id: string;
@@ -20,17 +20,38 @@ interface Evento {
 
 interface EventListWithModalProps {
   eventos: Evento[];
+  now: number;
   emptyMessage?: string;
 }
 
 export default function EventListWithModal({
   eventos,
+  now,
   emptyMessage = 'No hay partidos próximos registrados.',
 }: EventListWithModalProps) {
   const [selectedEvent, setSelectedEvent] = useState<Evento | null>(null);
+  const [mostrarFinalizados, setMostrarFinalizados] = useState(false);
+  const nowDate = getMexicoDate(new Date(now));
 
-  // Agrupar eventos por fecha YYYY-MM-DD
-  const eventosAgrupados = eventos.reduce<{ [fecha: string]: Evento[] }>((acc, evento) => {
+  const isLiveEvent = (evento: Evento) => isEventLive(evento.fecha, evento.hora, nowDate);
+  const isFinishedEvent = (evento: Evento) =>
+    !isLiveEvent(evento) && isEventPast(evento.fecha, evento.hora, nowDate);
+
+  const eventosActivos = eventos
+    .filter((evento) => !isFinishedEvent(evento))
+    .sort((a, b) => {
+      const aLive = isLiveEvent(a) ? 0 : 1;
+      const bLive = isLiveEvent(b) ? 0 : 1;
+      if (aLive !== bLive) return aLive - bLive;
+      return (a.fecha || '').localeCompare(b.fecha || '') || (a.hora || '').localeCompare(b.hora || '');
+    });
+
+  const eventosFinalizados = eventos
+    .filter(isFinishedEvent)
+    .sort((a, b) => (a.fecha || '').localeCompare(b.fecha || '') || (a.hora || '').localeCompare(b.hora || ''));
+
+  // Agrupar eventos activos por fecha YYYY-MM-DD
+  const eventosAgrupados = eventosActivos.reduce<{ [fecha: string]: Evento[] }>((acc, evento) => {
     const key = evento.fecha || 'Sin Fecha';
     if (!acc[key]) acc[key] = [];
     acc[key].push(evento);
@@ -38,6 +59,30 @@ export default function EventListWithModal({
   }, {});
 
   const fechasOrdenadas = Object.keys(eventosAgrupados).sort();
+  const finalizadosDeHoy =
+    eventosFinalizados.length > 0 &&
+    eventosFinalizados.every((evento) => evento.fecha === getTodayMexicoString());
+
+  const renderEvento = (evento: Evento) => {
+    const live = isLiveEvent(evento);
+    return (
+      <div key={evento.id} className="w-full">
+        <SportEventCard
+          evento={evento}
+          isLive={live}
+          now={now}
+          onClick={() => {
+            trackEvent('view_event_detail', {
+              event_name: evento.evento,
+              sport: evento.deporte,
+              competition: evento.competicion,
+            });
+            setSelectedEvent(evento);
+          }}
+        />
+      </div>
+    );
+  };
 
   if (eventos.length === 0) {
     return (
@@ -55,11 +100,7 @@ export default function EventListWithModal({
           const eventosDelDia = eventosAgrupados[fecha];
           const dateObj = new Date(fecha + 'T12:00:00');
           const dateFormatted = !isNaN(dateObj.getTime())
-            ? dateObj.toLocaleDateString('es-MX', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-              })
+            ? formatMexicoDate(fecha, 'long')
             : fecha;
 
           return (
@@ -86,27 +127,42 @@ export default function EventListWithModal({
               </div>
 
               <div className="flex flex-col gap-3 w-full">
-                {eventosDelDia.map((evento) => (
-                  <div key={evento.id} className="w-full">
-                    <SportEventCard
-                      evento={evento}
-                      isLive={isEventLive(evento.fecha, evento.hora)}
-                      onClick={() => {
-                        trackEvent('view_event_detail', {
-                          event_name: evento.evento,
-                          sport: evento.deporte,
-                          competition: evento.competicion,
-                        });
-                        setSelectedEvent(evento);
-                      }}
-                    />
-                  </div>
-                ))}
+                {eventosDelDia.map(renderEvento)}
               </div>
             </section>
           );
         })}
       </div>
+
+      {eventosFinalizados.length > 0 && (
+        <section className={`w-full ${fechasOrdenadas.length > 0 ? 'mt-10 border-t border-slate-800/80 pt-6' : ''}`}>
+          <button
+            type="button"
+            onClick={() => setMostrarFinalizados((prev) => !prev)}
+            className="gs-button gs-button-quiet w-full justify-between !min-h-11 !px-4 text-xs"
+            aria-expanded={mostrarFinalizados}
+            aria-controls="eventos-finalizados"
+          >
+            <span className="flex items-center gap-2 font-semibold">
+              <Clock size={14} className="text-slate-400" aria-hidden="true" />
+              <span>{finalizadosDeHoy ? 'Finalizados de hoy' : 'Finalizados'}</span>
+              <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5 text-[11px] font-bold text-slate-300">
+                {eventosFinalizados.length}
+              </span>
+            </span>
+            <span className="flex items-center gap-1.5 text-[11px] font-bold text-slate-400">
+              {mostrarFinalizados ? 'Ocultar' : 'Ver eventos'}
+              {mostrarFinalizados ? <ChevronUp size={14} aria-hidden="true" /> : <ChevronDown size={14} aria-hidden="true" />}
+            </span>
+          </button>
+
+          {mostrarFinalizados && (
+            <div id="eventos-finalizados" className="mt-3 flex flex-col gap-3">
+              {eventosFinalizados.map(renderEvento)}
+            </div>
+          )}
+        </section>
+      )}
 
       <SportEventModal
         evento={selectedEvent}

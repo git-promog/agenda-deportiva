@@ -6,7 +6,6 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import NextImage from 'next/image';
-import Header from '@/components/Header';
 import { 
   Calendar, 
   MapPin, 
@@ -389,7 +388,6 @@ export default function MundialClient({ noticias }: { noticias: Noticia[] }) {
       />
       
       <div className="min-h-screen bg-[#020617] text-slate-100 font-sans pb-24 relative overflow-x-hidden">
-        <Header />
         {/* Background Accents */}
         <div className="max-w-4xl mx-auto px-4 pt-8 relative z-10">
           <nav aria-label="Breadcrumb" className="gs-breadcrumbs">

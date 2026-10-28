@@ -71,23 +71,17 @@ export default function NavMobile() {
         return;
       }
     }
+    if (id === 'buscar') {
+      const input = document.getElementById('buscar') as HTMLInputElement | null;
+      input?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      input?.focus({ preventScroll: true });
+      return;
+    }
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
   };
-
-  const isSubpage = pathname.includes('/noticias') || 
-                    pathname.includes('/plataformas') || 
-                    pathname.includes('/quienes-somos') || 
-                    pathname.includes('/contacto') || 
-                    pathname.includes('/team') || 
-                    pathname.includes('/envivo') ||
-                    pathname.includes('/futbol') || 
-                    pathname.includes('/f1') || 
-                    pathname.includes('/nba') || 
-                    pathname.includes('/mlb') ||
-                    pathname.includes('/mundial-2026');
 
   const isHome = pathname === '/';
   const isLive = pathname.startsWith('/envivo');
@@ -95,9 +89,13 @@ export default function NavMobile() {
   const isPlatforms = pathname.startsWith('/plataformas');
   const isAbout = pathname.startsWith('/quienes-somos') || pathname.startsWith('/team');
   const isContact = pathname.startsWith('/contacto');
+  const isAgenda = isHome || ['/evento', '/futbol', '/nba', '/mlb', '/f1', '/mundial-2026'].some(
+    (href) => pathname === href || pathname.startsWith(`${href}/`)
+  );
+  const isSubpage = pathname !== '/';
 
   return (
-    <nav aria-label="Navegación móvil" className="gs-mobile-nav md:hidden fixed inset-x-0 bottom-0 z-[80] safe-area-bottom">
+    <nav aria-label="Navegación móvil" className={`gs-mobile-nav md:hidden fixed inset-x-0 bottom-0 safe-area-bottom ${menuOpen ? 'z-[110]' : 'z-[80]'}`}>
       {/* Dynamic Mobile Bottom Sheet Navigation Overlay */}
       <AnimatePresence initial={false}>
         {menuOpen && (
@@ -127,57 +125,57 @@ export default function NavMobile() {
               exit={{ opacity: 0, y: shouldReduceMotion ? 0 : 12 }}
               transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.16, ease: MENU_EASE }}
             >
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              <Link 
-                href="/" 
-                aria-current={isHome ? 'page' : undefined}
+            <div className="grid grid-cols-2 gap-2">
+              <Link
+                href="/"
+                aria-current={isHome ? 'page' : isAgenda ? 'true' : undefined}
                 onClick={() => { closeMenu(); trackEvent('nav_click', { destination: 'home' }); }}
-                className={`gs-menu-item ${isHome ? 'gs-menu-item-active' : ''}`}
+                className={`gs-menu-item ${isAgenda ? 'gs-menu-item-active' : ''}`}
               >
-                <Radio size={15} className="text-blue-500" aria-hidden="true" /> Agenda
+                <Radio size={15} className="text-blue-400" aria-hidden="true" /> Agenda
               </Link>
-              <button 
-                type="button"
-                onClick={() => { 
-                  closeMenu();
-                  window.dispatchEvent(new CustomEvent('scroll-to-live')); 
-                  trackEvent('nav_click', { destination: 'envivo' });
-                }} 
+              <Link
+                href="/envivo"
+                aria-current={isLive ? 'page' : undefined}
+                onClick={() => { closeMenu(); trackEvent('nav_click', { destination: 'envivo' }); }}
                 className={`gs-menu-item gs-menu-item-live ${isLive ? 'gs-menu-item-active' : ''}`}
               >
                 <span className="gs-status-dot gs-status-dot-live" aria-hidden="true"></span> En Vivo
-              </button>
-              <Link 
-                href="/noticias" 
+              </Link>
+              <Link
+                href="/noticias"
                 aria-current={isNews ? 'page' : undefined}
                 onClick={() => { closeMenu(); trackEvent('nav_click', { destination: 'noticias' }); }}
                 className={`gs-menu-item ${isNews ? 'gs-menu-item-active' : ''}`}
               >
-                <Newspaper size={15} className="text-emerald-500" aria-hidden="true" /> Noticias
+                <Newspaper size={15} className="text-blue-400" aria-hidden="true" /> Noticias
               </Link>
-              <Link 
-                href="/plataformas" 
+            </div>
+            <div className="my-3 border-t border-white/10" aria-hidden="true" />
+            <div className="grid grid-cols-2 gap-2">
+              <Link
+                href="/plataformas"
                 aria-current={isPlatforms ? 'page' : undefined}
                 onClick={() => { closeMenu(); trackEvent('nav_click', { destination: 'plataformas' }); }}
                 className={`gs-menu-item ${isPlatforms ? 'gs-menu-item-active' : ''}`}
               >
-                <Tv size={15} className="text-orange-500" aria-hidden="true" /> Plataformas
+                <Tv size={15} className="text-blue-400" aria-hidden="true" /> Plataformas
               </Link>
-              <Link 
-                href="/quienes-somos" 
+              <Link
+                href="/quienes-somos"
                 aria-current={isAbout ? 'page' : undefined}
                 onClick={() => { closeMenu(); trackEvent('nav_click', { destination: 'quienes-somos' }); }}
                 className={`gs-menu-item ${isAbout ? 'gs-menu-item-active' : ''}`}
               >
-                <Users size={15} className="text-purple-500" aria-hidden="true" /> Nosotros
+                <Users size={15} className="text-blue-400" aria-hidden="true" /> Nosotros
               </Link>
-              <Link 
-                href="/contacto" 
+              <Link
+                href="/contacto"
                 aria-current={isContact ? 'page' : undefined}
                 onClick={() => { closeMenu(); trackEvent('nav_click', { destination: 'contacto' }); }}
                 className={`gs-menu-item ${isContact ? 'gs-menu-item-active' : ''}`}
               >
-                <Mail size={15} className="text-pink-500" aria-hidden="true" /> Contacto
+                <Mail size={15} className="text-blue-400" aria-hidden="true" /> Contacto
               </Link>
             </div>
             <div className="gs-menu-meta flex items-center justify-between">
@@ -214,13 +212,9 @@ export default function NavMobile() {
           </span>
         </button>
 
-        <button
-          type="button"
-          onClick={() => {
-            setMenuOpen(false);
-            if (pathname === '/') window.dispatchEvent(new CustomEvent('scroll-to-live'));
-            else router.push('/envivo');
-          }}
+        <Link
+          href="/envivo"
+          onClick={() => { setMenuOpen(false); trackEvent('nav_click', { destination: 'envivo' }); }}
           aria-label="Ver eventos en vivo"
           aria-current={isLive ? 'page' : undefined}
           className={`gs-mobile-tab flex flex-1 min-w-0 items-center justify-center ${isLive ? 'gs-mobile-tab-active' : ''}`}
@@ -229,7 +223,7 @@ export default function NavMobile() {
             <Radio size={20} aria-hidden="true" />
             <span className="hidden min-[360px]:inline text-[10px] font-black uppercase tracking-widest">En Vivo</span>
           </span>
-        </button>
+        </Link>
 
         {/* Bottom sheet toggle button */}
         <button

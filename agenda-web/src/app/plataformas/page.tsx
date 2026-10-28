@@ -19,81 +19,75 @@ export default function PlataformasPage() {
       <div className="max-w-4xl mx-auto px-6 pt-10">
         <Breadcrumbs items={[]} current="Plataformas" currentHref="/plataformas" />
 
-        <header className="mb-12">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="bg-blue-600/10 p-4 rounded-2xl border border-blue-500/20 text-4xl">
+        <header className="gs-hub-header">
+          <div className="gs-hub-identity">
+            <div className="gs-hub-icon-box" aria-hidden="true">
               📺
             </div>
             <div className="min-w-0">
-              <h1 className="text-3xl md:text-5xl font-black italic uppercase leading-[0.95] tracking-tighter break-words">
-                Guía de <span className="text-blue-500">Plataformas</span>
+              <h1 className="gs-hub-title gs-hub-title-blue">
+                Guía de <strong>Plataformas</strong>
               </h1>
-              <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-2">
-                Dónde ver deportes en México (2026)
-              </p>
+              <p className="gs-hub-subtitle">Dónde ver deportes en México (2026)</p>
             </div>
           </div>
-          <p className="text-slate-400 max-w-2xl leading-relaxed">
+          <p className="max-w-2xl leading-relaxed text-slate-400">
             La fragmentación de los derechos deportivos hace que sea difícil saber qué plataforma contratar. Aquí comparamos las mejores opciones para que no te pierdas ningún partido.
           </p>
         </header>
 
         <div className="grid gap-6">
           {PLATFORMS.map((platform) => (
-            <Link 
-              key={platform.id} 
+            <Link
+              key={platform.id}
               href={`/plataformas/${platform.slug}`}
-              className="group relative overflow-hidden bg-slate-900/30 border border-slate-800 rounded-[32px] p-6 md:p-8 hover:border-blue-500/30 transition-all flex flex-col md:flex-row gap-6 items-center"
+              className="gs-card gs-card-interactive group flex flex-col items-center gap-6 p-6 md:flex-row md:p-8"
             >
-              {/* Background Glow */}
-              <div className={`absolute top-0 right-0 w-64 h-64 bg-gradient-to-br ${platform.color} opacity-5 blur-[80px] rounded-full transform translate-x-1/2 -translate-y-1/2 group-hover:opacity-10 transition-opacity`}></div>
-              
-              {/* Platform Logo/Icon */}
-              <div className="w-24 h-24 md:w-32 md:h-32 rounded-3xl bg-slate-950/40 border border-white/5 flex items-center justify-center shadow-2xl relative z-10 shrink-0 overflow-hidden group-hover:scale-105 transition-transform duration-500">
+              <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/5 bg-slate-950/40 md:h-32 md:w-32">
                  {platform.logo ? (
-                   <div className="w-full h-full p-4 relative flex items-center justify-center">
+                   <div className="relative flex h-full w-full items-center justify-center p-4">
                      <NextImage
-                       src={platform.logo} 
-                       alt={platform.name} 
+                       src={platform.logo}
+                       alt={platform.name}
                        fill
                        sizes="128px"
-                       className="max-w-full max-h-full object-contain filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]" 
+                       className="max-h-full max-w-full object-contain"
                      />
                    </div>
                  ) : (
-                   <span className="font-black italic text-white drop-shadow-lg text-4xl">{platform.name.charAt(0)}</span>
+                   <span className="text-4xl font-black text-white">{platform.name.charAt(0)}</span>
                  )}
               </div>
 
-              <div className="flex-1 text-center md:text-left relative z-10">
-                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-3">
-                  <h2 className="text-2xl font-black italic uppercase text-white">{platform.name}</h2>
-                  <span className="bg-slate-800 text-slate-400 text-[9px] font-black uppercase px-2 py-1 rounded border border-slate-700 tracking-widest">
+              <div className="min-w-0 flex-1 text-center md:text-left">
+                <div className="mb-3 flex flex-wrap items-center justify-center gap-3 md:justify-start">
+                  <h2 className="text-2xl font-black text-white">{platform.name}</h2>
+                  <span className="rounded border border-slate-700 bg-slate-800 px-2 py-1 text-[10px] font-bold text-slate-300">
                     {platform.price}
                   </span>
                 </div>
-                
-                <p className="text-slate-400 text-sm leading-relaxed mb-6 line-clamp-2">
+
+                <p className="mb-6 line-clamp-2 text-sm leading-relaxed text-slate-400">
                   {platform.description}
                 </p>
 
-                <div className="flex flex-wrap justify-center md:justify-start gap-2">
+                <div className="flex flex-wrap justify-center gap-2 md:justify-start">
                   {platform.keyContent.slice(0, 3).map((item, i) => (
-                    <span key={i} className="text-[9px] font-black text-blue-400 bg-blue-500/5 px-3 py-1.5 rounded-full border border-blue-500/10 uppercase tracking-widest">
+                    <span key={i} className="rounded-full border border-blue-500/10 bg-blue-500/5 px-3 py-1.5 text-[10px] font-semibold text-blue-300">
                       {item}
                     </span>
                   ))}
                   {platform.keyContent.length > 3 && (
-                    <span className="text-[9px] font-black text-slate-400 px-3 py-1.5 rounded-full border border-slate-800 uppercase tracking-widest">
+                    <span className="rounded-full border border-slate-800 px-3 py-1.5 text-[10px] font-semibold text-slate-400">
                       +{platform.keyContent.length - 3} más
                     </span>
                   )}
                 </div>
               </div>
 
-              <div className="shrink-0 relative z-10">
-                 <div className="bg-slate-800 p-4 rounded-2xl group-hover:bg-blue-600 transition-colors">
-                    <ChevronRight className="text-slate-500 group-hover:text-white" size={20} />
+              <div className="shrink-0">
+                 <div className="rounded-xl bg-slate-800 p-3 transition-colors group-hover:bg-blue-600">
+                    <ChevronRight className="text-slate-400 group-hover:text-white" size={20} />
                  </div>
               </div>
             </Link>
@@ -101,9 +95,9 @@ export default function PlataformasPage() {
         </div>
 
         {/* Disclaimer */}
-        <div className="mt-16 p-8 bg-slate-900/50 border border-slate-800 rounded-3xl flex items-start gap-4">
-          <Info className="text-blue-500 shrink-0" size={20} />
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-relaxed">
+        <div className="mt-16 flex items-start gap-4 rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+          <Info className="shrink-0 text-blue-400" size={20} />
+          <p className="text-xs leading-relaxed text-slate-400">
             GuíaSports no tiene afiliación directa con estas plataformas salvo que se indique lo contrario. Los precios y contenidos pueden cambiar según las políticas de cada proveedor.
           </p>
         </div>

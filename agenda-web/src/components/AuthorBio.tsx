@@ -39,7 +39,7 @@ export default function AuthorBio({ author }: AuthorBioProps) {
                 sizes="(max-width: 768px) 96px, 128px"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-3xl font-black text-slate-500">
+              <div className="w-full h-full flex items-center justify-center text-3xl font-black text-slate-400">
                 {author.name.charAt(0)}
               </div>
             )}
@@ -49,14 +49,14 @@ export default function AuthorBio({ author }: AuthorBioProps) {
         <div className="flex-1 text-center md:text-left">
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mb-2">
             <Link href={`/autores/${authorId}`}>
-              <h3 className="text-xl font-black italic uppercase text-white hover:text-blue-500 transition-colors">{author.name}</h3>
+              <h3 className="text-xl font-black text-white hover:text-blue-500 transition-colors">{author.name}</h3>
             </Link>
             <span className="bg-blue-600/10 text-blue-400 text-[10px] font-black uppercase px-2 py-0.5 rounded border border-blue-500/20 flex items-center gap-1">
               <ShieldCheck size={10} /> Verificado
             </span>
           </div>
           
-          <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">
             {author.role} • Especialista en <span className="text-blue-500">{author.specialty}</span>
           </p>
           
@@ -65,14 +65,14 @@ export default function AuthorBio({ author }: AuthorBioProps) {
           </p>
 
           <div className="flex items-center justify-center md:justify-start gap-4">
-            <button className="text-slate-500 hover:text-white transition-colors">
+            <button className="text-slate-400 hover:text-white transition-colors">
               <Share2 size={18} />
             </button>
-            <button className="text-slate-500 hover:text-white transition-colors">
+            <button className="text-slate-400 hover:text-white transition-colors">
               <Mail size={18} />
             </button>
             <div className="h-4 w-px bg-slate-800 hidden md:block mx-2"></div>
-            <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">GuíaSports Editorial Team</span>
+            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">GuíaSports Editorial Team</span>
           </div>
         </div>
       </div>

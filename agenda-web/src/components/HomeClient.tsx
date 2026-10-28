@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Zap, ChevronRight, Newspaper } from 'lucide-react';
+import { Zap, ChevronRight, Newspaper, X } from 'lucide-react';
 import Link from 'next/link';
 import NextImage from 'next/image';
-import Header from '@/components/Header';
 import HomeHero from '@/components/HomeHero';
 import HomeDestacados from '@/components/HomeDestacados';
 import SportEventModal from '@/components/SportEventModal';
@@ -14,7 +13,7 @@ import AgendaQuickActions from '@/components/agenda/AgendaQuickActions';
 import AgendaFilters from '@/components/agenda/AgendaFilters';
 import AgendaResults from '@/components/agenda/AgendaResults';
 import { trackContentClick, trackEvent, trackFilter, trackSearch } from '@/lib/analytics';
-import { getTodayMexicoString, isEventLive } from '@/lib/mexicoTime';
+import { getMexicoDate, getTodayMexicoString, isEventLive, isEventPast } from '@/lib/mexicoTime';
 import { isTvAbierta } from '@/lib/channelCatalog';
 import { searchEvents } from '@/lib/eventSearch';
 import { Evento, Noticia } from '@/types';
@@ -27,14 +26,16 @@ const emojis: { [key: string]: string } = {
 };
 
 const TOP_TEAMS = ["América", "Chivas", "Real Madrid", "Barcelona", "México", "F1", "NBA", "Champions", "Cruz Azul", "Pumas", "Selección"];
+const AGENDA_STATE_KEY = 'gs-agenda-state';
 
 interface HomeClientProps {
   initialEventos: Evento[];
   initialNoticias: Noticia[];
   initialUltimaAct: string;
+  now: number;
 }
 
-export default function HomeClient({ initialEventos, initialNoticias, initialUltimaAct }: HomeClientProps) {
+export default function HomeClient({ initialEventos, initialNoticias, initialUltimaAct, now }: HomeClientProps) {
   const searchParams = useSearchParams();
   const [eventos] = useState<Evento[]>(initialEventos);
   const [noticias] = useState<Noticia[]>(initialNoticias);
@@ -45,18 +46,47 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   const [busqueda, setBusqueda] = useState(searchParams.get('q') || "");
   const [soloEnVivo, setSoloEnVivo] = useState(searchParams.get('envivo') === '1');
   const [selectedEvent, setSelectedEvent] = useState<Evento | null>(null);
+  const restoredStateRef = useRef(false);
 
-  // Listener para scroll a eventos en vivo (Header / NavMobile)
   useEffect(() => {
-    const handleScrollToLive = () => {
-      const eventosEnVivo = document.querySelectorAll('[data-envivo="true"]');
-      if (eventosEnVivo.length > 0) {
-        eventosEnVivo[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (typeof window === 'undefined') return;
+
+    const hasUrlIntent = Boolean(
+      searchParams.get('q') || searchParams.get('competicion') || searchParams.get('envivo')
+    );
+
+    if (!restoredStateRef.current) {
+      restoredStateRef.current = true;
+      if (!hasUrlIntent) {
+        try {
+          const raw = window.sessionStorage.getItem(AGENDA_STATE_KEY);
+          if (raw) {
+            const saved = JSON.parse(raw) as Record<string, unknown>;
+            const timer = window.setTimeout(() => {
+              if (typeof saved.busqueda === 'string') setBusqueda(saved.busqueda);
+              if (typeof saved.filtroDeporte === 'string') setFiltroDeporte(saved.filtroDeporte);
+              if (typeof saved.filtroFecha === 'string') setFiltroFecha(saved.filtroFecha);
+              if (typeof saved.filtroCompeticion === 'string') setFiltroCompeticion(saved.filtroCompeticion);
+              if (typeof saved.soloTvAbierta === 'boolean') setSoloTvAbierta(saved.soloTvAbierta);
+              if (typeof saved.soloEnVivo === 'boolean') setSoloEnVivo(saved.soloEnVivo);
+            }, 0);
+            return () => window.clearTimeout(timer);
+          }
+        } catch {}
       }
-    };
-    window.addEventListener('scroll-to-live', handleScrollToLive);
-    return () => window.removeEventListener('scroll-to-live', handleScrollToLive);
-  }, []);
+    }
+
+    try {
+      window.sessionStorage.setItem(AGENDA_STATE_KEY, JSON.stringify({
+        busqueda,
+        filtroDeporte,
+        filtroFecha,
+        filtroCompeticion,
+        soloTvAbierta,
+        soloEnVivo,
+      }));
+    } catch {}
+  }, [busqueda, filtroDeporte, filtroFecha, filtroCompeticion, soloTvAbierta, soloEnVivo, searchParams]);
 
   // Tracking de búsqueda con debounce manual
   useEffect(() => {
@@ -69,24 +99,30 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   }, [busqueda]);
 
   const hoyStr = getTodayMexicoString();
+  const nowDate = getMexicoDate(new Date(now));
   const safeText = (value: string | null | undefined, fallback = "") => value || fallback;
 
   const deportesUnicos = ["Todos", ...new Set(eventos.map(e => safeText(e.deporte, "Otros")))];
   const fechasUnicas = ["Todos", ...new Set(eventos.map(e => safeText(e.fecha)))].filter(f => f !== "" && f >= hoyStr);
   const competicionesUnicas = ["Todos", ...new Set(eventos.map(e => safeText(e.competicion)).filter(Boolean))];
 
-  const destacados = eventos.filter(e => {
-    const esDeHoy = e.fecha === hoyStr;
-    if (e.destacado === true) return esDeHoy;
-    if (e.destacado === false) return false;
-    if (e.destacado === null || e.destacado === undefined) {
+  const destacados = eventos
+    .filter(e => {
+      if (e.fecha !== hoyStr || isEventPast(e.fecha, e.hora, nowDate)) return false;
+      if (e.destacado === true) return true;
+      if (e.destacado === false) return false;
       const eventName = safeText(e.evento);
-      return esDeHoy && TOP_TEAMS.some(t => eventName.toLowerCase().includes(t.toLowerCase()));
-    }
-    return false;
-  }).slice(0, 6);
+      return TOP_TEAMS.some(t => eventName.toLowerCase().includes(t.toLowerCase()));
+    })
+    .sort((a, b) => {
+      const aLive = isEventLive(a.fecha, a.hora, nowDate);
+      const bLive = isEventLive(b.fecha, b.hora, nowDate);
+      if (aLive !== bLive) return aLive ? -1 : 1;
+      return safeText(a.hora).localeCompare(safeText(b.hora));
+    })
+    .slice(0, 6);
 
-  const eventosEnVivo = eventos.filter((e) => isEventLive(e.fecha, e.hora));
+  const eventosEnVivo = eventos.filter((e) => isEventLive(e.fecha, e.hora, nowDate));
   let eventoHero: Evento | null = null;
   let tipoHero = "EN VIVO AHORA";
 
@@ -100,7 +136,8 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   }
 
   // Búsqueda universal con scoring
-  const eventosBuscados = busqueda.trim() ? searchEvents(eventos, busqueda) : eventos;
+  const hasSearch = busqueda.trim().length > 0;
+  const eventosBuscados = hasSearch ? searchEvents(eventos, busqueda) : eventos;
 
   const eventosFiltrados = eventosBuscados.filter(e => {
     const competition = safeText(e.competicion);
@@ -112,7 +149,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
     const coincideFecha = (filtroFecha === "Todos" ? !esFechaPasada : fecha === filtroFecha);
     const coincideCompeticion = filtroCompeticion === "Todos" || competition === filtroCompeticion;
     const esTvAbiertaEvento = isTvAbierta(e.canales);
-    const esEnVivo = isEventLive(fecha, hora);
+    const esEnVivo = isEventLive(fecha, hora, nowDate);
     return coincideDeporte && coincideFecha && coincideCompeticion && (soloTvAbierta ? esTvAbiertaEvento : true) && (soloEnVivo ? esEnVivo : true);
   });
 
@@ -156,36 +193,104 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
     window.history.replaceState({}, '', window.location.pathname);
   };
 
+  const scrollToResults = () => {
+    const target = document.getElementById('listado-eventos-principal');
+    if (!target) return;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.requestAnimationFrame(() => {
+      target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+    });
+  };
+
   const irAEnVivo = () => {
     trackEvent('click_en_vivo', { location: 'quick_actions' });
-    const enVivoEls = document.querySelectorAll('[data-envivo="true"]');
-    if (enVivoEls.length > 0) {
-      enVivoEls[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
-    } else {
-      setSoloEnVivo(true);
-    }
+    const next = !soloEnVivo;
+    setSoloEnVivo(next);
+    if (next) setFiltroFecha("Todos");
+    scrollToResults();
   };
 
   const irAHoy = () => {
-    trackFilter('date', hoyStr);
-    setFiltroFecha(hoyStr);
+    const next = filtroFecha === hoyStr ? "Todos" : hoyStr;
+    trackFilter('date', next);
+    setFiltroFecha(next);
+    if (next !== "Todos") setSoloEnVivo(false);
+    scrollToResults();
   };
 
-  const activeFilters: string[] = [];
-  if (filtroDeporte !== "Todos") activeFilters.push(`Deporte: ${filtroDeporte}`);
-  if (filtroFecha !== "Todos") activeFilters.push(`Fecha: ${formatearLabelFecha(filtroFecha)}`);
-  if (filtroCompeticion !== "Todos") activeFilters.push(`Competición: ${filtroCompeticion}`);
-  if (soloTvAbierta) activeFilters.push("TV abierta");
-  if (soloEnVivo) activeFilters.push("En vivo");
+  const activeFilters: { key: string; label: string; onRemove: () => void }[] = [];
+  if (filtroDeporte !== "Todos") {
+    activeFilters.push({
+      key: "deporte",
+      label: `Deporte: ${filtroDeporte}`,
+      onRemove: () => { trackFilter('sport', 'Todos'); setFiltroDeporte("Todos"); },
+    });
+  }
+  if (filtroFecha !== "Todos") {
+    activeFilters.push({
+      key: "fecha",
+      label: `Fecha: ${formatearLabelFecha(filtroFecha)}`,
+      onRemove: () => { trackFilter('date', 'Todos'); setFiltroFecha("Todos"); },
+    });
+  }
+  if (filtroCompeticion !== "Todos") {
+    activeFilters.push({
+      key: "competicion",
+      label: `Competición: ${filtroCompeticion}`,
+      onRemove: () => { trackFilter('league', 'Todos'); setFiltroCompeticion("Todos"); },
+    });
+  }
+  if (soloTvAbierta) {
+    activeFilters.push({
+      key: "tv",
+      label: "TV abierta",
+      onRemove: () => { trackFilter('tv_abierta', false); setSoloTvAbierta(false); },
+    });
+  }
+  if (soloEnVivo) {
+    activeFilters.push({
+      key: "envivo",
+      label: "En vivo",
+      onRemove: () => setSoloEnVivo(false),
+    });
+  }
 
   const activeFiltersCount = activeFilters.length;
-  const isDefaultView = !busqueda && filtroDeporte === "Todos" && filtroFecha === "Todos" && filtroCompeticion === "Todos" && !soloTvAbierta && !soloEnVivo;
+  const isDefaultView = !hasSearch && filtroDeporte === "Todos" && filtroFecha === "Todos" && filtroCompeticion === "Todos" && !soloTvAbierta && !soloEnVivo;
+
+  const emptyTitle =
+    eventos.length === 0 ? "Agenda en actualización"
+      : hasSearch ? "Sin coincidencias"
+        : soloEnVivo ? "No hay eventos en vivo ahora"
+          : filtroFecha === hoyStr && activeFiltersCount === 1 ? "No hay eventos para hoy"
+            : activeFiltersCount > 0 ? "No hay eventos con estos filtros"
+              : "No hay eventos próximos";
+
+  const emptyDescription =
+    eventos.length === 0 ? "Estamos actualizando los horarios. Vuelve a consultar en unos minutos."
+      : hasSearch ? `No encontramos eventos para “${busqueda.trim()}”. Prueba con otro equipo, liga o canal.`
+        : soloEnVivo ? "En este momento no hay transmisiones en vivo con estos criterios. Prueba con Hoy o quita el filtro."
+          : filtroFecha === hoyStr && activeFiltersCount === 1 ? "La agenda de hoy ya no tiene eventos próximos. Prueba con otra fecha o limpia los filtros."
+            : activeFiltersCount > 0 ? "Prueba con otro criterio o limpia los filtros para ver más opciones."
+              : "No hay eventos publicados en la ventana actual.";
+
+  const emptyIcon = hasSearch ? "search" : soloEnVivo ? "live" : activeFiltersCount > 0 ? "filter" : "calendar";
+
+  const emptyAction = eventos.length === 0
+    ? undefined
+    : hasSearch
+      ? { label: "Limpiar búsqueda", onClick: () => setBusqueda("") }
+      : soloEnVivo
+        ? { label: "Quitar filtro En vivo", onClick: () => setSoloEnVivo(false) }
+        : filtroFecha === hoyStr && activeFiltersCount === 1
+          ? { label: "Quitar filtro de fecha", onClick: () => setFiltroFecha("Todos") }
+          : activeFiltersCount > 0
+            ? { label: "Limpiar filtros", onClick: resetFilters }
+            : undefined;
 
   return (
     <>
       <div className="relative min-h-screen w-full bg-[#020617] pb-24 font-sans text-slate-100">
-        <Header ultimaAct={initialUltimaAct} />
-
         <main id="envivo" className="gs-home-main">
           <section className="gs-home-intro">
             <div className="gs-home-kicker">Agenda deportiva en vivo</div>
@@ -199,6 +304,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
               <span><strong>{eventos.length}</strong> eventos en los próximos días</span>
               {eventosEnVivo.length > 0 && <span><strong className="text-red-300">{eventosEnVivo.length}</strong> en vivo ahora</span>}
               <span>Hora local de México</span>
+              {initialUltimaAct && <span>{initialUltimaAct}</span>}
             </div>
           </section>
 
@@ -210,12 +316,18 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
               onDeporteChange={(dep) => { trackFilter('sport', dep); setFiltroDeporte(dep); }}
               onEnVivo={irAEnVivo}
               onHoy={irAHoy}
+              enVivoActivo={soloEnVivo}
+              hoyActivo={filtroFecha === hoyStr}
               emojis={emojis}
               filterSlot={
                 <AgendaFilters
                   filtroFecha={filtroFecha}
                   fechas={fechasUnicas}
-                  onFechaChange={(f) => { trackFilter('date', f); setFiltroFecha(f); }}
+                  onFechaChange={(f) => {
+                    trackFilter('date', f);
+                    setFiltroFecha(f);
+                    if (f !== "Todos") setSoloEnVivo(false);
+                  }}
                   filtroCompeticion={filtroCompeticion}
                   competiciones={competicionesUnicas}
                   onCompeticionChange={(c) => { trackFilter('league', c); setFiltroCompeticion(c); }}
@@ -228,11 +340,31 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
               }
             />
 
-            {activeFiltersCount > 0 && (
-              <div className="flex flex-wrap items-center gap-2 pt-1" aria-label="Filtros activos">
+            {(hasSearch || activeFiltersCount > 0) && (
+              <div className="flex flex-wrap items-center gap-2 pt-1" aria-label="Criterios activos de la agenda">
                 <div className="gs-filter-summary">
-                  {activeFilters.map((f, i) => (
-                    <span key={i} className="gs-filter-summary-chip">{f}</span>
+                  {hasSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setBusqueda("")}
+                      className="gs-filter-summary-chip min-h-11 gap-1.5 transition-colors hover:border-blue-300/50 hover:text-blue-200"
+                      aria-label={`Quitar búsqueda ${busqueda.trim()}`}
+                    >
+                      Búsqueda: {busqueda.trim()}
+                      <X size={12} aria-hidden="true" />
+                    </button>
+                  )}
+                  {activeFilters.map((filter) => (
+                    <button
+                      key={filter.key}
+                      type="button"
+                      onClick={filter.onRemove}
+                      className="gs-filter-summary-chip min-h-11 gap-1.5 transition-colors hover:border-blue-300/50 hover:text-blue-200"
+                      aria-label={`Quitar filtro ${filter.label}`}
+                    >
+                      {filter.label}
+                      <X size={12} aria-hidden="true" />
+                    </button>
                   ))}
                 </div>
                 <button
@@ -253,9 +385,13 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
           <div id="listado-eventos-principal" className="w-full">
             <AgendaResults
               eventosAgrupados={eventosAgrupados}
-              isSearching={Boolean(busqueda.trim())}
-              emptyTitle={eventos.length === 0 ? "Agenda en actualización" : busqueda.trim() ? "Sin coincidencias" : activeFiltersCount > 0 ? "No hay eventos con estos filtros" : "No hay eventos próximos"}
-              emptyDescription={eventos.length === 0 ? "Estamos actualizando los horarios. Vuelve a consultar en unos minutos." : busqueda.trim() ? `No encontramos eventos para “${busqueda.trim()}”. Prueba con otro equipo, liga o canal.` : activeFiltersCount > 0 ? "Prueba con otro criterio o limpia los filtros para ver más opciones." : "No hay eventos publicados en la ventana actual."}
+              now={now}
+              isSearching={hasSearch}
+              emptyTitle={emptyTitle}
+              emptyDescription={emptyDescription}
+              emptyIcon={emptyIcon}
+              emptyActionLabel={emptyAction?.label}
+              onEmptyAction={emptyAction?.onClick}
               onEventClick={(evento) => {
                 trackEvent('view_event_detail', {
                   event_name: evento.evento,
@@ -320,7 +456,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
                             {n.autor ? (
                               <p className="text-[10px] font-bold text-blue-400 tracking-wide">Por {n.autor}</p>
                             ) : (
-                              <p className="text-[10px] font-bold text-slate-500 tracking-wide">GuíaSports</p>
+                              <p className="text-[10px] font-bold text-slate-400 tracking-wide">GuíaSports</p>
                             )}
                           </div>
                           <span className="text-xs font-bold text-blue-400">Leer →</span>

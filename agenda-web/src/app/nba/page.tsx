@@ -6,6 +6,7 @@ import { Calendar } from 'lucide-react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import EventListWithModal from '@/components/EventListWithModal';
 import { getTodayMexicoString } from '@/lib/mexicoTime';
+import { getServerNow } from '@/lib/serverNow';
 import { deduplicateEventos } from '@/lib/eventUrls';
 import type { Evento, Noticia } from '@/types';
 
@@ -30,6 +31,7 @@ type HubNoticia = Noticia & { fecha?: string | null };
 
 export default async function NbaHub() {
   const hoyStr = getTodayMexicoString();
+  const now = getServerNow();
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -89,6 +91,7 @@ export default async function NbaHub() {
 
           <EventListWithModal
             eventos={proximos}
+            now={now}
             emptyMessage="No hay partidos de básquetbol próximos registrados. Vuelve pronto para ver la cartelera actualizada."
           />
 

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import "./globals.css";
+import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import NavMobile from "@/components/NavMobile";
 import ScrollToTop from "@/components/ScrollToTop";
@@ -70,6 +71,7 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(webSiteSchema) }}
         />
+        <Header />
         {children}
         <Footer />
         <StickyAd />

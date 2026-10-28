@@ -5,7 +5,7 @@
 ## Estado actual
 
 - Fecha de inicio: 2026-09-01.
-- Estado: **Fases 0 a 8 publicadas el 2026-09-09; Ajustes UX de Agenda y Filtros completados y autorizados para deploy el 2026-09-22**.
+- Estado: **Fases 0 a 8 publicadas el 2026-09-09; Ajustes UX de Agenda y Filtros completados y autorizados para deploy el 2026-09-22; Bloque A y M1–M6 aprobados el 2026-10-27; ajuste visual de ficha confirmado; etapa cerrada en local; sin push ni deploy**.
 - Fase de cierre pre-diseño visual: completada el 27/08/2026.
 - A8: cerrado y documentado en el plan de remediación anterior.
 - Rama local: `main`, limpia y alineada con `origin/main` al crear este documento.
@@ -670,6 +670,14 @@ Estado: **publicado en producción el 2026-09-09** (Fases 0–8); **ajustes UX d
 | 2026-09-09 | Con autorización explícita del usuario, se publica completamente: push de `release/visual-v1` y fast-forward de `main` (`21bb298..5149559`) a `origin`, disparando el deploy de producción en Vercel. Verificación en producción correcta (HTTP 200 y cambios del release presentes). |
 | 2026-09-22 | Se aprueban e implementan ajustes UX de Agenda y Filtros: separación de eventos pasados vs próximos de hoy con botón colapsable 'Eventos anteriores de hoy' destacado en azul sutil, reubicación del botón 'Filtrar' junto a 'En vivo' y 'Hoy', y divisor visual de cambio de día en scroll con gradiente y salto vertical. |
 | 2026-09-22 | Con autorización explícita del usuario, se aprueba la publicación y deploy a producción de los ajustes UX. |
+| 2026-10-27 | Se documenta el Bloque A: cuatro tareas principales, una acción primaria por superficie, contrato común de evento, límites conservar/simplificar, matriz de rutas con shell actual y criterios de aceptación de M1. Sin cambios de código; pendiente de aprobación. |
+| 2026-10-27 | El usuario aprueba el Bloque A y autoriza iniciar M1. Se implementa el shell público único, la ruta activa, el destino único de En Vivo, el menú móvil en paleta, la búsqueda de escritorio y la carga sin header duplicado; validaciones y revisión renderizada correctas. Sin push ni deploy. |
+| 2026-10-27 | El usuario aprueba M1 y autoriza iniciar M2. Se convierten En Vivo y Hoy en filtros explícitos, se añaden chips de filtros activos con limpieza individual, estados vacíos específicos, destacados sólo vigentes y hero limitado a la vista editorial. Sin push ni deploy. |
+| 2026-10-27 | El usuario aprueba M2 y autoriza iniciar M3. Se endurece la búsqueda con stopwords, palabra completa para consultas cortas y canales, chip de búsqueda activa, limpieza en un paso, Escape en filtros y áreas táctiles de 44 px; se añaden pruebas de relevancia. Sin push ni deploy. |
+| 2026-10-27 | El usuario aprueba M3 y autoriza iniciar M4. Se unifica la tarjeta, En Vivo adopta el modal compartido, los hubs priorizan activos y colapsan finalizados, detalle/modal alinean su orden y se corrige el desfase de hidratación con un instante de referencia del servidor. Sin push ni deploy. |
+| 2026-10-27 | El usuario aprueba M4 y autoriza iniciar M5. Se normaliza la jerarquía de hubs/noticias, se simplifican titulares y breadcrumbs, se rehacen las superficies de plataformas con tokens y se conserva la piel de archivo del Mundial. Sin push ni deploy. |
+| 2026-10-27 | El usuario aprueba M5 y autoriza iniciar M6. La QA de tareas detecta pérdida de contexto al volver del detalle; se corrige con persistencia por pestaña, se enfoca la búsqueda móvil y se eleva el contraste de etiquetas a AA. Sin push ni deploy. |
+| 2026-10-27 | El usuario aprueba M6 con un ajuste visual y confirma el resultado. La pastilla queda a la derecha del icono en escritorio y al extremo derecho de la fila en móvil; se elimina la fila superior de la tarjeta para reducir su altura, conservando estado, hora, evento, canal, contexto y acciones. Sin push ni deploy. |
 
 ## Registro de sesiones
 
@@ -691,26 +699,387 @@ Estado: **publicado en producción el 2026-09-09** (Fases 0–8); **ajustes UX d
 | 2026-09-09 | Fase 8 | Aprobada por el usuario; alcance confirmado (39 archivos visuales + plan), paquete visual con build 173/173, checklist de staging y rollback, y rama `release/visual-v1` con commit local; sin push ni deploy | Sección “Reporte de consolidación Fase 8” de este documento |
 | 2026-09-09 | Release | Publicación completa autorizada por el usuario: `release/visual-v1` y `main` (`5149559`) en `origin`; deploy de producción en Vercel verificado con cambios del release en línea | Sección “Reporte de consolidación Fase 8” de este documento |
 | 2026-09-22 | Ajustes UX | Aprobados por el usuario (separación de eventos anteriores, botón Filtrar reubicado, divisor de cambio de día); 41 pruebas, TypeScript, lint y build 173/173 correctos; deploy autorizado | Sección “Paquete visual GuíaSports (Fases 0–8 + Ajustes UX Agenda & Filtros)” |
+| 2026-10-27 | Bloque A | Contrato de experiencia documentado con auditoría estática verificada; sin cambios de código; pendiente de aprobación para iniciar M1 | Sección “Bloque A — Contrato de experiencia y alcance” |
+| 2026-10-27 | M1 | Aprobada por el usuario; shell público único, rutas activas, En Vivo con destino único, menú móvil en paleta y búsqueda de escritorio implementados; 41 pruebas, TypeScript, lint, build 173/173 y revisión 320–1280 sin overflow | Sección “Reporte de implementación M1” |
+| 2026-10-27 | M2 | Aprobada por el usuario; En Vivo/Hoy explícitos, chips de filtros activos con limpieza individual, estados vacíos contextuales, destacados vigentes y hero editorial; 41 pruebas, TypeScript, lint, build 173/173 y revisión 320–1280 sin overflow | Sección “Reporte de implementación M2” |
+| 2026-10-27 | M3 | Aprobada por el usuario; búsqueda con stopwords y palabra completa, canales sin fragmentos, chip de búsqueda activa, limpieza en un paso, Escape en filtros y 44 pruebas; TypeScript, lint, build 173/173 y revisión 320–1280 sin overflow | Sección “Reporte de implementación M3” |
+| 2026-10-27 | M4 | Aprobada por el usuario; contrato único de tarjeta, En Vivo con modal compartido, hubs con activos primero y finalizados colapsados, detalle/modal reordenados y referencia temporal determinista; 44 pruebas, TypeScript, lint, build 173/173 y revisión 320–1280 sin overflow | Sección “Reporte de implementación M4” |
+| 2026-10-27 | M5 | Aprobada por el usuario; jerarquía tipográfica compartida, noticias y plataformas simplificadas, breadcrumbs legibles y Mundial conservado como archivo especial; 44 pruebas, TypeScript, lint, build 173/173 y revisión 320–1280 sin overflow | Sección “Reporte de implementación M5” |
+| 2026-10-27 | M6 | Aprobada y cerrada en local; recorridos de tareas, continuidad, teclado, móvil, movimiento reducido, overflow y contraste AA; se corrigieron contexto, foco de búsqueda móvil y contraste; 44 pruebas, TypeScript, lint, build 173/173 y diff check | Sección “Reporte de QA M6” |
+| 2026-10-27 | Ajuste M6 | Confirmado por el usuario; pastilla a la derecha del icono en escritorio y al extremo derecho de la fila en móvil, con fila superior eliminada; tarjeta activa de 150 px en escritorio y 280 px en móvil; revisión 320–1280 sin overflow y validaciones verdes | Sección “Ajuste visual posterior a M6 — ficha de evento” |
 
-## Registro de sesiones
+## Nueva etapa — Auditoría y simplificación de la experiencia
 
-| Fecha | Fase | Resultado | Referencia |
+### Decisión de organización
+
+Esta etapa se mantiene dentro de este mismo documento. No se crea un segundo plan activo: el plan actual ya contiene el historial aprobado, las restricciones operativas y el formato de reporte. Duplicarlo dispersaría el contexto y obligaría a los agentes a reconciliar instrucciones en cada sesión.
+
+Fases 0–8 y el release permanecen cerrados. Esta etapa no los reabre; sólo atiende fricción de uso detectada al evaluar el producto como una persona común.
+
+### Estado y objetivo
+
+- Estado: **Bloque A y M1–M6 aprobados el 2026-10-27; ajuste visual de ficha confirmado; etapa cerrada en local; sin push ni deploy**.
+- Objetivo: que una persona encuentre una transmisión, entienda cuándo es y sepa dónde verla con el menor número de decisiones posible.
+- Tipo de trabajo: mantenimiento y ajustes visuales/UX acotados sobre el paquete publicado.
+- Siguiente acción recomendada: decidir si se autoriza publicación. Cualquier push/deploy requiere autorización explícita separada.
+
+### Diagnóstico resumido
+
+La base visual publicada es sólida, pero la experiencia todavía se percibe compleja por estos problemas:
+
+- **Navegación fragmentada:** el shell compartido no se percibe igual en todas las rutas públicas.
+- **Entrada sobrecargada:** la portada presenta demasiadas capas antes de dejar clara la siguiente acción.
+- **Búsqueda poco confiable:** coincidencias amplias pueden mezclar equipos, ligas o deportes irrelevantes.
+- **Jerarquía temporal inconsistente:** algunos hubs empiezan con eventos finalizados aunque la intención sea encontrar eventos actuales.
+- **Acciones dispersas:** Agenda, En Vivo, hubs y tarjetas no siempre ofrecen la misma acción primaria ni el mismo camino de regreso.
+
+Hallazgos de apoyo: `HomeClient.tsx` concentra decisiones; `envivo/page.tsx` funciona como una mini-experiencia separada; `EventListWithModal.tsx` necesita una jerarquía temporal uniforme; `SportEventCard.tsx` muestra demasiadas acciones en poco espacio; y `Header.tsx`, `NavMobile.tsx` y `layout.tsx` deben resolverse como un solo shell.
+
+Este diagnóstico complementa la QA aprobada de Fases 0–8. No declara una regresión técnica ni reabre el release.
+
+### Resultado de producto esperado
+
+En la primera pantalla el usuario debe poder:
+
+1. Identificar dónde está y qué puede consultar.
+2. Ver si hay algo en vivo ahora.
+3. Buscar un equipo, liga o canal sin aprender el sistema.
+4. Entender hora y canal sin abrir un modal.
+5. Abrir un detalle y regresar conservando contexto.
+
+La interfaz debe seguir sintiéndose como una guía de transmisión nocturna: clara, directa, confiable y mexicana; deportiva por ritmo y contraste, no por saturación de efectos.
+
+### Plan de acción
+
+#### Bloque A — Contrato de experiencia y alcance
+
+Estado: **aprobado por el usuario el 2026-10-27; contrato vigente para M1–M6**.
+
+##### A.0 Hallazgos verificados en esta sesión
+
+Auditoría estática de las superficies públicas, sin modificar código:
+
+- `Header` sólo se renderiza en `/` (`HomeClient.tsx`), `/envivo` y `/mundial-2026` (`MundialClient.tsx`). Noticias, hubs, detalle de evento, plataformas, nosotros, contacto y privacidad no tienen navegación superior de escritorio; sólo heredan `Footer` y `NavMobile` desde `layout.tsx`.
+- `NavMobile` usa acentos fuera de la paleta aprobada en el menú: azul, esmeralda, naranja, morado y rosa para destinos que no son En Vivo.
+- La entrada global “En Vivo” no tiene un destino único: en portada hace scroll interno y en el resto navega a `/envivo`; la ruta activa del shell no siempre refleja esa decisión.
+- En Vivo lista eventos en vivo y próximos a iniciar con un diseño propio, pero sus tarjetas no abren detalle ni modal; es una pantalla final, no parte del flujo de consulta.
+- Los hubs (`futbol`, `nba`, `mlb`, `f1`) agrupan por fecha desde hoy, pero dentro del día mezclan eventos finalizados con próximos, ordenados sólo por hora; el primer bloque percibido puede ser pasado.
+- `SportEventCard` expone hasta cuatro acciones (ver detalle, abrir página, compartir y, fuera de la tarjeta, filtro por liga), lo que compite con la lectura de hora y canal.
+- `HomeClient` concentra búsqueda, accesos rápidos, filtros, hero, resultados, destacados, noticias y hubs; antes de buscar ya hay varias capas y criterios posibles.
+- La búsqueda por scoring ya desambigua casos como “América” y canales, pero no muestra el criterio activo ni distingue con suficiente claridad “sin coincidencias” de “agenda vacía”.
+
+Estos hallazgos describen fricción de uso; no declaran regresiones de las Fases 0–8 ni reabren el release.
+
+##### A.1 Tareas principales
+
+| # | Tarea del usuario | Pregunta que intenta responder | Entrada natural | Resultado que debe obtener |
+|---|---|---|---|---|
+| 1 | Ver qué está en vivo | ¿Qué puedo ver ahora? | En Vivo / portada | Evento, hora y canal sin abrir modal. |
+| 2 | Ver qué hay hoy y próximos | ¿Qué hay hoy? | Agenda / portada | Agenda agrupada por fecha, con próximos primero. |
+| 3 | Saber dónde verlo | ¿En qué canal o plataforma? | Tarjeta / detalle | Canal visible y explícito, o “Por confirmar”. |
+| 4 | Buscar un evento | ¿Dónde está mi equipo, liga o canal? | Búsqueda | Resultados pertinentes y criterio activo visible. |
+
+La continuidad (abrir detalle y regresar sin perder contexto) es una condición transversal de las cuatro tareas, no una quinta tarea.
+
+##### A.2 Una acción primaria por superficie
+
+| Superficie | Acción primaria | Acciones secundarias permitidas | No debe competir como primaria |
 |---|---|---|---|
-| 2026-09-01 | Preparación | Plan creado; sin cambios de código | Este documento |
-| 2026-09-01 | Fase 0 | Propuesta visual elaborada; pendiente de aprobación; sin cambios de código | Sección “Propuesta de brief visual” de este documento |
-| 2026-09-01 | Fase 0 | Brief aprobado por el usuario; handoff preparado para Fase 1; sin cambios de código | Sección “Brief visual aprobado” de este documento |
-| 2026-09-01 | Fase 1 | Base visual implementada localmente; validaciones parciales; pendiente de revisión del usuario | Sección “Reporte de implementación Fase 1” de este documento |
-| 2026-09-03 | Fase 1 | Revisión local: datos restaurados tras actualizar sólo la clave pública local; tokens aún sin consumidores; adopción visual pendiente | Sección “Incidencias detectadas durante la revisión local” de este documento |
-| 2026-09-03 | Fase 1 | Adopción visible P0 implementada en componentes compartidos; 38 pruebas, TypeScript, lint, build 173/173 y diff check correctos; pendiente de revisión/aprobación del usuario | Sección “Reporte de implementación Fase 1” de este documento |
-| 2026-09-04 | Fase 1 | Aprobada por el usuario; handoff preparado para Fase 2 — Header y navegación fluida | Sección “Handoff activo” de este documento |
-| 2026-09-04 | Fase 2 | Aprobada por el usuario; 38 pruebas, TypeScript, lint y diff check correctos; build detenido en `compile`, incidencia de procesos documentada y proceso cerrado | Sección “Reporte de implementación Fase 2” de este documento |
-| 2026-09-04 | Fase 3 | Aprobada por el usuario; portada implementada localmente, revisión responsive completada y handoff preparado para Fase 4 | Sección “Reporte de implementación Fase 3” de este documento |
-| 2026-09-06 | Fase 4 | Aprobada por el usuario; tarjetas, estados, modal y detalle implementados localmente, revisión responsive e interacción completadas; build detenido en `compile` y documentado; handoff preparado para Fase 5 | Sección “Reporte de implementación Fase 4” de este documento |
-| 2026-09-06 | Fase 5 | Aprobada por el usuario; noticias, hubs, archivo Mundial unificados con el sistema visual, EventListWithModal adoptado en NBA/MLB/F1; 38 pruebas, TypeScript, lint y diff check correctos; build documentado; handoff preparado para Fase 6 | Sección “Reporte de implementación Fase 5” de este documento |
-| 2026-09-07 | Fase 6 | Aprobada por el usuario; transiciones y microinteracciones, skeletons, movimiento reducido e imágenes revisadas; 38 pruebas, TypeScript, lint, diff check y build 173/173 correctos; handoff preparado para Fase 7 | Sección “Reporte de implementación Fase 6” de este documento |
-| 2026-09-08 | Fase 7 | Aprobada por el usuario; QA visual/accesibilidad/regresión por CDP sin dependencias nuevas, overflow 0, dos recortes móviles corregidos, contraste AA en 0 fallos y build completado; handoff preparado para Fase 8 | Sección “Reporte de implementación Fase 7” de este documento |
-| 2026-09-09 | Fase 8 | Aprobada por el usuario; alcance confirmado (39 archivos visuales + plan), paquete visual con build 173/173, checklist de staging y rollback, y rama `release/visual-v1` con commit local; sin push ni deploy | Sección “Reporte de consolidación Fase 8” de este documento |
-| 2026-09-09 | Release | Publicación completa autorizada por el usuario: `release/visual-v1` y `main` (`5149559`) en `origin`; deploy de producción en Vercel verificado con cambios del release en línea | Sección “Reporte de consolidación Fase 8” de este documento |
+| Portada / Agenda | Consultar la agenda (buscar o abrir un evento) | En vivo, Hoy, Filtrar, compartir | Hubs, noticias, destacados |
+| En Vivo | Abrir el detalle del evento en vivo | Ver canal, volver a la agenda | Navegación editorial |
+| Hub deportivo | Abrir el siguiente evento relevante | Ver agenda completa, noticias del hub | Otras ligas o archivo |
+| Noticias (índice) | Leer un artículo | Explorar deportes | Abrir eventos |
+| Noticia (detalle) | Leer el contenido | Compartir, volver a noticias | Agenda promocional |
+| Evento (detalle) | Identificar canal y regresar a la agenda | Compartir, abrir página canónica | Otras acciones inline |
+| Plataformas | Consultar una plataforma | Volver a la agenda | — |
+| Nosotros / Contacto / Privacidad | Informarse o contactar | Volver al inicio | — |
+| Mundial 2026 | Abrir un partido del archivo | Calendario, sedes, favoritos | Otras campañas |
+
+Regla: una sola acción con tratamiento primario por tarjeta o panel. La acción secundaria se conserva sólo si no desplaza hora, canal o acción principal.
+
+##### A.3 Contrato común de evento
+
+Orden obligatorio en tarjeta, modal, En Vivo, hub y detalle:
+
+1. **Estado y momento** — `En vivo`, `Próximo` o `Finalizado`, más hora local de México y fecha agrupadora. `En vivo` usa rojo y texto; `Próximo` es neutro; `Finalizado` baja prioridad sin perder legibilidad. `isEventLive` define en vivo (inicio −5 min a +125 min); `isEventPast` define finalizado.
+2. **Evento** — “Equipo A vs Equipo B” o el título del evento; máximo dos líneas; sin truncar hasta volverlo incomprensible.
+3. **Canal** — etiqueta “Dónde verlo” y chips informativos; si el campo está vacío o contiene una indicación pendiente, se muestra `Por confirmar` y no se promete disponibilidad.
+4. **Contexto** — deporte y competición en menor jerarquía. En Agenda, la competición puede filtrar; en otros contextos es sólo contexto.
+5. **Acción** — primaria `Ver detalle`; la página canónica y compartir son secundarias. No se duplica la misma acción con dos botones equivalentes.
+
+Reglas transversales:
+
+- Mismo orden y mismos nombres de estado en todas las superficies.
+- El estado no depende sólo del color: siempre hay texto y estructura.
+- Hora y canal se entienden sin abrir modal.
+- No se inventan canales, horarios ni estados; los datos y su ausencia se respetan.
+- Zona horaria de referencia: `America/Mexico_City`.
+
+##### A.4 Qué se conserva y qué se simplifica
+
+| Se conserva sin cambios | Se simplifica sólo en presentación y flujo |
+|---|---|
+| Paleta y tokens `gs-*`: azul noche, superficies slate, lima para acción, rojo sólo En Vivo, azul para navegación, amarillo para Mundial. | Capas decorativas, glow, blur, pulsos no semánticos, mayúsculas e itálicas excesivas. |
+| Rutas, URLs, canonical, metadata, JSON-LD, sitemap y robots. | Shell: hoy Header sólo en 3 rutas; pasará a un shell público coherente en todas. |
+| Consultas, datos, IDs, contenido fuente e imágenes existentes. | Menú móvil: destinos y acentos de color ajenos a la paleta. |
+| Contrato de `SportEventCard`, `SportEventModal` y detalle aprobado en Fase 4; foco, Escape y retorno al disparador. | Exceso de acciones inline en la tarjeta y duplicación de botones equivalentes. |
+| Búsqueda por scoring, alias y catálogo de canales (M3 podrá ajustar lógica con pruebas). | Orden de entrada de la portada y duplicación entre accesos rápidos, chips y filtros. |
+| En Vivo, hubs, noticias, Mundial y plataformas con su contenido y funciones actuales. | Jerarquía temporal de hubs y la En Vivo como pantalla aislada sin detalle. |
+| Dock móvil de cuatro acciones, foco atrapado, touch targets y `prefers-reduced-motion`. | Colores por destino y competencia entre dock y panel del menú. |
+| Analítica existente y eventos de tracking. | Repetición de micro-etiquetas y textos que no ayudan a decidir. |
+
+No se modifican en esta etapa: datos, IDs, URLs, SEO, Supabase, RLS, `.env.local`, scripts de sincronización, admin, API ni dependencias.
+
+##### A.5 Matriz de rutas, navegación, estado temporal y acción primaria
+
+| Ruta | Superficie | Shell previo a M1 (2026-10-27) | Ruta activa propuesta | Estado temporal | Acción primaria |
+|---|---|---|---|---|---|
+| `/` | Portada / Agenda | Header propio + Footer/NavMobile global | Agenda | Hoy + 3 días; live separado; anteriores de hoy colapsados | Consultar / abrir detalle |
+| `/envivo` | En Vivo | Header propio + shell global | En Vivo | Sólo hoy: live y próximos a 60 min | Abrir detalle (brecha actual) |
+| `/noticias` | Noticias | Sólo shell global | Noticias | Editorial, sin estado temporal | Leer artículo |
+| `/noticias/[slug]` | Noticia | Sólo shell global; breadcrumbs | Noticias | Editorial | Leer / compartir |
+| `/futbol`, `/futbol/[competicion]` | Hub | Sólo shell global; breadcrumbs | Agenda | Hoy en adelante; finalizados de hoy mezclados | Abrir detalle |
+| `/nba`, `/mlb`, `/f1` | Hub | Sólo shell global; breadcrumbs | Agenda | Hoy en adelante; finalizados de hoy mezclados | Abrir detalle |
+| `/mundial-2026` | Archivo especial | Header propio + shell global | Agenda | Archivo y calendario | Abrir partido |
+| `/evento/[slug]` | Detalle de evento | Sólo shell global; BackButton y breadcrumbs | Agenda | Estado individual del evento | Ver canal / volver |
+| `/plataformas` | Plataformas | Sólo shell global; breadcrumbs | Plataformas | No aplica | Consultar plataforma |
+| `/quienes-somos` | Nosotros | Sólo shell global | Nosotros | No aplica | Informarse |
+| `/contacto` | Contacto | Sólo shell global | Contacto | No aplica | Contactar |
+| `/privacidad` | Legal | Sólo shell global | Sin entrada primaria | No aplica | Leer |
+
+Decisiones de navegación asociadas:
+
+- La entrada global **En Vivo** apunta siempre a `/envivo`. El atajo “En vivo” de la portada filtra o desplaza dentro de la agenda y debe distinguirse como atajo de superficie, no como destino global.
+- Mapa de ruta activa: `/` y `/evento/*` y los hubs ⇒ Agenda; `/envivo` ⇒ En Vivo; `/noticias/*` ⇒ Noticias; `/plataformas` ⇒ Plataformas; `/quienes-somos` ⇒ Nosotros; `/contacto` ⇒ Contacto; `/privacidad` sin entrada activa.
+- Regreso: detalle de evento usa historial y cae a `/`; detalle de noticia vuelve a `/noticias`; hub vuelve a Agenda vía breadcrumb; En Vivo vuelve a Agenda.
+- Búsqueda desde una subpágina regresa a la búsqueda de portada (`/#buscar`) sin perder el término cuando exista.
+- Un solo shell público montado una vez; ninguna página monta un segundo Header. La última actualización de portada se conserva sin añadir consultas nuevas a todas las rutas.
+- Dock móvil: Inicio, Buscar, En Vivo y Menú. El panel conserva los seis destinos actuales, agrupados como tres principales (Agenda, En Vivo, Noticias) y tres de apoyo (Plataformas, Nosotros, Contacto), con color sólo cuando aporte significado (rojo En Vivo; azul/lima para el resto).
+
+##### A.6 Criterios de aceptación para M1
+
+- Todas las rutas públicas muestran el mismo Header de escritorio, Footer y NavMobile; no hay doble navegación ni páginas sin orientación superior.
+- La ruta activa es correcta según el mapa anterior, incluidos hubs y detalle de evento.
+- En Vivo llega a `/envivo` desde cualquier ruta; el atajo de portada sigue siendo un filtro local inequívoco.
+- El menú móvil usa sólo la paleta aprobada, conserva 44 px, foco, Escape, retorno al disparador y movimiento reducido.
+- Buscar es visible y conduce a la búsqueda de portada desde subpáginas.
+- Sin overflow horizontal en 320, 375, 768, 1024 y 1280 px.
+- Sin cambios en rutas, URLs, datos, contenido fuente, IDs, Supabase, RLS, scripts ni dependencias.
+
+##### A.7 Fuera de alcance de este bloque
+
+Bloque A no modifica código de aplicación. Sólo fija el contrato. Fue aprobado el 2026-10-27; M1 se implementó después con ese contrato como referencia y fue aprobada el mismo día.
+
+#### Fase M1 — Shell y navegación coherentes
+
+Estado: **aprobada por el usuario el 2026-10-27**.
+
+Archivos guía: `agenda-web/src/app/layout.tsx`, `agenda-web/src/components/Header.tsx`, `agenda-web/src/components/NavMobile.tsx`, `agenda-web/src/components/Footer.tsx` y páginas públicas que no consumen el shell compartido.
+
+Objetivo: que portada, En Vivo, noticias, hubs y detalle se sientan parte del mismo producto.
+
+Acciones:
+
+- Definir un shell público único para desktop y móvil.
+- Hacer evidente la ruta activa y mantener una ruta clara de regreso.
+- Conservar contexto al pasar de búsqueda a En Vivo, hub, detalle y regreso.
+- Reducir destinos y colores ajenos a la paleta en el menú móvil.
+- Mantener Mundial 2026 como skin especial, integrado a la orientación general.
+
+Salida: navegación consistente, sin overflow crítico en 320/375/768/1024/1280 px y sin cambiar rutas, URLs, datos ni contenido fuente.
+
+##### Reporte de implementación M1 — aprobada
+
+- **Shell público único:** `Header` se monta una vez en `layout.tsx` para todas las rutas públicas y se retiró de `HomeClient.tsx`, `envivo/page.tsx` y `MundialClient.tsx`. El Header se oculta en `/admin` para no invadir la superficie administrativa. `Footer` y `NavMobile` siguen siendo globales.
+- **Ruta activa:** Agenda queda activa en `/`, `/evento/*`, `/futbol*`, `/nba`, `/mlb`, `/f1` y `/mundial-2026`; En Vivo en `/envivo`; Noticias en `/noticias*`; Plataformas, Nosotros y Contacto en sus rutas; `/privacidad` no activa ninguna entrada principal. En portada Agenda usa `aria-current="page"`; en hubs y detalle usa `aria-current="true"` para no anunciar una página distinta. El menú móvil refleja la misma correspondencia.
+- **En Vivo con destino único:** la entrada global de Header y el dock móvil navegan siempre a `/envivo`; se retiró el evento `scroll-to-live` y su listener. El atajo “En vivo” de la portada conserva su comportamiento local de desplazamiento/filtro y no se confunde con la navegación global.
+- **Menú móvil:** seis destinos agrupados como tres principales (Agenda, En Vivo, Noticias) y tres de apoyo (Plataformas, Nosotros, Contacto), con separador. Se eliminaron los acentos esmeralda, naranja, morado y rosa; sólo En Vivo conserva rojo y el resto usa azul/lima. Se mantienen 44 px, foco atrapado, Escape y retorno al disparador. El menú abierto eleva su capa para que el aviso de cookies no tape la última fila.
+- **Búsqueda visible:** se añadió acceso de búsqueda en Header para escritorio (`md+`) que lleva a `/#buscar` y enfoca el campo en portada; el dock móvil conserva su búsqueda y regresa a la búsqueda de portada. Se retiró el bloque de búsqueda muerto de Header.
+- **Carga y continuidad:** se eliminó el header esqueletal de `app/loading.tsx` para evitar dos headers durante el fallback de renderizado en cliente. La información de “última actualización” de portada se conserva en el resumen de `HomeClient`, sin añadir consultas nuevas a todas las rutas.
+- **Navegación intermedia:** se añadió padding compacto a los enlaces de navegación entre 768 y 1023 px para que los seis destinos no se recorten en tablet.
+- **Archivos modificados:** `agenda-web/src/app/layout.tsx`, `agenda-web/src/components/Header.tsx`, `agenda-web/src/components/NavMobile.tsx`, `agenda-web/src/components/HomeClient.tsx`, `agenda-web/src/app/envivo/page.tsx`, `agenda-web/src/app/mundial-2026/MundialClient.tsx`, `agenda-web/src/app/loading.tsx` y `agenda-web/src/app/globals.css`. `Footer.tsx` fue revisado y no requirió cambios.
+- **Validación renderizada:** 13 rutas × 5 viewports (320×812, 375×812, 768×900, 1024×900, 1280×900), detalle de evento a 1280 px y 25 casos adicionales de rutas dinámicas (noticia, plataforma, partido del Mundial, autor y `admin/login`): exactamente un `Header` por ruta pública, cero en admin, overflow horizontal 0 y sin errores de consola en la compilación final. Portada hidratada con 162 tarjetas. Menú móvil verificado a 320 y 375 px sin overflow, con áreas de 44 px, sin colores fuera de paleta y cerrando con Escape con retorno de foco. En Vivo navega a `/envivo` y marca la ruta activa. Búsqueda de Header y dock llega a `/#buscar` y enfoca el campo. Nav de escritorio sin recorte en 768, 1024 y 1280 px. Capturas en `/private/tmp/guiasports-m1/`.
+- **Hallazgo fuera de M1:** en una compilación intermedia apareció un aviso de hidratación en `/mlb` cuando un evento cruzó la ventana de “En vivo” entre el render estático y el cliente. La compilación final no lo reprodujo. Es un comportamiento dependiente del tiempo en `EventListWithModal`/`SportEventCard` y queda para el alcance de M4; no se modificó en M1.
+- **Validaciones:** `npm run test` (5 archivos, 41 pruebas), `npx tsc --noEmit`, `npm run lint`, `npm run build` (173/173 rutas) y `git diff --check` correctos. Puerto 3000 libre al iniciar y detener la revisión; sin borrar `.next`, locks ni archivos fuente.
+- **Fuera de alcance confirmado:** no se modificaron datos, IDs, URLs, canonical, schemas, contenido fuente, `.env.local`, Supabase, RLS, scripts de sincronización, admin ni dependencias. Sin push ni deploy.
+- **Estado de fase:** implementación local aprobada por el usuario el 2026-10-27. El siguiente bloque es Fase M2 — Portada y agenda orientadas a la tarea.
+
+#### Fase M2 — Portada y agenda orientadas a la tarea
+
+Estado: **aprobada por el usuario el 2026-10-27**.
+
+Archivos guía: `HomeClient.tsx`, `HomeHero.tsx`, `HomeDestacados.tsx`, `agenda/AgendaSearch.tsx`, `AgendaQuickActions.tsx`, `AgendaFilters.tsx` y `AgendaResults.tsx`.
+
+Acciones:
+
+- Ordenar la experiencia como buscar → elegir criterio → consultar resultados.
+- Reducir duplicación entre botones rápidos, chips y filtros.
+- Hacer que En Vivo y Hoy tengan un comportamiento inequívoco.
+- Reservar destacados para eventos vigentes y realmente relevantes.
+- Mantener el hero atractivo, pero no necesario para entender la agenda.
+- Mejorar filtros activos, limpieza y estados vacíos.
+
+Salida: la primera pantalla deja clara la siguiente acción; En Vivo, próximos y finalizados se distinguen; la información esencial aparece sin abrir modal.
+
+##### Reporte de implementación M2 — aprobada
+
+- **En Vivo y Hoy inequívocos:** ambos son ahora filtros locales con `aria-pressed` y estado visual claro. En Vivo alterna el filtro, limpia la fecha incompatible y lleva a resultados; Hoy alterna la fecha de hoy y desactiva En Vivo al activarse. Elegir una fecha distinta desde el panel desactiva En Vivo para evitar combinaciones imposibles. El desplazamiento a resultados respeta `prefers-reduced-motion`.
+- **Filtros activos manejables:** los chips de filtros activos son botones de 44 px con acción individual de quitar (deporte, fecha, competición, TV abierta y En vivo); “Limpiar” sigue disponible para restablecer todo.
+- **Estados vacíos específicos:** se distinguen “Sin coincidencias”, “No hay eventos en vivo ahora”, “No hay eventos para hoy”, “No hay eventos con estos filtros”, “No hay eventos próximos” y “Agenda en actualización”, con icono y acción contextual (limpiar búsqueda, quitar filtro En vivo, quitar fecha o limpiar filtros). No se ofrece “Limpiar filtros” cuando no hay eventos.
+- **Destacados vigentes:** “Imperdibles de hoy” excluye eventos finalizados, ordena primero los que están en vivo y luego por hora. El hero sólo toma eventos en vivo o destacados vigentes; deja de mostrar un evento ya concluido como prioridad.
+- **Flujo de portada:** se conserva el orden buscar → criterios → hero editorial → resultados. El hero permanece como excepción editorial, pero desaparece cuando hay búsqueda o filtros activos, por lo que no bloquea la consulta; búsqueda, resultados y agenda siguen siendo la ruta principal.
+- **Normalización de búsqueda:** el estado de búsqueda usa el término sin espacios para alternar hero, resultados y estados vacíos de forma consistente.
+- **Archivos modificados:** `agenda-web/src/components/HomeClient.tsx`, `agenda-web/src/components/agenda/AgendaQuickActions.tsx` y `agenda-web/src/components/agenda/AgendaResults.tsx`. `HomeHero.tsx`, `HomeDestacados.tsx`, `AgendaSearch.tsx` y `AgendaFilters.tsx` fueron revisados; no requirieron cambios propios.
+- **Validación renderizada:** 320, 375, 768, 1024 y 1280 px en estado inicial, con filtros activos y con vacío: overflow horizontal 0, chips de 44 px, resultados a 100 px de scroll y sin errores de consola. Se verificaron los filtros En vivo (26 eventos), Hoy (106), Fútbol (141), el vacío de búsqueda y el vacío de En vivo con Béisbol. Capturas en `/private/tmp/guiasports-m2/`.
+- **Validaciones:** `npm run test` (5 archivos, 41 pruebas), `npx tsc --noEmit`, `npm run lint`, `npm run build` (173/173 rutas) y `git diff --check` correctos. Puerto 3000 libre al iniciar y detener la revisión; sin borrar `.next`, locks ni archivos fuente.
+- **Fuera de alcance confirmado:** no se modificaron datos, IDs, URLs, canonical, schemas, contenido fuente, `.env.local`, Supabase, RLS, scripts de sincronización ni dependencias. Sin push ni deploy.
+- **Estado de fase:** implementación local aprobada por el usuario el 2026-10-27. El siguiente bloque es Fase M3 — Búsqueda y filtros confiables.
+
+#### Fase M3 — Búsqueda y filtros confiables
+
+Estado: **aprobada por el usuario el 2026-10-27**.
+
+Archivos guía: `agenda-web/src/lib/eventSearch.ts`, `AgendaSearch.tsx`, `AgendaFilters.tsx` y `AgendaResults.tsx`.
+
+Acciones:
+
+- Revisar coincidencias por equipo, competición, deporte y canal sin añadir fuentes nuevas.
+- Evitar coincidencias parciales engañosas.
+- Mostrar el criterio activo y limpiarlo en un paso.
+- Diferenciar “sin coincidencias” de “agenda vacía”.
+- Mantener teclado, foco, touch targets y responsive.
+
+Salida: consultas representativas no mezclan resultados irrelevantes de forma evidente. Si se modifica lógica, se documenta como ajuste funcional acotado y se agregan pruebas unitarias; no se tocan datos, IDs ni scripts.
+
+##### Reporte de implementación M3 — aprobada
+
+- **Relevancia de búsqueda:** se añadieron stopwords y una longitud mínima de coincidencia parcial. Las consultas de una letra o conectores como “a” y “vs” ya no devuelven toda la agenda; las consultas cortas (“5”, “tv”, “f1”) sólo coinciden por palabra completa. Canales y plataformas usan coincidencia de palabra completa, evitando que “5” encuentre “Canal 50” o que “canal 5” mezcle “Canal 50”. La expansión por alias queda acotada para no dispararse con fragmentos genéricos.
+- **Casos preservados:** siguen funcionando Apple TV, TV abierta, América frente a “American”, Chivas por alias, Liga MX, canales ESPN/Fox/TUDN y las consultas por equipo, competición, deporte y canal existentes. Se añadieron tres pruebas unitarias para consultas cortas, conectores y canales por palabra completa.
+- **Criterio activo y limpieza:** la búsqueda aparece como chip “Búsqueda: …” junto a los filtros activos, con eliminación en un paso y 44 px; el botón de limpiar del campo también mide 44 px. Los estados vacíos siguen distinguiendo búsqueda, En Vivo, Hoy, filtros y agenda vacía.
+- **Teclado y foco:** el panel de filtros cierra con Escape y devuelve el foco al botón “Filtrar”. Las fechas y competiciones del panel usan áreas de 44 px. El campo declara `aria-controls` hacia los resultados y `enterKeyHint="search"`.
+- **Archivos modificados:** `agenda-web/src/lib/eventSearch.ts`, `agenda-web/src/lib/eventSearch.test.ts`, `agenda-web/src/components/agenda/AgendaSearch.tsx`, `agenda-web/src/components/agenda/AgendaFilters.tsx` y `agenda-web/src/components/HomeClient.tsx` (chip de búsqueda). `AgendaResults.tsx` fue revisado; no requirió cambios en M3.
+- **Validación renderizada:** 320, 375, 768, 1024 y 1280 px con búsqueda “liga”, búsqueda sin coincidencias y panel de filtros abierto: overflow horizontal 0, chips y controles de 44 px, 53 resultados para “liga”, estado “Sin coincidencias” con “Limpiar búsqueda” y sin errores de consola. Consultas “a” y “vs” devuelven vacío; “5” y “canal 5” sólo devuelven el canal correcto. Capturas en `/private/tmp/guiasports-m3/`.
+- **Validaciones:** `npm run test` (5 archivos, 44 pruebas), `npx tsc --noEmit`, `npm run lint`, `npm run build` (173/173 rutas) y `git diff --check` correctos. Puerto 3000 libre al iniciar y detener la revisión; sin borrar `.next`, locks ni archivos fuente.
+- **Fuera de alcance confirmado:** no se modificaron datos, IDs, URLs, canonical, schemas, contenido fuente, `.env.local`, Supabase, RLS, scripts de sincronización ni dependencias. Sin push ni deploy.
+- **Estado de fase:** implementación local aprobada por el usuario el 2026-10-27. El siguiente bloque es Fase M4 — Contrato único de evento y En Vivo.
+
+#### Fase M4 — Contrato único de evento y En Vivo
+
+Estado: **aprobada por el usuario el 2026-10-27**.
+
+Archivos guía: `SportEventCard.tsx`, `EventListWithModal.tsx`, `SportEventModal.tsx`, `envivo/page.tsx`, `evento/[slug]/page.tsx` y hubs de fútbol, NBA, MLB y F1.
+
+Acciones:
+
+- Alinear estado, hora, evento, canal, contexto y acción primaria.
+- Hacer que En Vivo ofrezca detalle y canal sin ser una pantalla aislada.
+- Priorizar en vivo y próximos en hubs; diferenciar finalizados.
+- Reducir acciones inline y conservar las secundarias donde correspondan.
+- Mantener modal, Escape, foco y retorno al disparador.
+
+Salida: tarjeta, En Vivo, hub y detalle responden la misma pregunta en el mismo orden; los estados se distinguen por texto, estructura y color.
+
+##### Reporte de implementación M4 — aprobada
+
+- **Contrato de tarjeta:** `SportEventCard` quedó en el orden estado → hora/fecha → evento → canal → contexto → acción. La competición salió del encabezado y ahora aparece como contexto después del canal, junto al deporte. Se retiró el icono de enlace externo duplicado; quedan la acción primaria “Ver detalle” y compartir como secundaria.
+- **Hubs orientados a actualidad:** `EventListWithModal` separa eventos activos y finalizados. Los activos se ordenan primero por en vivo y luego por fecha/hora; los finalizados del día quedan en un bloque colapsable de 44 px. Así NBA, MLB, F1, fútbol y competiciones dejan de abrir con un evento finalizado.
+- **En Vivo integrado:** la página abandonó sus tarjetas propias y ahora usa `EventListWithModal`, por lo que cada evento en vivo ofrece canal visible, detalle en modal y página canónica sin ser una pantalla aislada. Se conservaron su encabezado, conteo, estado vacío y enlaces de regreso.
+- **Detalle y modal alineados:** el detalle muestra estado, fecha y hora antes del título; después el canal y luego la competición con el deporte. El modal replica ese orden en su encabezado y cuerpo. Se conservaron Escape, foco atrapado, retorno al disparador, agendar, página del evento y compartir.
+- **Tiempo de referencia determinista:** se añadió `src/lib/serverNow.ts` para entregar un instante de referencia del servidor a las tarjetas y evitar que el estado cambie entre el HTML estático y la hidratación. Esto corrige el aviso de hidratación detectado en `/mlb` durante M1. No se añadieron dependencias.
+- **Archivos modificados:** `SportEventCard.tsx`, `EventListWithModal.tsx`, `SportEventModal.tsx`, `envivo/page.tsx`, `evento/[slug]/page.tsx`, los hubs `nba`, `mlb`, `f1`, `futbol` y `futbol/[competicion]`, además de `HomeClient.tsx`, `agenda/AgendaResults.tsx`, `agenda/EventCard.tsx`, `app/page.tsx` y `src/lib/serverNow.ts` para propagar el instante de referencia.
+- **Validación renderizada:** siete rutas (NBA, MLB, F1, fútbol, Liga MX, En Vivo y detalle) en 320, 375, 768, 1024 y 1280 px: overflow horizontal 0, primera tarjeta siempre En vivo o Próximo, finalizados colapsados, dos acciones por tarjeta y contexto visible; sin errores de consola. En 375 y 1280 px se verificó que canal aparece antes de competición en modal y detalle, que el modal abre con foco dentro, se cierra con Escape y devuelve el foco al disparador. `/mlb` se cargó dos veces sin el aviso de hidratación anterior. Capturas en `/private/tmp/guiasports-m4/`.
+- **Validaciones:** `npm run test` (5 archivos, 44 pruebas), `npx tsc --noEmit`, `npm run lint`, `npm run build` (173/173 rutas) y `git diff --check` correctos. Puerto 3000 libre al iniciar y detener la revisión; sin borrar `.next`, locks ni archivos fuente.
+- **Fuera de alcance confirmado:** no se modificaron datos, IDs, URLs, canonical, schemas, contenido fuente, `.env.local`, Supabase, RLS, scripts de sincronización ni dependencias. Sin push ni deploy.
+- **Estado de fase:** implementación local aprobada por el usuario el 2026-10-27. El siguiente bloque es Fase M5 — Noticias, hubs y superficies de apoyo.
+
+#### Fase M5 — Noticias, hubs y superficies de apoyo
+
+Estado: **aprobada por el usuario el 2026-10-27**.
+
+Archivos guía: `noticias/`, `plataformas/`, `futbol/`, `nba/`, `mlb/`, `f1/` y `mundial-2026/`.
+
+Acciones:
+
+- Compartir shell, encabezado, breadcrumbs y jerarquía.
+- Separar contenido editorial, agenda y promociones.
+- Conservar la personalidad del Mundial sin desconectarlo del producto.
+- Revisar densidad, mayúsculas, itálicas, glow y bloques promocionales.
+- Conservar URLs, contenido fuente e imágenes existentes.
+
+Salida: el usuario distingue si está leyendo, explorando un deporte o consultando transmisiones; los hubs no empiezan por eventos finalizados cuando buscan actualidad.
+
+##### Reporte de implementación M5 — aprobada
+
+- **Jerarquía compartida:** los títulos de hubs y noticias dejaron mayúsculas e itálicas sostenidas y ahora usan caja normal con peso alto; los subtítulos de hub pasaron a texto legible sin tracking amplio. Las migas de pan también usan caja normal, son más legibles y permiten partir títulos largos sin overflow.
+- **Noticias:** el índice conserva hero editorial, navegación temática y cuadrícula, ahora con títulos de hero y tarjeta en caja normal. El detalle normalizó el titular, los encabezados del contenido, FAQ, noticias relacionadas y llamado de compartir; las etiquetas cortas y metadatos conservan mayúsculas.
+- **Plataformas (índice):** el encabezado adopta `gs-hub-header` con breadcrumbs y título compartido; las tarjetas usan `gs-card`, se retiraron el glow de fondo, los radios de 32–40 px y las sombras fuertes. Nombres de plataforma en caja normal, precios y contenido con menor tracking, y aviso legal legible sin mayúsculas sostenidas.
+- **Plataformas (detalle):** hero simplificado sin blur, rotación ni sombras pesadas; breadcrumbs visibles; títulos de sección y CTA en caja normal. La tarjeta promocional blanca se reemplazó por un panel nocturno con borde azul, manteniendo el enlace oficial, el contenido y la URL. Se redujeron radios y sombras.
+- **Hubs y Mundial:** los hubs heredan la nueva jerarquía y conservan el comportamiento de activos/finalizados de M4. Mundial 2026 conserva deliberadamente su piel de archivo (amarillo, mayúsculas e itálicas de campaña) para no romper calendario, llaves, sedes ni favoritos; se verificó su shell, breadcrumbs, overflow y consola.
+- **Separación editorial/promoción:** los anuncios siguen etiquetados como “Publicidad”; la promoción de plataformas quedó claramente en la columna lateral, separada del resumen y los derechos deportivos.
+- **Archivos modificados:** `agenda-web/src/app/globals.css`, `agenda-web/src/app/noticias/[slug]/page.tsx`, `agenda-web/src/app/plataformas/page.tsx` y `agenda-web/src/app/plataformas/[slug]/page.tsx`. Los hubs y Mundial se revisaron; heredan el cambio tipográfico sin cambios estructurales.
+- **Validación renderizada:** noticias, detalle de noticia, plataformas, detalle de plataforma, NBA, fútbol, F1 y Mundial en 320, 375, 768, 1024 y 1280 px: `Header` único, overflow horizontal 0 y sin errores de consola. Se repitieron seis rutas a 320/375/1280 tras normalizar breadcrumbs sin overflow. Capturas en `/private/tmp/guiasports-m5/`.
+- **Validaciones:** `npm run test` (5 archivos, 44 pruebas), `npx tsc --noEmit`, `npm run lint`, `npm run build` (173/173 rutas) y `git diff --check` correctos. Puerto 3000 libre al iniciar y detener la revisión; sin borrar `.next`, locks ni archivos fuente.
+- **Fuera de alcance confirmado:** no se modificaron datos, IDs, URLs, canonical, schemas, contenido fuente, imágenes, `.env.local`, Supabase, RLS, scripts de sincronización ni dependencias. Sin push ni deploy.
+- **Estado de fase:** implementación local aprobada por el usuario el 2026-10-27. El siguiente bloque es Fase M6 — QA de tareas y cierre.
+
+#### Fase M6 — QA de tareas y cierre
+
+Estado: **M6 aprobada y cerrada en local el 2026-10-27; ajuste visual de ficha confirmado por el usuario. Sin push ni deploy**.
+
+Recorridos mínimos:
+
+1. Entrar y encontrar qué está en vivo.
+2. Buscar un equipo/competición representativo y comprobar pertinencia.
+3. Consultar hoy y distinguir próximos de finalizados.
+4. Abrir un evento, identificar canal y regresar conservando contexto.
+5. Entrar directamente a un hub y encontrar el siguiente evento relevante.
+6. Navegar en móvil entre Agenda, En Vivo, Noticias y detalle.
+7. Repetir con teclado y movimiento reducido cuando aplique.
+
+Viewports: 320×812, 375×812, 768×900, 1024×900 y 1280×900.
+
+Salida: cada recorrido tiene una acción primaria evidente, sin bloqueo de navegación, pérdida de contexto u overflow crítico; los estados, horas y canales son legibles sin depender sólo del color.
+
+##### Reporte de QA M6 — aprobada con ajustes
+
+- **Método:** QA por CDP sobre Chrome headless contra `next start` local y datos reales, sin dependencias nuevas. Se combinaron recorridos funcionales, teclado, movimiento reducido, medición de overflow y contraste AA por DOM.
+- **Recorridos verificados:** portada → En Vivo (sólo eventos en vivo) → Hoy (eventos de hoy y distinción de finalizados); búsqueda de Chivas con un resultado pertinente; modal de evento con canal, foco atrapado, Escape y retorno al disparador; detalle con canal visible; hub NBA con activos primero y finalizados colapsados; móvil entre Agenda, En Vivo, Noticias, detalle y regreso; búsqueda móvil con foco directo en el campo.
+- **Continuidad corregida:** al abrir un evento, ir a su página y volver, la búsqueda y filtros de la portada se conservaban en el modal pero se perdían al regresar del detalle. Se añadió persistencia de criterios en `sessionStorage` por pestaña, sin cambiar URLs ni datos. Verificado: “Chivas” sigue activo y muestra el mismo resultado al volver; una URL con `?envivo=1` tiene prioridad sobre el estado guardado.
+- **Teclado y movimiento reducido:** el panel de filtros cierra con Escape y devuelve el foco a “Filtrar”; el modal mantiene el foco dentro, cierra con Escape y vuelve al disparador; el menú móvil conserva su trampa de foco. Con `prefers-reduced-motion: reduce`, `--gs-motion-fast` vale 1 ms y el modal abre/cierra sin bloqueo.
+- **Accesibilidad:** se corrigieron etiquetas y metadatos con `slate-500/600` que quedaban por debajo de AA en tarjetas, contexto, modal, detalle, plataformas y biografía de autor; el pie del menú móvil subió a `text-subtle`. Auditoría final: **0 textos por debajo de AA** en diez rutas de escritorio y diez rutas móviles, incluido el menú abierto.
+- **Overflow y consola:** diez rutas × cinco viewports (320, 375, 768, 1024 y 1280 px): `Header` único, overflow horizontal 0 y sin errores de consola. Los estados, horas y canales se leen por texto además del color.
+- **Archivos modificados en M6:** `HomeClient.tsx` (persistencia de contexto), `NavMobile.tsx` (foco de búsqueda), `SportEventCard.tsx`, `SportEventModal.tsx`, `evento/[slug]/page.tsx`, `noticias/[slug]/page.tsx`, `plataformas/[slug]/page.tsx`, `AuthorBio.tsx` y `globals.css` (ajustes de contraste del pie del menú). No se tocaron datos, IDs, URLs, contenido fuente, imágenes, Supabase, RLS, `.env.local`, scripts ni dependencias.
+- **Validaciones:** `npm run test` (5 archivos, 44 pruebas), `npx tsc --noEmit`, `npm run lint`, `npm run build` (173/173 rutas) y `git diff --check` correctos. Puerto 3000 libre al iniciar y detener la revisión; sin borrar `.next`, locks ni archivos fuente.
+- **Estado:** QA completada, sin bloqueos funcionales ni regresiones conocidas dentro del alcance. El usuario aprobó M6 con un ajuste visual solicitado. El paquete queda listo para decisión de cierre/publicación, que requiere autorización explícita. Sin push ni deploy.
+
+##### Ajuste visual posterior a M6 — ficha de evento
+
+Estado: **confirmado por el usuario el 2026-10-27; implementado en local**.
+
+- **Cambio:** se retiró la fila superior de `SportEventCard` que contenía la pastilla de estado. En escritorio la pastilla aparece a la derecha del icono del deporte; en móvil queda al extremo derecho de la fila icono/hora/fecha. Se eliminó el padding superior que separaba el encabezado del cuerpo. La tarjeta conserva estado, hora, fecha, evento, canal, contexto y acciones, pero ocupa menos altura vertical.
+- **Resultado:** en escritorio la tarjeta activa mide 150 px de alto y en móvil 280 px; la pastilla “Finalizado” mide 75×28 px y no se parte. Se mantiene el foco, el modal, la acción primaria y compartir.
+- **Validación:** 320, 375, 768, 1024 y 1280 px sin overflow; estado visible, icono/pastilla alineados y sin errores de consola. `npm run test` (44 pruebas), `npx tsc --noEmit`, `npm run lint`, `npm run build` (173/173 rutas) y `git diff --check` correctos. Capturas en `/private/tmp/guiasports-card3/`.
+- **Fuera de alcance:** no se modificaron datos, IDs, URLs, contenido fuente, Supabase, RLS, `.env.local`, scripts ni dependencias. Sin push ni deploy.
+
+### Regla de tamaño de sesión
+
+Cada sesión de implementación debe tener:
+
+- Un objetivo principal.
+- Un conjunto pequeño de archivos.
+- Una revisión visual concreta.
+- Validaciones técnicas proporcionales.
+- Un reporte y un handoff.
+
+Si aparece trabajo de otra fase, se registra como hallazgo y no se implementa en la sesión actual. Si el contexto llega aproximadamente al 70–75 %, se cierra con handoff.
+
+### Handoff de esta etapa
+
+Estado: **Bloque A y M1–M6 aprobados; ajuste visual de ficha confirmado; etapa cerrada en local; sin push ni deploy**.
+
+No se modificaron datos, contenido fuente, IDs, URLs, `.env.local`, Supabase, RLS ni scripts de sincronización. El contrato está en “Bloque A — Contrato de experiencia y alcance”; los resultados aprobados en los reportes M1–M5; la QA final en “Reporte de QA M6”; y el ajuste de ficha en su sección posterior. La etapa queda cerrada localmente. Cualquier publicación nueva requiere autorización explícita, rama de release y verificación posterior.
+
+Siguiente sesión recomendada: decidir si se autoriza publicación. Si no se autoriza, el paquete permanece validado sólo en local.
 
 ## Prompt de continuidad para la siguiente sesión
 
@@ -725,7 +1094,17 @@ Lee primero:
 Las Fases 0 a 8 están aprobadas por el usuario: Fase 0 el 2026-09-01, Fases 1–3 el 2026-09-04, Fases 4 y 5 el 2026-09-06, Fase 6 el 2026-09-07, Fase 7 el 2026-09-08 y Fase 8 el 2026-09-09. El paquete visual fue **publicado en producción** el 2026-09-09: `release/visual-v1` y `main` (`5149559`) están en `origin` y el deploy de Vercel está verificado. La incidencia recurrente del build local quedó documentada: usar un solo `next dev`, detenerlo antes de que el agente ejecute `npm run build`, confirmar que no haya otro proceso de Next y no borrar `.next`, locks ni archivos fuente para resolver una espera. En Next.js 16.2.1 `next dev` usa `.next/dev` por defecto, por lo que un build detenido no debe atribuirse automáticamente a una colisión con dev. El plan técnico de remediación está cerrado. A8 está cerrado. Producción está operativa.
 
 Objetivo de esta sesión:
-Mantenimiento o ajustes acotados sobre el paquete visual ya publicado. No hay fases de implementación pendientes.
+Continuar la nueva etapa de auditoría y simplificación UX descrita en este plan. Trabajar sólo el bloque indicado por el handoff vigente; no reabrir Fases 0–8.
+
+Secuencia recomendada de esta nueva etapa:
+- Bloque A — Contrato de experiencia y alcance: aprobado el 2026-10-27.
+- Fase M1 — Shell y navegación coherentes: aprobada el 2026-10-27.
+- Fase M2 — Portada y agenda orientadas a la tarea: aprobada el 2026-10-27.
+- Fase M3 — Búsqueda y filtros confiables: aprobada el 2026-10-27.
+- Fase M4 — Contrato único de evento y En Vivo: aprobada el 2026-10-27.
+- Fase M5 — Noticias, hubs y superficies de apoyo: aprobada el 2026-10-27.
+- Fase M6 — QA de tareas y cierre: aprobada y cerrada en local; ajuste visual de ficha confirmado.
+- Publicación del paquete: requiere autorización explícita separada; no ejecutada.
 
 Restricciones:
 - Trabajar sólo en local y dentro del alcance de los ajustes solicitados.
@@ -739,6 +1118,7 @@ Restricciones:
 
 Alcance:
 - Mantenimiento o ajustes acotados sobre el paquete visual ya publicado.
+- Simplificación progresiva de navegación, portada, búsqueda, filtros, tarjetas, En Vivo y hubs según las Fases M1–M6 de este plan.
 - Confirmar que no hay cambios fuera de alcance.
 - Solicitar autorización explícita antes de cualquier push o deploy nuevo.
 - Si el usuario autoriza, publicar los ajustes mediante la rama de release y `main`, y documentar el resultado.

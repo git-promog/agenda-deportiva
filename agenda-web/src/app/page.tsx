@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import HomeClient from '@/components/HomeClient';
 import { Metadata } from 'next';
 import { getTodayMexicoString, getDateRangeMexico } from '@/lib/mexicoTime';
+import { getServerNow } from '@/lib/serverNow';
 import { buildEventUrl, deduplicateEventos } from '@/lib/eventUrls';
 import type { Noticia } from '@/types';
 
@@ -36,6 +37,7 @@ type HomeEvento = {
 };
 
 export default async function Home() {
+  const now = getServerNow();
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -154,6 +156,7 @@ export default async function Home() {
         initialEventos={eventos}
         initialNoticias={noticias}
         initialUltimaAct={ultimaAct}
+        now={now}
       />
     </>
   );

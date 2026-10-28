@@ -30,12 +30,40 @@ const ALIAS_MAP: Record<string, string[]> = {
   mlb: ['beisbol', 'mlb', 'diablos rojos', 'liga mexicana de beisbol'],
 };
 
+const STOPWORDS = new Set([
+  'a', 'al', 'algo', 'and', 'con', 'de', 'del', 'el', 'en', 'la', 'las',
+  'los', 'o', 'of', 'para', 'por', 'sin', 'the', 'un', 'una', 'unas', 'unos',
+  'v', 'vs', 'y',
+]);
+
+const MIN_PARTIAL_LENGTH = 3;
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function containsWholeWord(text: string, term: string): boolean {
+  if (!text || !term) return false;
+  if (text === term) return true;
+  return new RegExp(`(^|[^a-z0-9])${escapeRegExp(term)}([^a-z0-9]|$)`).test(text);
+}
+
+function matchesField(text: string, query: string, allowPartial: boolean): boolean {
+  if (!text || !query) return false;
+  return allowPartial ? text.includes(query) : containsWholeWord(text, query);
+}
+
 /**
  * Motor de Búsqueda Universal Deportivo con Scoring y Relevancia Inteligente.
  */
 export function searchEvents(eventos: Evento[], query: string): Evento[] {
   const cleanQuery = normalizeSearchText(query);
   if (!cleanQuery) return eventos;
+
+  const tokens = cleanQuery.split(/\s+/).filter(Boolean);
+  if (tokens.every((token) => STOPWORDS.has(token))) return [];
+
+  const allowPartial = cleanQuery.length >= MIN_PARTIAL_LENGTH;
   const isAmericaQuery = cleanQuery === 'america';
 
   const isAmericanFalsePositive = (value: string) =>
@@ -50,7 +78,12 @@ export function searchEvents(eventos: Evento[], query: string): Evento[] {
 
   // Buscar si la consulta coincide con un canal o plataforma del catálogo
   const matchingCatalogChannels = CANALES_CATALOGO.filter((c) =>
-    c.aliases.some((alias) => normalizeSearchText(alias) === cleanQuery || cleanQuery.includes(normalizeSearchText(alias)))
+    c.aliases.some((alias) => {
+      const normalizedAlias = normalizeSearchText(alias);
+      if (normalizedAlias === cleanQuery) return true;
+      if (!allowPartial) return containsWholeWord(normalizedAlias, cleanQuery);
+      return cleanQuery.includes(normalizedAlias) || normalizedAlias.includes(cleanQuery);
+    })
   );
 
   const scoredEvents: { evento: Evento; score: number }[] = [];
@@ -73,7 +106,7 @@ export function searchEvents(eventos: Evento[], query: string): Evento[] {
     }
 
     // 2. Coincidencia por canal o plataforma catalogada (ej. "Apple TV", "ViX", "ESPN")
-    if (matchingCatalogChannels.length > 0) {
+    if (matchingCatalogChannels.length > 0 && containsWholeWord(channelsNorm, cleanQuery)) {
       const eventChannels = matchChannels(item.canales);
       const hasMatchedChannel = eventChannels.some((ec) =>
         matchingCatalogChannels.some((mc) => mc.id === ec.id || mc.plataforma === ec.plataforma)
@@ -93,36 +126,45 @@ export function searchEvents(eventos: Evento[], query: string): Evento[] {
     }
 
     // 4. Coincidencia en Titulo de Evento / Equipos
-    if (titleNorm.includes(cleanQuery) && !isAmericanFalsePositive(titleNorm)) {
+    if (matchesField(titleNorm, cleanQuery, allowPartial) && !isAmericanFalsePositive(titleNorm)) {
       if (titleNorm === cleanQuery) score += 100;
       else if (titleNorm.startsWith(cleanQuery)) score += 80;
       else score += 50;
     }
 
-    if (localNorm.includes(cleanQuery) || visitNorm.includes(cleanQuery)) {
+    if (matchesField(localNorm, cleanQuery, allowPartial) || matchesField(visitNorm, cleanQuery, allowPartial)) {
       score += 90;
     }
 
     // 5. Coincidencia en Competición / Liga
-    const competitionMatches = compNorm.includes(cleanQuery) || leagueNorm.includes(cleanQuery);
+    const competitionMatches =
+      matchesField(compNorm, cleanQuery, allowPartial) ||
+      matchesField(leagueNorm, cleanQuery, allowPartial);
     if (competitionMatches && !isAmericanFalsePositive(compNorm) && !isAmericanFalsePositive(leagueNorm)) {
       if (compNorm === cleanQuery) score += 70;
       else score += 40;
     }
 
     // 6. Coincidencia en Deporte
-    if (sportNorm.includes(cleanQuery)) {
+    if (matchesField(sportNorm, cleanQuery, allowPartial)) {
       score += 35;
     }
 
     // 7. Coincidencia en texto crudo de Canales
-    if (channelsNorm.includes(cleanQuery)) {
+    if (containsWholeWord(channelsNorm, cleanQuery)) {
       score += 50;
     }
 
     // 8. Expansión por Alias Deportivo
     for (const [key, aliases] of Object.entries(ALIAS_MAP)) {
-      if (cleanQuery === key || aliases.some((a) => a.includes(cleanQuery))) {
+      const queryMatchesKey =
+        cleanQuery === key ||
+        (allowPartial && key.includes(cleanQuery)) ||
+        aliases.some((alias) =>
+          allowPartial ? alias.includes(cleanQuery) : alias === cleanQuery
+        );
+
+      if (queryMatchesKey) {
         for (const alias of aliases) {
           if (
             titleNorm.includes(alias) ||

@@ -5,7 +5,7 @@
 ## Estado actual
 
 - Fecha de inicio: 2026-09-01.
-- Estado: **Fases 0 a 8 publicadas el 2026-09-09; Ajustes UX de Agenda y Filtros completados y autorizados para deploy el 2026-09-22; Bloque A y M1–M6 aprobados el 2026-10-27; ajuste visual de ficha confirmado; etapa cerrada en local; sin push ni deploy**.
+- Estado: **Fases 0 a 8 publicadas el 2026-09-09; Ajustes UX de Agenda y Filtros completados y autorizados para deploy el 2026-09-22; Bloque A y M1–M6 aprobados el 2026-10-27; paquete `11bf3a8` publicado en producción el 2026-10-27 mediante `release/ux-simplificacion` y `main`; deploy verificado**.
 - Fase de cierre pre-diseño visual: completada el 27/08/2026.
 - A8: cerrado y documentado en el plan de remediación anterior.
 - Rama local: `main`, limpia y alineada con `origin/main` al crear este documento.
@@ -678,6 +678,7 @@ Estado: **publicado en producción el 2026-09-09** (Fases 0–8); **ajustes UX d
 | 2026-10-27 | El usuario aprueba M4 y autoriza iniciar M5. Se normaliza la jerarquía de hubs/noticias, se simplifican titulares y breadcrumbs, se rehacen las superficies de plataformas con tokens y se conserva la piel de archivo del Mundial. Sin push ni deploy. |
 | 2026-10-27 | El usuario aprueba M5 y autoriza iniciar M6. La QA de tareas detecta pérdida de contexto al volver del detalle; se corrige con persistencia por pestaña, se enfoca la búsqueda móvil y se eleva el contraste de etiquetas a AA. Sin push ni deploy. |
 | 2026-10-27 | El usuario aprueba M6 con un ajuste visual y confirma el resultado. La pastilla queda a la derecha del icono en escritorio y al extremo derecho de la fila en móvil; se elimina la fila superior de la tarjeta para reducir su altura, conservando estado, hora, evento, canal, contexto y acciones. Sin push ni deploy. |
+| 2026-10-27 | Con autorización explícita del usuario, se publica el paquete `11bf3a8` en `release/ux-simplificacion` y `main`; el deploy de producción se verificó con HTTP 200 y los marcadores visuales del paquete en `/nba` y `/plataformas`. |
 
 ## Registro de sesiones
 
@@ -705,8 +706,9 @@ Estado: **publicado en producción el 2026-09-09** (Fases 0–8); **ajustes UX d
 | 2026-10-27 | M3 | Aprobada por el usuario; búsqueda con stopwords y palabra completa, canales sin fragmentos, chip de búsqueda activa, limpieza en un paso, Escape en filtros y 44 pruebas; TypeScript, lint, build 173/173 y revisión 320–1280 sin overflow | Sección “Reporte de implementación M3” |
 | 2026-10-27 | M4 | Aprobada por el usuario; contrato único de tarjeta, En Vivo con modal compartido, hubs con activos primero y finalizados colapsados, detalle/modal reordenados y referencia temporal determinista; 44 pruebas, TypeScript, lint, build 173/173 y revisión 320–1280 sin overflow | Sección “Reporte de implementación M4” |
 | 2026-10-27 | M5 | Aprobada por el usuario; jerarquía tipográfica compartida, noticias y plataformas simplificadas, breadcrumbs legibles y Mundial conservado como archivo especial; 44 pruebas, TypeScript, lint, build 173/173 y revisión 320–1280 sin overflow | Sección “Reporte de implementación M5” |
-| 2026-10-27 | M6 | Aprobada y cerrada en local; recorridos de tareas, continuidad, teclado, móvil, movimiento reducido, overflow y contraste AA; se corrigieron contexto, foco de búsqueda móvil y contraste; 44 pruebas, TypeScript, lint, build 173/173 y diff check | Sección “Reporte de QA M6” |
+| 2026-10-27 | M6 | Aprobada, cerrada y publicada; recorridos de tareas, continuidad, teclado, móvil, movimiento reducido, overflow y contraste AA; se corrigieron contexto, foco de búsqueda móvil y contraste; 44 pruebas, TypeScript, lint, build 173/173 y diff check | Sección “Reporte de QA M6” |
 | 2026-10-27 | Ajuste M6 | Confirmado por el usuario; pastilla a la derecha del icono en escritorio y al extremo derecho de la fila en móvil, con fila superior eliminada; tarjeta activa de 150 px en escritorio y 280 px en móvil; revisión 320–1280 sin overflow y validaciones verdes | Sección “Ajuste visual posterior a M6 — ficha de evento” |
+| 2026-10-27 | Publicación | Paquete `11bf3a8` publicado en `release/ux-simplificacion` y `main`; deploy verificado con HTTP 200 y marcadores visuales; rollback disponible en `55e66ad` | Sección “Publicación — 2026-10-27” |
 
 ## Nueva etapa — Auditoría y simplificación de la experiencia
 
@@ -718,10 +720,10 @@ Fases 0–8 y el release permanecen cerrados. Esta etapa no los reabre; sólo at
 
 ### Estado y objetivo
 
-- Estado: **Bloque A y M1–M6 aprobados el 2026-10-27; ajuste visual de ficha confirmado; etapa cerrada en local; sin push ni deploy**.
+- Estado: **Bloque A y M1–M6 aprobados y publicados en producción el 2026-10-27; deploy verificado**.
 - Objetivo: que una persona encuentre una transmisión, entienda cuándo es y sepa dónde verla con el menor número de decisiones posible.
 - Tipo de trabajo: mantenimiento y ajustes visuales/UX acotados sobre el paquete publicado.
-- Siguiente acción recomendada: decidir si se autoriza publicación. Cualquier push/deploy requiere autorización explícita separada.
+- Siguiente acción recomendada: ninguna pendiente dentro de esta etapa. Cualquier cambio nuevo requiere alcance y autorización explícita.
 
 ### Diagnóstico resumido
 
@@ -1024,7 +1026,7 @@ Salida: el usuario distingue si está leyendo, explorando un deporte o consultan
 
 #### Fase M6 — QA de tareas y cierre
 
-Estado: **M6 aprobada y cerrada en local el 2026-10-27; ajuste visual de ficha confirmado por el usuario. Sin push ni deploy**.
+Estado: **M6 aprobada, cerrada y publicada en producción el 2026-10-27; ajuste visual de ficha confirmado por el usuario; deploy verificado**.
 
 Recorridos mínimos:
 
@@ -1061,6 +1063,17 @@ Estado: **confirmado por el usuario el 2026-10-27; implementado en local**.
 - **Validación:** 320, 375, 768, 1024 y 1280 px sin overflow; estado visible, icono/pastilla alineados y sin errores de consola. `npm run test` (44 pruebas), `npx tsc --noEmit`, `npm run lint`, `npm run build` (173/173 rutas) y `git diff --check` correctos. Capturas en `/private/tmp/guiasports-card3/`.
 - **Fuera de alcance:** no se modificaron datos, IDs, URLs, contenido fuente, Supabase, RLS, `.env.local`, scripts ni dependencias. Sin push ni deploy.
 
+##### Publicación — 2026-10-27
+
+Estado: **publicado en producción; deploy verificado**.
+
+- **Commit del paquete:** `11bf3a8` (`feat(ux): simplificar navegación, búsqueda y fichas de eventos`).
+- **Ramas:** `release/ux-simplificacion` y `main` publicadas en `origin`; `main` avanzó por fast-forward `55e66ad..11bf3a8`.
+- **Verificación en producción:** HTTP 200 en `/`, `/envivo`, `/noticias`, `/nba`, `/plataformas`, `/plataformas/vix` y `/mundial-2026`. `/nba` contiene la nueva ficha (`md:min-w-[150px]`); `/plataformas` contiene `gs-hub-title-blue`; `/plataformas/vix` ya no contiene la tarjeta blanca (`bg-white` = 0).
+- **Validaciones previas:** `npm run test` (44 pruebas), `npx tsc --noEmit`, `npm run lint`, `npm run build` (173/173 rutas) y `git diff --check` correctos.
+- **Rollback:** revertir `11bf3a8` o redesplegar `55e66ad`; no hay migraciones de datos ni cambios en Supabase/RLS.
+- **Documentación:** este registro se publica después en `main` y `release/ux-simplificacion`; no cambia el código de aplicación.
+
 ### Regla de tamaño de sesión
 
 Cada sesión de implementación debe tener:
@@ -1075,11 +1088,11 @@ Si aparece trabajo de otra fase, se registra como hallazgo y no se implementa en
 
 ### Handoff de esta etapa
 
-Estado: **Bloque A y M1–M6 aprobados; ajuste visual de ficha confirmado; etapa cerrada en local; sin push ni deploy**.
+Estado: **Bloque A y M1–M6 aprobados y publicados en producción el 2026-10-27; deploy verificado**.
 
-No se modificaron datos, contenido fuente, IDs, URLs, `.env.local`, Supabase, RLS ni scripts de sincronización. El contrato está en “Bloque A — Contrato de experiencia y alcance”; los resultados aprobados en los reportes M1–M5; la QA final en “Reporte de QA M6”; y el ajuste de ficha en su sección posterior. La etapa queda cerrada localmente. Cualquier publicación nueva requiere autorización explícita, rama de release y verificación posterior.
+No se modificaron datos, contenido fuente, IDs, URLs, `.env.local`, Supabase, RLS ni scripts de sincronización. El contrato está en “Bloque A — Contrato de experiencia y alcance”; los resultados aprobados en los reportes M1–M5; la QA final en “Reporte de QA M6”; el ajuste de ficha en su sección posterior; y la publicación en “Publicación — 2026-10-27”. No hay trabajo pendiente dentro de esta etapa. Cualquier cambio nuevo requiere alcance y autorización explícita.
 
-Siguiente sesión recomendada: decidir si se autoriza publicación. Si no se autoriza, el paquete permanece validado sólo en local.
+Siguiente sesión recomendada: iniciar sólo un alcance nuevo autorizado. La publicación ya fue ejecutada y verificada.
 
 ## Prompt de continuidad para la siguiente sesión
 
@@ -1094,7 +1107,7 @@ Lee primero:
 Las Fases 0 a 8 están aprobadas por el usuario: Fase 0 el 2026-09-01, Fases 1–3 el 2026-09-04, Fases 4 y 5 el 2026-09-06, Fase 6 el 2026-09-07, Fase 7 el 2026-09-08 y Fase 8 el 2026-09-09. El paquete visual fue **publicado en producción** el 2026-09-09: `release/visual-v1` y `main` (`5149559`) están en `origin` y el deploy de Vercel está verificado. La incidencia recurrente del build local quedó documentada: usar un solo `next dev`, detenerlo antes de que el agente ejecute `npm run build`, confirmar que no haya otro proceso de Next y no borrar `.next`, locks ni archivos fuente para resolver una espera. En Next.js 16.2.1 `next dev` usa `.next/dev` por defecto, por lo que un build detenido no debe atribuirse automáticamente a una colisión con dev. El plan técnico de remediación está cerrado. A8 está cerrado. Producción está operativa.
 
 Objetivo de esta sesión:
-Continuar la nueva etapa de auditoría y simplificación UX descrita en este plan. Trabajar sólo el bloque indicado por el handoff vigente; no reabrir Fases 0–8.
+La etapa de auditoría y simplificación UX (Bloque A y M1–M6) está cerrada y publicada. No hay trabajo pendiente dentro de ella; cualquier sesión nueva debe partir de un alcance autorizado explícitamente y no reabrir Fases 0–8.
 
 Secuencia recomendada de esta nueva etapa:
 - Bloque A — Contrato de experiencia y alcance: aprobado el 2026-10-27.
@@ -1103,8 +1116,8 @@ Secuencia recomendada de esta nueva etapa:
 - Fase M3 — Búsqueda y filtros confiables: aprobada el 2026-10-27.
 - Fase M4 — Contrato único de evento y En Vivo: aprobada el 2026-10-27.
 - Fase M5 — Noticias, hubs y superficies de apoyo: aprobada el 2026-10-27.
-- Fase M6 — QA de tareas y cierre: aprobada y cerrada en local; ajuste visual de ficha confirmado.
-- Publicación del paquete: requiere autorización explícita separada; no ejecutada.
+- Fase M6 — QA de tareas y cierre: aprobada, cerrada y publicada; ajuste visual de ficha confirmado.
+- Publicación del paquete: ejecutada y verificada el 2026-10-27 (`11bf3a8`).
 
 Restricciones:
 - Trabajar sólo en local y dentro del alcance de los ajustes solicitados.

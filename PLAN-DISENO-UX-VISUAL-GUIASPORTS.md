@@ -5,7 +5,7 @@
 ## Estado actual
 
 - Fecha de inicio: 2026-09-01.
-- Estado: **Fases 0 a 8 publicadas el 2026-09-09; Ajustes UX de Agenda y Filtros completados y autorizados para deploy el 2026-09-22; Bloque A y M1–M6 aprobados el 2026-10-27; paquete `11bf3a8` publicado en producción el 2026-10-27 mediante `release/ux-simplificacion` y `main`; deploy verificado**.
+- Estado: **Fases 0 a 8 publicadas el 2026-09-09; Ajustes UX de Agenda y Filtros completados y autorizados para deploy el 2026-09-22; Bloque A y M1–M6 aprobados el 2026-10-27; paquete `11bf3a8` publicado en producción; corrección de estabilidad móvil `39b9960` publicada el 2026-10-27; deploy verificado, pendiente de confirmación en dispositivo móvil**.
 - Fase de cierre pre-diseño visual: completada el 27/08/2026.
 - A8: cerrado y documentado en el plan de remediación anterior.
 - Rama local: `main`, limpia y alineada con `origin/main` al crear este documento.
@@ -679,6 +679,7 @@ Estado: **publicado en producción el 2026-09-09** (Fases 0–8); **ajustes UX d
 | 2026-10-27 | El usuario aprueba M5 y autoriza iniciar M6. La QA de tareas detecta pérdida de contexto al volver del detalle; se corrige con persistencia por pestaña, se enfoca la búsqueda móvil y se eleva el contraste de etiquetas a AA. Sin push ni deploy. |
 | 2026-10-27 | El usuario aprueba M6 con un ajuste visual y confirma el resultado. La pastilla queda a la derecha del icono en escritorio y al extremo derecho de la fila en móvil; se elimina la fila superior de la tarjeta para reducir su altura, conservando estado, hora, evento, canal, contexto y acciones. Sin push ni deploy. |
 | 2026-10-27 | Con autorización explícita del usuario, se publica el paquete `11bf3a8` en `release/ux-simplificacion` y `main`; el deploy de producción se verificó con HTTP 200 y los marcadores visuales del paquete en `/nba` y `/plataformas`. |
+| 2026-10-27 | Con autorización explícita del usuario, se publica la corrección de estabilidad móvil `39b9960` en `release/mobile-filtros` y `main`: póster estático en móvil, cálculo horario único y tarjeta sin `display: contents`; producción verificada con póster 200, nueva cuadrícula y filtros sin video/errores en móvil. |
 
 ## Registro de sesiones
 
@@ -709,6 +710,7 @@ Estado: **publicado en producción el 2026-09-09** (Fases 0–8); **ajustes UX d
 | 2026-10-27 | M6 | Aprobada, cerrada y publicada; recorridos de tareas, continuidad, teclado, móvil, movimiento reducido, overflow y contraste AA; se corrigieron contexto, foco de búsqueda móvil y contraste; 44 pruebas, TypeScript, lint, build 173/173 y diff check | Sección “Reporte de QA M6” |
 | 2026-10-27 | Ajuste M6 | Confirmado por el usuario; pastilla a la derecha del icono en escritorio y al extremo derecho de la fila en móvil, con fila superior eliminada; tarjeta activa de 150 px en escritorio y 280 px en móvil; revisión 320–1280 sin overflow y validaciones verdes | Sección “Ajuste visual posterior a M6 — ficha de evento” |
 | 2026-10-27 | Publicación | Paquete `11bf3a8` publicado en `release/ux-simplificacion` y `main`; deploy verificado con HTTP 200 y marcadores visuales; rollback disponible en `55e66ad` | Sección “Publicación — 2026-10-27” |
+| 2026-10-27 | Fix móvil | Corrección `39b9960` publicada en `release/mobile-filtros` y `main`; póster móvil, cálculo horario único y CSS grid; producción verificada; pendiente confirmación en dispositivo | Sección “Corrección de estabilidad móvil — 2026-10-27” |
 
 ## Nueva etapa — Auditoría y simplificación de la experiencia
 
@@ -720,10 +722,10 @@ Fases 0–8 y el release permanecen cerrados. Esta etapa no los reabre; sólo at
 
 ### Estado y objetivo
 
-- Estado: **Bloque A y M1–M6 aprobados y publicados en producción el 2026-10-27; deploy verificado**.
+- Estado: **Bloque A y M1–M6 aprobados y publicados; corrección de estabilidad móvil `39b9960` publicada el 2026-10-27, pendiente de confirmación en dispositivo**.
 - Objetivo: que una persona encuentre una transmisión, entienda cuándo es y sepa dónde verla con el menor número de decisiones posible.
 - Tipo de trabajo: mantenimiento y ajustes visuales/UX acotados sobre el paquete publicado.
-- Siguiente acción recomendada: ninguna pendiente dentro de esta etapa. Cualquier cambio nuevo requiere alcance y autorización explícita.
+- Siguiente acción recomendada: confirmar el fix móvil en el teléfono del usuario. Si persiste, continuar el diagnóstico con modelo/versión/código de error.
 
 ### Diagnóstico resumido
 
@@ -1074,6 +1076,18 @@ Estado: **publicado en producción; deploy verificado**.
 - **Rollback:** revertir `11bf3a8` o redesplegar `55e66ad`; no hay migraciones de datos ni cambios en Supabase/RLS.
 - **Documentación:** este registro se publica después en `main` y `release/ux-simplificacion`; no cambia el código de aplicación.
 
+##### Corrección de estabilidad móvil — 2026-10-27
+
+Estado: **corrección publicada en producción; pendiente de confirmación en dispositivo móvil**.
+
+- **Síntoma reportado:** al filtrar o tocar un deporte en móvil, la página parpadeaba y terminaba en la pantalla del navegador “Ocurrió un problema varias veces en https://www.guiasports.com”. Ocurría en Chrome y Safari móviles; escritorio funcionaba.
+- **Diagnóstico:** no se logró reproducir el crash en Chrome headless ni en Chrome con GPU usando viewport, UA y eventos táctiles de iPhone. Se identificaron tres factores de riesgo móvil y se corrigieron.
+- **Mitigaciones:** (1) el hero ya no monta el video en móvil; usa `hero-home-poster.jpg` y sólo monta video en escritorio y sin movimiento reducido, evitando montar/desmontar video al filtrar; (2) `AgendaResults` calcula la fecha de referencia de México una vez por lista, no por tarjeta; (3) `SportEventCard` reemplazó `display: contents` por CSS grid, conservando la pastilla a la derecha del icono en escritorio y al extremo derecho de la fila en móvil.
+- **Validación local:** 320/375/768/1024/1280 px sin overflow; móvil sin video montado y con póster; escritorio con video; filtros Tenis/Fútbol/Todos sin errores; 44 pruebas, `tsc`, lint, build 173/173 y `git diff --check` correctos.
+- **Publicación:** commit `39b9960` en `release/mobile-filtros` y `main`; producción verificada con póster HTTP 200, nueva cuadrícula en `/nba`, filtro Tenis en móvil sin video ni errores de consola y rutas principales HTTP 200.
+- **Rollback:** revertir `39b9960` o redesplegar `fcbc1c3`; sin migraciones de datos ni cambios en Supabase/RLS.
+- **Pendiente:** confirmación del usuario en su teléfono. Si el crash persiste, recopilar modelo, versión de sistema/navegador y código de error, y aislar temporalmente la persistencia de sesión o el póster.
+
 ### Regla de tamaño de sesión
 
 Cada sesión de implementación debe tener:
@@ -1088,11 +1102,11 @@ Si aparece trabajo de otra fase, se registra como hallazgo y no se implementa en
 
 ### Handoff de esta etapa
 
-Estado: **Bloque A y M1–M6 aprobados y publicados en producción el 2026-10-27; deploy verificado**.
+Estado: **Bloque A y M1–M6 aprobados y publicados; corrección de estabilidad móvil `39b9960` publicada el 2026-10-27, pendiente de confirmación en dispositivo**.
 
-No se modificaron datos, contenido fuente, IDs, URLs, `.env.local`, Supabase, RLS ni scripts de sincronización. El contrato está en “Bloque A — Contrato de experiencia y alcance”; los resultados aprobados en los reportes M1–M5; la QA final en “Reporte de QA M6”; el ajuste de ficha en su sección posterior; y la publicación en “Publicación — 2026-10-27”. No hay trabajo pendiente dentro de esta etapa. Cualquier cambio nuevo requiere alcance y autorización explícita.
+No se modificaron datos, contenido fuente, IDs, URLs, `.env.local`, Supabase, RLS ni scripts de sincronización. El contrato está en “Bloque A — Contrato de experiencia y alcance”; los resultados aprobados en los reportes M1–M5; la QA final en “Reporte de QA M6”; el ajuste de ficha en su sección posterior; la publicación en “Publicación — 2026-10-27”; y el fix móvil en “Corrección de estabilidad móvil — 2026-10-27”. Cualquier cambio nuevo requiere alcance y autorización explícita.
 
-Siguiente sesión recomendada: iniciar sólo un alcance nuevo autorizado. La publicación ya fue ejecutada y verificada.
+Siguiente sesión recomendada: confirmar el fix móvil en el teléfono del usuario. Si persiste, continuar el diagnóstico con modelo, versión de sistema/navegador y código de error.
 
 ## Prompt de continuidad para la siguiente sesión
 
@@ -1118,6 +1132,7 @@ Secuencia recomendada de esta nueva etapa:
 - Fase M5 — Noticias, hubs y superficies de apoyo: aprobada el 2026-10-27.
 - Fase M6 — QA de tareas y cierre: aprobada, cerrada y publicada; ajuste visual de ficha confirmado.
 - Publicación del paquete: ejecutada y verificada el 2026-10-27 (`11bf3a8`).
+- Corrección de estabilidad móvil: publicada el 2026-10-27 (`39b9960`); pendiente de confirmación en dispositivo.
 
 Restricciones:
 - Trabajar sólo en local y dentro del alcance de los ajustes solicitados.

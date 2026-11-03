@@ -34,10 +34,11 @@ function ResultCards({
   onEventClick: (evento: Evento) => void;
   onFiltrarLiga: (liga: string) => void;
 }) {
+  const nowDate = getMexicoDate(new Date(now));
   return (
     <div className="flex w-full flex-col gap-3">
       {eventos.map((evento, index, arr) => {
-        const live = isEventLive(evento.fecha, evento.hora, getMexicoDate(new Date(now)));
+        const live = isEventLive(evento.fecha, evento.hora, nowDate);
         return (
           <div key={evento.id} id={`evento-${evento.id}`} data-envivo={live ? "true" : "false"} className="w-full">
             <EventCard

@@ -1,4 +1,6 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import { ArrowUpRight, Clock, Tv } from 'lucide-react';
 import ShareButton from '@/components/ShareButton';
 import { formatMexicoDate, isEventLive } from '@/lib/mexicoTime';
@@ -18,6 +20,26 @@ interface Props {
 }
 
 export default function HomeHero({ evento, tipo, onClick }: Props) {
+  const [showVideo, setShowVideo] = useState(false);
+
+  useEffect(() => {
+    const desktopQuery = window.matchMedia('(min-width: 768px)');
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    const update = () => {
+      setShowVideo(desktopQuery.matches && !reducedMotionQuery.matches);
+    };
+
+    update();
+    desktopQuery.addEventListener?.('change', update);
+    reducedMotionQuery.addEventListener?.('change', update);
+
+    return () => {
+      desktopQuery.removeEventListener?.('change', update);
+      reducedMotionQuery.removeEventListener?.('change', update);
+    };
+  }, []);
+
   if (!evento) return null;
 
   const live = isEventLive(evento.fecha, evento.hora);
@@ -26,17 +48,25 @@ export default function HomeHero({ evento, tipo, onClick }: Props) {
 
   return (
     <article className="gs-home-hero" aria-labelledby="home-hero-title">
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        preload="metadata"
+      <div
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: "url('/images/hero-home-poster.jpg')" }}
         aria-hidden="true"
-        className="gs-home-hero-video"
-      >
-        <source src="/video/herohome.mp4" type="video/mp4" />
-      </video>
+      />
+      {showVideo && (
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          poster="/images/hero-home-poster.jpg"
+          aria-hidden="true"
+          className="gs-home-hero-video"
+        >
+          <source src="/video/herohome.mp4" type="video/mp4" />
+        </video>
+      )}
       <div className="absolute inset-0 bg-slate-950/80" aria-hidden="true" />
       <div className="gs-home-hero-content">
         <div className="gs-home-hero-top">

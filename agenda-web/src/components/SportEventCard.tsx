@@ -83,21 +83,19 @@ export default function SportEventCard({ evento, isLive, now, onFiltrarLiga, onC
   return (
     <article className={`group gs-card gs-card-interactive relative overflow-hidden p-4 md:p-5 ${status === 'live' ? 'border-red-500/60 hover:border-red-400/70' : 'border-slate-800/80'}`}>
       <div className="flex flex-col gap-4 md:flex-row md:items-center">
-        <div className="flex shrink-0 items-center gap-3 border-b border-white/10 pb-4 md:min-w-[150px] md:flex-col md:items-start md:border-b-0 md:border-r md:pb-0 md:pr-5">
-          <div className="contents md:flex md:items-center md:gap-3">
-            <div className="order-1 text-2xl opacity-80 md:text-3xl" aria-hidden="true">{EMOJIS[evento.deporte] || "🏆"}</div>
-            <span className={`gs-badge order-3 ml-auto whitespace-nowrap normal-case tracking-normal md:ml-0 ${status === 'live' ? 'gs-badge-live' : status === 'finished' ? 'gs-badge-finished' : 'gs-badge-upcoming'}`}>
-              {status === 'live' && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current" aria-hidden="true" />}
-              {statusLabel}
-            </span>
-          </div>
-          <div className="order-2 md:mt-2">
+        <div className="grid shrink-0 grid-cols-[auto_1fr_auto] items-center gap-3 border-b border-white/10 pb-4 md:min-w-[150px] md:grid-cols-[auto_auto] md:border-b-0 md:border-r md:pb-0 md:pr-5">
+          <div className="col-start-1 row-start-1 text-2xl opacity-80 md:text-3xl" aria-hidden="true">{EMOJIS[evento.deporte] || "🏆"}</div>
+          <div className="col-start-2 row-start-1 min-w-0 md:col-span-2 md:col-start-1 md:row-start-2 md:mt-2">
             <div className={`flex items-center gap-2 text-2xl font-black tracking-tight ${status === 'live' ? 'text-red-300' : 'text-white'}`}>
               <Clock size={17} aria-hidden="true" />
               <span className="gs-time">{evento.hora || 'Por definir'}</span>
             </div>
             <p className="mt-1 text-xs font-semibold capitalize text-slate-400">{formatEventDate(evento.fecha)}</p>
           </div>
+          <span className={`gs-badge col-start-3 row-start-1 justify-self-end whitespace-nowrap normal-case tracking-normal md:col-start-2 md:row-start-1 md:justify-self-start ${status === 'live' ? 'gs-badge-live' : status === 'finished' ? 'gs-badge-finished' : 'gs-badge-upcoming'}`}>
+            {status === 'live' && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current" aria-hidden="true" />}
+            {statusLabel}
+          </span>
         </div>
 
         <div className="min-w-0 flex-1">

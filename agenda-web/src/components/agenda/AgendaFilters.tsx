@@ -77,12 +77,12 @@ export default function AgendaFilters({
         ref={triggerRef}
         type="button"
         onClick={() => (isOpen ? closePanel() : setIsOpen(true))}
-        className={`gs-button ${isOpen || activeCount > 0 ? "gs-button-secondary" : "gs-button-quiet"}`}
+        className={`gs-button !text-white ${isOpen || activeCount > 0 ? "gs-button-secondary" : "gs-button-quiet"}`}
         aria-expanded={isOpen}
         aria-controls="agenda-filters-panel"
         aria-label={activeCount > 0 ? `Editar filtros, ${activeCount} activos` : "Abrir filtros"}
       >
-        <Filter size={15} aria-hidden="true" />
+        <Filter size={15} className="text-lime-400" aria-hidden="true" />
         Filtrar
         {activeCount > 0 && <span className="rounded-full bg-white/15 px-1.5 py-0.5 text-[10px] text-white">{activeCount}</span>}
       </button>

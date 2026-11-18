@@ -52,7 +52,7 @@ export default function Header() {
       </div>
       <header className="gs-shell-header relative z-50 w-full overflow-x-hidden pt-1">
         <div className="gs-shell-container mx-auto w-full">
-          <div className="flex justify-between items-center md:mb-4">
+          <div className="flex w-full items-center justify-center gap-3 sm:justify-between md:mb-4">
             <Link href="/" aria-label="GuíaSports, inicio" className="gs-brand inline-flex min-h-11 shrink-0 items-center">
               <NextImage src="/GuiaSports-logo.svg" alt="GuíaSports" width={200} height={50} className="h-10 w-auto" priority />
             </Link>

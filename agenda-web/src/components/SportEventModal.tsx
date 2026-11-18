@@ -3,7 +3,9 @@ import Link from 'next/link';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Calendar, CalendarPlus, ChevronRight, Clock, Info, Radio, Tv, X } from 'lucide-react';
 import ShareButton from '@/components/ShareButton';
+import ChannelCapsule from '@/components/ChannelCapsule';
 import { trackEvent } from '@/lib/analytics';
+import { resolveChannelsForDisplay } from '@/lib/channelCatalog';
 import { buildEventPath, buildEventUrl } from '@/lib/eventUrls';
 import { isEventLive } from '@/lib/mexicoTime';
 
@@ -166,7 +168,12 @@ export default function SportEventModal({ evento, isOpen, onClose }: Props) {
   const status = getEventStatus(activeEvento);
   const statusLabel = getStatusLabel(status);
   const transmissionUnconfirmed = !activeEvento.canales.trim() || UNCONFIRMED_CHANNEL_PATTERN.test(activeEvento.canales);
-  const channelLabel = transmissionUnconfirmed ? 'Transmisión por confirmar' : activeEvento.canales;
+  const channelNames = resolveChannelsForDisplay(activeEvento.canales)
+    .map((channel) => channel.nombre)
+    .join(' · ');
+  const channelLabel = transmissionUnconfirmed
+    ? 'Transmisión por confirmar'
+    : channelNames || activeEvento.canales;
 
   const buildCalendarLink = () => {
     const startDate = new Date(`${activeEvento.fecha}T${activeEvento.hora}:00-06:00`);
@@ -265,13 +272,14 @@ export default function SportEventModal({ evento, isOpen, onClose }: Props) {
               )}
 
               <div className="mb-7 grid gap-3">
-                <div className={`flex items-center gap-4 rounded-2xl border p-4 ${transmissionUnconfirmed ? 'border-slate-700/60 bg-slate-800/50' : 'border-blue-400/20 bg-blue-500/10'}`}>
-                  <div className={`rounded-xl p-2 ${transmissionUnconfirmed ? 'bg-slate-700/70' : 'bg-blue-500/20'}`}>
+                <div className={`flex items-start gap-4 rounded-2xl border p-4 ${transmissionUnconfirmed ? 'border-slate-700/60 bg-slate-800/50' : 'border-blue-400/20 bg-blue-500/10'}`}>
+                  <div className={`mt-0.5 rounded-xl p-2 ${transmissionUnconfirmed ? 'bg-slate-700/70' : 'bg-blue-500/20'}`}>
                     <Tv size={20} className={transmissionUnconfirmed ? 'text-slate-300' : 'text-blue-300'} />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Dónde verlo</p>
                     <p className="text-sm font-bold text-white">{channelLabel}</p>
+                    <ChannelCapsule canales={activeEvento.canales} showIcon={false} className="mt-2" />
                   </div>
                 </div>
 

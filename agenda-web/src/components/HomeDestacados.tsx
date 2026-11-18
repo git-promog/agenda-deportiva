@@ -1,5 +1,6 @@
 import React from 'react';
-import { ArrowUpRight, Clock, Star } from 'lucide-react';
+import { ArrowUpRight, Clock, Star, Tv } from 'lucide-react';
+import { resolveChannelsForDisplay } from '@/lib/channelCatalog';
 import { Evento } from '@/types';
 
 const EMOJIS: { [key: string]: string } = {
@@ -27,32 +28,43 @@ export default function HomeDestacados({ destacados, onEventClick }: Props) {
         <span className="gs-home-section-meta">{destacados.length} seleccionados</span>
       </div>
       <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide">
-        {destacados.map((e) => (
-          <button
-            key={e.id}
-            type="button"
-            onClick={() => onEventClick?.(e)}
-            className="gs-card gs-card-interactive group flex min-h-[12.5rem] w-[85vw] min-w-[17.5rem] max-w-[21rem] flex-shrink-0 flex-col justify-between p-5 text-left"
-          >
-            <div>
-              <div className="mb-3 flex items-start justify-between gap-3">
-                <div className="text-[0.6875rem] font-bold uppercase tracking-[0.08em] text-yellow-400">{e.competicion}</div>
-                <div className="text-xl opacity-80" aria-hidden="true">{EMOJIS[e.deporte] || "🏆"}</div>
+        {destacados.map((e) => {
+          const channelText =
+            resolveChannelsForDisplay(e.canales)
+              .map((channel) => channel.nombre)
+              .join(' · ') || 'Por confirmar';
+
+          return (
+            <button
+              key={e.id}
+              type="button"
+              onClick={() => onEventClick?.(e)}
+              aria-label={`Ver detalles de ${e.evento}`}
+              className="gs-card gs-card-interactive group flex min-h-[12.5rem] w-[85vw] min-w-[17.5rem] max-w-[21rem] flex-shrink-0 flex-col justify-between p-5 text-left focus-visible:ring-2 focus-visible:ring-[#a3e635] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+            >
+              <div>
+                <div className="mb-3 flex items-start justify-between gap-3">
+                  <div className="min-w-0 truncate text-[0.6875rem] font-bold uppercase tracking-[0.08em] text-yellow-400">{e.competicion}</div>
+                  <div className="text-xl opacity-80" aria-hidden="true">{EMOJIS[e.deporte] || "🏆"}</div>
+                </div>
+                <div className="line-clamp-2 text-base font-extrabold leading-tight text-white">{e.evento}</div>
               </div>
-              <div className="line-clamp-2 text-base font-extrabold leading-tight text-white">{e.evento}</div>
-            </div>
-            <div className="mt-5 grid gap-3">
-              <div className="flex items-center gap-2 text-sm font-bold text-white">
-                <Clock className="h-4 w-4 text-yellow-400" aria-hidden="true" />
-                <span>{e.hora}</span>
+              <div className="mt-5 grid gap-3">
+                <div className="flex items-center gap-2 text-sm font-bold text-white">
+                  <Clock className="h-4 w-4 text-yellow-400" aria-hidden="true" />
+                  <span>{e.hora}</span>
+                </div>
+                <div className="flex items-center justify-between gap-3 border-t border-slate-700/70 pt-3 text-xs">
+                  <span className="flex min-w-0 items-center gap-1.5">
+                    <Tv className="h-3.5 w-3.5 shrink-0 text-blue-300" aria-hidden="true" />
+                    <span className="truncate text-slate-300" title={channelText}>{channelText}</span>
+                  </span>
+                  <ArrowUpRight className="h-4 w-4 flex-shrink-0 text-yellow-400 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" />
+                </div>
               </div>
-              <div className="flex items-center justify-between gap-3 border-t border-slate-700/70 pt-3 text-xs">
-                <span className="truncate text-slate-300">{e.canales}</span>
-                <ArrowUpRight className="h-4 w-4 flex-shrink-0 text-yellow-400 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" />
-              </div>
-            </div>
-          </button>
-        ))}
+            </button>
+          );
+        })}
       </div>
     </section>
   );

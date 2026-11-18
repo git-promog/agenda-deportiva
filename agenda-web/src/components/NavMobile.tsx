@@ -95,7 +95,7 @@ export default function NavMobile() {
   const isSubpage = pathname !== '/';
 
   return (
-    <nav aria-label="Navegación móvil" className={`gs-mobile-nav md:hidden fixed inset-x-0 bottom-0 safe-area-bottom ${menuOpen ? 'z-[110]' : 'z-[80]'}`}>
+    <nav aria-label="Navegación móvil" className={`gs-mobile-nav touch-manipulation select-none fixed inset-x-0 bottom-0 safe-area-bottom md:hidden ${menuOpen ? 'z-[110]' : 'z-[80]'}`}>
       {/* Dynamic Mobile Bottom Sheet Navigation Overlay */}
       <AnimatePresence initial={false}>
         {menuOpen && (
@@ -188,7 +188,7 @@ export default function NavMobile() {
       </AnimatePresence>
 
       {/* Docked Tab Bar */}
-      <div className="gs-mobile-nav-inner h-16 max-w-md mx-auto flex items-stretch px-2">
+      <div className="gs-mobile-nav-inner h-16 max-w-md mx-auto flex items-stretch gap-1 px-1.5 sm:px-2">
         <Link
           href="/"
           onClick={() => trackEvent('nav_click', { destination: 'home' })}

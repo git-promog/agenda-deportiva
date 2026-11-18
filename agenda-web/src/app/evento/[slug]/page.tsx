@@ -5,7 +5,9 @@ import Link from 'next/link';
 import { Calendar, Clock, ExternalLink, Info, Radio, Tv } from 'lucide-react';
 import BackButton from '@/components/BackButton';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import ChannelCapsule from '@/components/ChannelCapsule';
 import ShareButton from '@/components/ShareButton';
+import { resolveChannelsForDisplay } from '@/lib/channelCatalog';
 import { buildEventPath, buildEventUrl, getEventIdFromSlug } from '@/lib/eventUrls';
 import { isEventLive } from '@/lib/mexicoTime';
 
@@ -130,7 +132,12 @@ export default async function EventoDetalle({ params }: Props) {
   const status = getEventStatus(evento);
   const statusLabel = getStatusLabel(status);
   const transmissionUnconfirmed = !evento.canales.trim() || UNCONFIRMED_CHANNEL_PATTERN.test(evento.canales);
-  const channelLabel = transmissionUnconfirmed ? 'Transmisión por confirmar' : evento.canales;
+  const channelNames = resolveChannelsForDisplay(evento.canales)
+    .map((channel) => channel.nombre)
+    .join(' · ');
+  const channelLabel = transmissionUnconfirmed
+    ? 'Transmisión por confirmar'
+    : channelNames || evento.canales;
   const startDateTime = `${evento.fecha}T${evento.hora || '00:00'}:00-06:00`;
   const jsonLd = {
     "@context": "https://schema.org",
@@ -206,9 +213,10 @@ export default async function EventoDetalle({ params }: Props) {
           <section className="mb-8 grid gap-3">
             <div className={`flex items-start gap-4 rounded-2xl border p-5 ${transmissionUnconfirmed ? 'border-slate-700/60 bg-slate-900/50' : 'border-blue-400/20 bg-blue-500/10'}`}>
               <Tv className={`mt-1 shrink-0 ${transmissionUnconfirmed ? 'text-slate-300' : 'text-blue-300'}`} size={20} />
-              <div>
+              <div className="min-w-0 flex-1">
                 <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">Dónde verlo</p>
                 <p className="font-bold text-white">{channelLabel}</p>
+                <ChannelCapsule canales={evento.canales} showIcon={false} className="mt-2" />
               </div>
             </div>
 

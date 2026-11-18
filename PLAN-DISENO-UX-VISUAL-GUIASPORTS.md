@@ -5,7 +5,7 @@
 ## Estado actual
 
 - Fecha de inicio: 2026-09-01.
-- Estado: **Fases 0 a 8 publicadas el 2026-09-09; Ajustes UX de Agenda y Filtros completados y autorizados para deploy el 2026-09-22; Bloque A y M1–M6 aprobados el 2026-10-27; paquete `11bf3a8` publicado en producción; corrección de estabilidad móvil `39b9960` publicada el 2026-10-27; deploy verificado, pendiente de confirmación en dispositivo móvil**.
+- Estado: **Fases 0 a 8 publicadas el 2026-09-09; Ajustes UX de Agenda y Filtros completados y autorizados para deploy el 2026-09-22; Bloque A y M1–M6 aprobados el 2026-10-27; paquete `11bf3a8` publicado en producción; corrección de estabilidad móvil `39b9960` publicada el 2026-10-27; Etapa V1.2 (Rediseño Home Layout y Sistema de Iconos de Canales) aprobada el 2026-11-13 y **Fases L0–L4 completadas y validadas localmente el 2026-11-17** (iconos auditados, sistema visual de canales, Header/Toolbar/Letrero Digital, HomeHero, SportEventCard compacta, AgendaResults, superficies inferiores, modal/detalle con canales y QA integral multi-viewport); **paquete local listo para solicitar autorización explícita de release/deploy**.**
 - Fase de cierre pre-diseño visual: completada el 27/08/2026.
 - A8: cerrado y documentado en el plan de remediación anterior.
 - Rama local: `main`, limpia y alineada con `origin/main` al crear este documento.
@@ -680,6 +680,8 @@ Estado: **publicado en producción el 2026-09-09** (Fases 0–8); **ajustes UX d
 | 2026-10-27 | El usuario aprueba M6 con un ajuste visual y confirma el resultado. La pastilla queda a la derecha del icono en escritorio y al extremo derecho de la fila en móvil; se elimina la fila superior de la tarjeta para reducir su altura, conservando estado, hora, evento, canal, contexto y acciones. Sin push ni deploy. |
 | 2026-10-27 | Con autorización explícita del usuario, se publica el paquete `11bf3a8` en `release/ux-simplificacion` y `main`; el deploy de producción se verificó con HTTP 200 y los marcadores visuales del paquete en `/nba` y `/plataformas`. |
 | 2026-10-27 | Con autorización explícita del usuario, se publica la corrección de estabilidad móvil `39b9960` en `release/mobile-filtros` y `main`: póster estático en móvil, cálculo horario único y tarjeta sin `display: contents`; producción verificada con póster 200, nueva cuadrícula y filtros sin video/errores en móvil. |
+| 2026-11-11 | Se audita el nuevo mockup `agenda-web/public/capturas/home_layout.png` (Illustrator) y el scraper (`scraper.py` / `channelCatalog.ts`); se define la ruta única `agenda-web/public/images/channels/` con formato `.webp` cuadrado `128×128 px` y la arquitectura modular Fases L0–L4 sin tocar datos, Supabase, RLS ni scripts. |
+| 2026-11-13 | El usuario aprueba el Plan de Acción V1.2 y confirma dos definiciones clave: (1) la cinta rápida de enfrentamientos debajo del buscador operará como letrero digital horizontal en loop continuo (*marquee* infinito interactivo, con respeto a `prefers-reduced-motion`); (2) se crearán iconos independientes para cada variante de canal/plataforma (`espn` / `espn-1..4`, `disney-plus` / `disney-plus-premium`, `fox-sports*` / `nacion-deportes*`, `tennis-tv` / `atp-tennis-tv`, etc.). Se consolida todo en este plan maestro. |
 
 ## Registro de sesiones
 
@@ -711,6 +713,14 @@ Estado: **publicado en producción el 2026-09-09** (Fases 0–8); **ajustes UX d
 | 2026-10-27 | Ajuste M6 | Confirmado por el usuario; pastilla a la derecha del icono en escritorio y al extremo derecho de la fila en móvil, con fila superior eliminada; tarjeta activa de 150 px en escritorio y 280 px en móvil; revisión 320–1280 sin overflow y validaciones verdes | Sección “Ajuste visual posterior a M6 — ficha de evento” |
 | 2026-10-27 | Publicación | Paquete `11bf3a8` publicado en `release/ux-simplificacion` y `main`; deploy verificado con HTTP 200 y marcadores visuales; rollback disponible en `55e66ad` | Sección “Publicación — 2026-10-27” |
 | 2026-10-27 | Fix móvil | Corrección `39b9960` publicada en `release/mobile-filtros` y `main`; póster móvil, cálculo horario único y CSS grid; producción verificada; pendiente confirmación en dispositivo | Sección “Corrección de estabilidad móvil — 2026-10-27” |
+| 2026-11-11 | Plan V1.2 | Auditoría de `home_layout.png`, investigación profunda de canales del scraper y propuesta de Fases L0–L4; sin cambios de código | Sección “Nueva etapa V1.2 — Rediseño Home Layout, Compactación de Tarjetas y Sistema Visual de Canales” |
+| 2026-11-13 | Aprobación V1.2 | Plan V1.2 confirmado por el usuario (letrero digital en loop continuo + logos independientes por canal) y documentado en este plan; `git diff --check` limpio; listo para carga de iconos y Fase L0/L1 | Sección “Nueva etapa V1.2 — Rediseño Home Layout, Compactación de Tarjetas y Sistema Visual de Canales” |
+| 2026-11-16 | Fase L0 | Auditoría de `agenda-web/public/images/channels/`: 95 archivos `.webp` presentes, todos en `kebab-case` estricto, sin typos; Lista A completa salvo la alternativa opcional `vix-premium.webp` (resuelta a `vix.webp`), Lista B completa salvo `espn-extra.webp`, y reservados de Lista C (`espn-deportes`, `espn-premium`, `fox-deportes`, `triller-tv`, `vix-premium`) cubiertos con fallback de texto | Sección “Resultado de auditoría L0 — 2026-11-16” |
+| 2026-11-16 | Fase L1 | `channelCatalog.ts` extendido con `logo`, índice exacto de alias y `resolveChannelsForDisplay`; nuevo `ChannelCapsule.tsx` con icono TV azul, cápsula de logos y fallback seguro; `channelCatalog.test.ts` con cobertura de Listas A/B/C; 248 pruebas verdes, TypeScript, lint, build 173/173 y `git diff --check` limpios; sin tocar Header/HomeClient/HomeHero/SportEventCard/AgendaResults | Sección “Fase L1 — Motor visual de canales, resolutor exacto y componente `ChannelCapsule`” |
+| 2026-11-16 | Fase L2 | Header móvil centrado, Intro despejada con resumen reubicado al pie, Toolbar en orden acciones→deportes→buscador→letrero, chip `Todos` con checklist azul y nuevo `AgendaMatchTicker` en loop continuo con pausa y modo reducido; 252 pruebas, TypeScript, lint, build 173/173, `git diff --check`, QA 320–1280 sin overflow, controles ≥44 px y `prefers-reduced-motion` verificado | Sección “Fase L2 — Header móvil centrado, Intro despejada, Toolbar reordenada y Letrero Digital en loop” |
+| 2026-11-16 | Fase L3 | `HomeHero` con contexto deportivo, `vs` lima, guía vertical y fila `ChannelCapsule + Share + >`; `SportEventCard` compacta de 3 niveles con iniciales reales, cápsula centrada y controles de 44 px; `AgendaResults` con anteriores antes de la barra azul, separador sólido y pastilla de fecha dinámica; 259 pruebas, TypeScript, lint, build 173/173, `git diff --check` y QA CDP en portada, `/envivo` y `/futbol` (320–1280, 0 overflow, 0 controles <44 px) | Sección “Fase L3 — Rediseño de `HomeHero`, compactación de `SportEventCard` y cortes de `AgendaResults`” |
+| 2026-11-17 | Ajuste visual L3 | Se alinea la ficha con `home_layout.png`: liga/evento centrada horizontalmente en la cabecera superior, en mayúsculas y **una sola línea** con truncado; se compacta el espaciado vertical de la ficha (padding, separación a la divisoria y barras internas) para reducir el scroll; logos de canales de 44 px con tooltip de nombre en hover, foco y clic; 262 pruebas, TypeScript, lint, build 173/173, `git diff --check` y QA CDP 320–1280 sin overflow ni controles <44 px | Sección “Resultado de implementación L3” |
+| 2026-11-17 | Fase L4 | `HomeDestacados` con texto limpio de canales, TV y flecha amarilla; superficies inferiores armonizadas (noticias, competiciones y resumen/actualización); dock móvil revisado con foco/touch; `ChannelCapsule` integrada en `SportEventModal` y detalle de evento junto a nombres legibles; QA integral en portada, `/envivo`, `/futbol`, `/nba` y detalle (320–1280) sin overflow ni controles <44 px, modal con foco/Escape/retorno correcto, reduced motion y consola limpia; 265 pruebas, TypeScript, lint, build 173/173 y `git diff --check` | Sección “Fase L4 — Armonización inferior, Modal/Detalle con iconos y QA integral multi-viewport” |
 
 ## Nueva etapa — Auditoría y simplificación de la experiencia
 
@@ -1100,7 +1110,7 @@ Cada sesión de implementación debe tener:
 
 Si aparece trabajo de otra fase, se registra como hallazgo y no se implementa en la sesión actual. Si el contexto llega aproximadamente al 70–75 %, se cierra con handoff.
 
-### Handoff de esta etapa
+### Handoff de la etapa M1–M6
 
 Estado: **Bloque A y M1–M6 aprobados y publicados; corrección de estabilidad móvil `39b9960` publicada el 2026-10-27, pendiente de confirmación en dispositivo**.
 
@@ -1108,7 +1118,8 @@ No se modificaron datos, contenido fuente, IDs, URLs, `.env.local`, Supabase, RL
 
 Siguiente sesión recomendada: confirmar el fix móvil en el teléfono del usuario. Si persiste, continuar el diagnóstico con modelo, versión de sistema/navegador y código de error.
 
-## Prompt de continuidad para la siguiente sesión
+
+## Prompt histórico de continuidad — etapa M1–M6
 
 ```text
 Continuamos GuíaSports en la implementación visual y UX.
@@ -1172,4 +1183,451 @@ Ejecuta las validaciones desde agenda-web, registra cualquier limitación de red
 La incidencia de datos quedó resuelta localmente y no debe reabrirse como trabajo de Supabase. Antes de ejecutar `npm run build`, confirma que el puerto 3000 esté libre y que no exista otro `next dev`, `next start` o `next build`. Si persiste una espera en `compile`, documenta procesos, lock, diagnóstico, red y entorno sin borrar `.next`, locks ni archivos fuente.
 
 Si el usuario solicita ajustes, mantente dentro del paquete publicado. Cualquier push o deploy nuevo requiere autorización explícita.
+```
+
+---
+
+## Nueva etapa V1.2 — Rediseño Home Layout, Compactación de Tarjetas y Sistema Visual de Canales
+
+### Estado y referencias de la etapa
+
+- **Fecha de aprobación del plan:** 2026-11-13.
+- **Estado actual:** **Fases L0–L4 completadas y validadas localmente el 2026-11-17. Sistema visual de canales, Header/Toolbar/Letrero Digital, HomeHero, SportEventCard compacta, AgendaResults, superficies inferiores y modal/detalle con canales integrados; 265 pruebas, build 173/173, QA integral 320–1280 sin overflow ni controles menores a 44 px, modal con foco/Escape correcto, reduced motion y consola limpia. Paquete local listo para solicitar autorización explícita de release/deploy.**
+- **Referencia visual maestra:** `agenda-web/public/capturas/home_layout.png` (`1500×12954 px`, diseño en Illustrator).
+- **Ruta única de iconos de canales y streaming:** `agenda-web/public/images/channels/` (servida en frontend como `/images/channels/<archivo>.webp`).
+- **Alcance estricto:** ajustes exclusivamente visuales, de jerarquía, interacción y mapeo frontend de canales. **Prohibido modificar datos, tablas de Supabase, políticas RLS, `.env.local`, URLs públicas, IDs, SEO/schemas o scripts de sincronización (`scraper.py`, `subir_agenda.py`, `sync-*.mjs`).**
+
+### Especificación visual aprobada (`home_layout.png`)
+
+1. **Header e Intro centrada (*Above the fold* despejado)** — `Header.tsx` y `HomeClient.tsx`:
+   - En móvil, el logotipo `GuíaSports` se centra horizontalmente en `Header.tsx` sobre fondo `#020617` con borde inferior sutil (en escritorio se preserva la barra de navegación completa).
+   - El kicker (`● AGENDA DEPORTIVA EN VIVO` en lima `#a3e635`) y el `<h1>` (`¿Dónde ver deportes` en blanco + `hoy en México` en lima itálica bold + `?` en blanco) se alinean al centro.
+   - El bloque descriptivo (*"Horarios y canales de TV abierta..."*), el conteo de eventos próximos/en vivo, *"Hora local de México"* y el sello `ACTUALIZADO - ...` se retiran de la parte superior y **se reubican al pie del contenido principal** (debajo de *Competiciones Destacadas* y antes del `Footer`), permitiendo que los controles y eventos suban de inmediato a la primera pantalla.
+
+2. **Toolbar reordenada + Letrero Digital (Marquee en loop continuo)** — `AgendaQuickActions.tsx`, `AgendaFilters.tsx`, `AgendaSearch.tsx` y nuevo componente de ticker:
+   - **Fila 1 — Acciones rápidas centradas:** `((•)) EN VIVO` (borde y texto rojo), `📅 HOY` (icono calendario en lima, texto blanco) y `FILTRAR` (icono embudo con sliders en lima, texto blanco).
+   - **Fila 2 — Carrusel horizontal de deportes:** botones laterales `<` y `>` cuadrados redondeados; el chip `Todos` sustituye el trofeo por un **icono de checklist azul** con borde y texto azul activo; chips compactos para el resto de deportes.
+   - **Fila 3 — Buscador (`AgendaSearch.tsx`):** ubicado debajo del carrusel de deportes, caja azul noche/slate con borde sutil y lupa en azul (`#60a5fa`).
+   - **Fila 4 — Letrero digital de enfrentamientos en loop continuo (*Quick Match Marquee*):**
+     - Barra horizontal compacta con borde sutil debajo del buscador (`América vs Chivas • Real Madrid vs Barcelona • Dodgers vs Yankees • ...`) con separadores `•` en color **lima (`#a3e635`)**.
+     - **Comportamiento confirmado por el usuario:** funciona como un **letrero digital deportivo con desplazamiento horizontal automático e infinito en loop suave** (duplicando la pista visual con `aria-hidden="true"` en la copia para continuidad sin cortes y animación CSS fluida por `transform: translate3d`).
+     - Se alimenta dinámicamente en cliente a partir de los eventos destacados/vigentes de la ventana actual (sin consultas nuevas ni cambios en Supabase).
+     - Cada enfrentamiento es interactivo (al hacer clic abre el modal del evento o filtra/busca el partido).
+     - Se pausa suavemente en `:hover` y `:focus-within` para facilitar el clic/lectura, y si el usuario tiene activo `prefers-reduced-motion: reduce`, detiene el loop automático y permite desplazamiento horizontal manual limpio sin mareo ni bloqueo.
+
+3. **Hero editorial compacto con cápsula de canales integrada** — `HomeHero.tsx`:
+   - Fila superior: a la izquierda, pastilla `● EN VIVO AHORA` (o etiqueta editorial); a la derecha, contexto deportivo alineado a la derecha (`• DEPORTE` arriba + `COMPETICIÓN` en lima abajo + icono del deporte). El botón compartir baja a la fila de acciones.
+   - Título del partido con el conector **`vs` en color lima (`#a3e635`)**.
+   - Guía vertical izquierda en lima para `CUÁNDO` (reloj + `HH:MM • Hoy` en lima brillante) y `DÓNDE VERLO`.
+   - **Fila inferior unificada:** icono custom de `TV ((•))` en azul claro + **cápsula contenedora de iconos de canales** + botón cuadrado `Compartir` + **botón primario cuadrado `>` en lima sólido** (~`44×44 px`, sustituyendo el botón ancho *"Ver evento ↗"*).
+
+4. **Nueva ficha compacta `SportEventCard` de 3 niveles** — `SportEventCard.tsx`:
+   Reduce sustancialmente la altura vertical en móvil eliminando etiquetas repetitivas (*"Dónde verlo"*, *"Ver detalle"*) y ordenando la lectura en tres franjas:
+   - **Nivel 1 — Cabecera dividida (con línea divisoria sutil inferior):**
+     - *Izquierda:* icono del deporte + `🕒 Hora` grande y clara (reloj coral en vivo, neutro en próximo) + fecha corta debajo (`Dom 08 Nov`).
+     - *Derecha:* pastilla de estado (`• En vivo` en rojo/vino o `Próximo` en pill oscuro con borde slate) + debajo `• DEPORTE` (bullet rojo en vivo, azul en próximo) + `COMPETICIÓN` alineada a la derecha.
+   - **Nivel 2 — Enfrentamiento / Evento:**
+     - Si contiene ` vs `: diseño simétrico `[Equipo Local alineado a derecha] (IN) vs (IN) [Equipo Visitante alineado a izquierda]` con círculos de iniciales reales.
+     - Si es evento general (ej. *NASCAR Cup Series*, GP de F1): título directo en una línea bold alineada a la izquierda.
+   - **Nivel 3 — Barra inferior unificada de Transmisión + Acciones (1 sola fila):**
+     - Icono `TV ((•))` en azul claro a la izquierda.
+     - **Cápsula central (`flex-1`)** con fondo azul marino translúcido y borde azulado sutil que aloja los **iconos cuadrados de canales/plataformas** centrados (con scroll horizontal limpio si exceden el ancho y fallback a pastilla de texto si algún canal futuro no tiene imagen o dice *"Por confirmar"*).
+     - Derecha: botón cuadrado `Compartir` (`44×44 px`) + **botón primario cuadrado `>` en lima (`#a3e635`)** (`44×44 px`, chevron oscuro y `aria-label="Ver detalles de ..."` accesible).
+   - Compatible de forma responsiva con escritorio (`md+`) y heredado armónicamente por `EventListWithModal.tsx` en `/envivo` y hubs deportivos (`/futbol`, `/nba`, `/mlb`, `/f1`).
+
+5. **Cortes de sección en `AgendaResults.tsx` y superficies inferiores**:
+   - Marco exterior redondeado con borde rojizo sutil para agrupar la sección *En vivo ahora*.
+   - Bloque desplegable compacto *Eventos anteriores de hoy* ubicado **antes** de la barra divisoria de *Próximos eventos*, con contador en pastilla azul y texto `VER PARTIDOS ⌄`.
+   - **Barra horizontal azul sólida** encima del encabezado `📅 Próximos eventos` para separar visualmente el bloque actual/pasado de la agenda futura, seguida de la pastilla de fecha `📅 HOY` con línea extendida.
+   - Conservación y pulido fino de *Imperdibles de hoy* (texto de canal con flecha amarilla `↗`), *Últimas noticias*, *Competiciones destacadas*, resumen reubicado al pie y dock móvil (`NavMobile.tsx`).
+
+---
+
+### Estándar técnico y catálogo maestro de iconos de canales
+
+#### Reglas de activos gráficos (`agenda-web/public/images/channels/`)
+
+- **Formato único:** `.webp` cuadrado `128 × 128 px` (proporción `1:1`), exportado con su fondo cuadrado de marca completo hasta el borde (el redondeo uniforme `rounded-md` / `rounded-lg` + `overflow-hidden` lo aplica CSS en Hero, Card y Modal).
+- **Convención de nombres:** `kebab-case` estricto en minúsculas ASCII (`a-z`, `0-9`, `-`), sin espacios, sin acentos (`nacion`, `beisbol`), cambiando `+` por `-plus`, sin barras `/` ni asteriscos `*`.
+- **Logos independientes confirmados por el usuario:** cada variante de señal o nivel de plataforma tendrá su propio archivo independiente (incluyendo `espn.webp` y `espn-1..4.webp`, `disney-plus.webp` y `disney-plus-premium.webp`, `fox-sports*.webp` y `nacion-deportes*.webp`, `tennis-tv.webp` y `atp-tennis-tv.webp`). El único caso que comparte archivo por tratarse de un prefijo técnico del scraper es `* youtube` → `youtube.webp`.
+- **Regla de conexión en código (`resolveChannelsForDisplay`):**
+  1. Separar canales únicamente por delimitadores reales de lista (`, ` y ` · `), evitando romper nombres compuestos.
+  2. Normalizar cada nombre crudo (minúsculas, sin diacríticos, eliminar `*` inicial/final, convertir `+` en `plus`, colapsar espacios/puntuación).
+  3. Resolver por **coincidencia exacta de alias normalizado** antes de cualquier heurística, evitando falsos positivos entre señales hermanas (`ESPN` vs `ESPN 2/3/4`, `FOX` vs `Fox One` vs `FOX+` vs `Fox Sports`, `TVC Deportes` vs `TVC Deportes 2`).
+  4. Mantener intactas las funciones `isTvAbierta()` y `matchChannels()` consumidas por `eventSearch.ts` y filtros.
+  5. Si un canal nuevo del scraper aún no cuenta con imagen o falla su carga, renderizar automáticamente una pastilla de texto limpia dentro de la cápsula (0 imágenes rotas).
+
+#### Lista A — Canales base identificados (archivos independientes confirmados)
+
+| # | Canal origen | Archivo exacto en `public/images/channels/` | Alias del scraper que conectan a este icono |
+|---|---|---|---|
+| 1 | Canal 5 | `canal-5.webp` | `Canal 5`, `El 5`, `5*`, `Canal 5*`, `Canal5` |
+| 2 | Azteca 7 | `azteca-7.webp` | `Azteca 7`, `TV Azteca 7`, `Azteca7`, `7` |
+| 3 | Nu9ve | `nu9ve.webp` | `Nu9ve`, `Canal 9`, `El 9`, `Galavisión`, `Canal9` |
+| 4 | Imagen TV | `imagen-tv.webp` | `Imagen TV`, `Imagen Televisión`, `Canal 3` |
+| 5 | ESPN | `espn.webp` | `ESPN`, `ESPN México` |
+| 6 | ESPN 1 | `espn-1.webp` | `ESPN 1`, `ESPN1` |
+| 7 | ESPN 2 | `espn-2.webp` | `ESPN 2`, `ESPN2` |
+| 8 | ESPN 3 | `espn-3.webp` | `ESPN 3`, `ESPN3` |
+| 9 | ESPN 4 | `espn-4.webp` | `ESPN 4`, `ESPN4` |
+| 10 | FOX | `fox.webp` | `FOX`, `Canal FOX`, `FOX México` |
+| 11 | Fox One | `fox-one.webp` | `Fox One`, `FOX ONE`, `FOXOne` |
+| 12 | FOX+ | `fox-plus.webp` | `FOX+`, `Fox+`, `Fox Plus`, `FOX Plus` |
+| 13a | Fox Sports | `fox-sports.webp` | `Fox Sports`, `Fox Sports 1`, `FS1` |
+| 13b | Nación Deportes | `nacion-deportes.webp` | `Nación Deportes`, `Nacion Deportes`, `Nación Deportes 1` |
+| 14a | Fox Sports 2 | `fox-sports-2.webp` | `Fox Sports 2`, `FS2` |
+| 14b | Nación Deportes 2 | `nacion-deportes-2.webp` | `Nación Deportes 2`, `Nacion Deportes 2` |
+| 15a | Fox Sports 3 | `fox-sports-3.webp` | `Fox Sports 3`, `FS3` |
+| 15b | Nación Deportes 3 | `nacion-deportes-3.webp` | `Nación Deportes 3`, `Nacion Deportes 3` |
+| 16a | Fox Sports Premium | `fox-sports-premium.webp` | `Fox Sports Premium` |
+| 16b | Nación Deportes Premium | `nacion-deportes-premium.webp` | `Nación Deportes Premium`, `Nacion Deportes Premium` |
+| 17 | TUDN | `tudn.webp` | `TUDN`, `TUDN México`, `TUDN En Vivo` |
+| 18 | TVC Deportes | `tvc-deportes.webp` | `TVC Deportes` |
+| 19 | TVC Deportes 2 | `tvc-deportes-2.webp` | `TVC Deportes 2` |
+| 20 | Azteca Deportes Network | `azteca-deportes-network.webp` | `Azteca Deportes Network`, `Azteca Deportes`, `aztecadeportes.com` |
+| 21 | Sky Sports | `sky-sports.webp` | `Sky Sports`, `SKY Sports`, `Sky+`, `Sky` |
+| 22 | TNT Sports | `tnt-sports.webp` | `TNT Sports`, `TNT Sports México` |
+| 23 | HBO Max / Max | `hbo-max.webp` | `HBO Max`, `Max`, `HBO` |
+| 24 | ViX | `vix.webp` | `ViX`, `ViX+`, `ViX Gratis`, `ViX Premium` *(o `vix-premium.webp` si se separa)* |
+| 25 | Disney+ Premium | `disney-plus-premium.webp` | `Disney+ Premium`, `Disney Plus Premium` |
+| 26 | Prime Video | `prime-video.webp` | `Prime Video`, `Amazon Prime Video`, `Amazon Prime` |
+| 27 | Paramount+ | `paramount-plus.webp` | `Paramount+`, `Paramount Plus` |
+| 28 | F1 TV Pro | `f1-tv-pro.webp` | `F1 TV Pro`, `F1 TV`, `F1 TV Premium`, `F1TV` |
+| 29 | Apple TV | `apple-tv.webp` | `Apple TV`, `Apple TV+`, `Apple TV Plus` |
+| 30 | Pluto TV | `pluto-tv.webp` | `Pluto TV` |
+| 31 | LMB TV | `lmb-tv.webp` | `LMB TV`, `LMB.TV`, `Jonrón.TV`, `Jonron TV` |
+| 32 | Caliente TV | `caliente-tv.webp` | `Caliente TV`, `Caliente.mx TV` |
+| 33 | Claro Sports | `claro-sports.webp` | `Claro Sports`, `Marca Claro`, `Claro Sports YouTube` |
+| 34 | DAZN | `dazn.webp` | `DAZN`, `DAZN App` |
+| 35 | Tubi | `tubi.webp` | `Tubi`, `Tubi TV` |
+| 36 | Laytime TV | `laytime-tv.webp` | `Laytime TV`, `Laytime` |
+| 37 | Fanatiz | `fanatiz.webp` | `Fanatiz`, `Fanatiz México` |
+| 38 | MotoGP VideoPass | `motogp-videopass.webp` | `MotoGP VideoPass`, `VideoPass`, `MotoGP TV` |
+| 39 | WTA TV | `wta-tv.webp` | `WTA TV`, `WTA Unlocked` |
+| 40 | Tennis TV | `tennis-tv.webp` | `Tennis TV`, `TennisTV` |
+| 41 | ATP Tennis TV | `atp-tennis-tv.webp` | `ATP Tennis TV`, `ATPTennis.TV` |
+| 42 | NBA League Pass | `nba-league-pass.webp` | `NBA League Pass`, `NBA Pass` |
+| 43 | FUTV | `futv.webp` | `FUTV` |
+| 44 | 1Baseball Network | `1baseball-network.webp` | `1Baseball Network`, `1Baseball` |
+| 45 | BeisbolPlay | `beisbolplay.webp` | `BeisbolPlay`, `BéisbolPlay` |
+| 46 | AYM Sports | `aym-sports.webp` | `AYM Sports`, `AyM Sports` |
+| 47–48 | YouTube / `* YouTube` | `youtube.webp` | `YouTube`, `* YouTube`, `YouTube Live` *(prefijo `*` limpiado en código)* |
+| 49 | RCN Nuestra Tele | `rcn-nuestra-tele.webp` | `RCN Nuestra Tele`, `Nuestra Tele`, `RCN Internacional` |
+| 50 | Globo Internacional | `globo-internacional.webp` | `Globo Internacional`, `TV Globo Internacional` |
+| 51 | LPF Play | `lpf-play.webp` | `LPF Play` |
+| 52 | TyC Sports Internacional | `tyc-sports-internacional.webp` | `TyC Sports Internacional`, `TyC Sports` |
+| 53 | MegaSports | `megasports.webp` | `MegaSports`, `Mega Sports`, `Megacable Sports` |
+| 54 | Antel TV Internacional | `antel-tv-internacional.webp` | `Antel TV Internacional`, `Antel TV` |
+
+#### Lista B — Canales adicionales en proyecto actual y frecuentes en el scraper (recomendados)
+
+| Canal / Plataforma | Archivo exacto en `public/images/channels/` | Contexto en GuíaSports / Scraper WOSTI |
+|---|---|---|
+| Disney+ (Estándar) | `disney-plus.webp` | Cuando el scraper envía `"Disney+"` sin *"Premium"* (incluye alias histórico `Star+`). |
+| Las Estrellas | `las-estrellas.webp` | Ya en `channelCatalog.ts` (`Las Estrellas`, `Canal 2`). |
+| Azteca Uno | `azteca-uno.webp` | Ya en `channelCatalog.ts` (`Azteca Uno`, `Azteca 1`, `Canal 1`). |
+| Hi Sports | `hi-sports.webp` | Ya en `channelCatalog.ts` (`Hi Sports`). |
+| Afizzionados | `afizzionados.webp` | Ya en `channelCatalog.ts` (`Afizzionados`). |
+| Netflix | `netflix.webp` | Ya en `platformsData.ts` (WWE Raw, NFL Navidad, Boxeo/MMA, F1). |
+| NFL Game Pass | `nfl-game-pass.webp` | Ya en `channelCatalog.ts` (`NFL Game Pass`, `DAZN NFL`). |
+| MLS Season Pass | `mls-season-pass.webp` | Frecuente en MLS y Leagues Cup separado de `Apple TV`. |
+| MLB.TV | `mlb-tv.webp` | Diario en temporada MLB (`MLB.TV`, `MLB TV`). |
+| UFC Fight Pass | `ufc-fight-pass.webp` | Semanal en eventos de Combate / UFC. |
+| FIFA+ | `fifa-plus.webp` | Eliminatorias, torneos FIFA y ligas internacionales gratuitas. |
+| OneFootball | `onefootball.webp` | Ligas internacionales gratuitas/PPV en WOSTI. |
+| UEFA.tv | `uefa-tv.webp` | UEFA Youth League, Futsal y torneos europeos. |
+| ESPN Extra | `espn-extra.webp` | Tenis, rugby y ligas sudamericanas en México. |
+| Canal 6 / Multimedios | `canal-6.webp` | LMB, LNBP y Liga MX Femenil (`Canal 6`, `Multimedios`). |
+| Canal Once / Canal 22 | `canal-once.webp` / `canal-22.webp` | LMB, ONEFA y Juegos Olímpicos. |
+| TNT / Space | `tnt.webp` / `space.webp` | Canales lineales de Warner con Champions League, Boxeo y Lucha. |
+| Chivas TV / Claro Video | `chivas-tv.webp` / `claro-video.webp` | Partidos locales de Chivas y streaming de América Móvil. |
+
+#### Lista C — Nombres reservados para expansión futura (cubiertos por fallback automático si aún no existen)
+
+- **Ligas / Deportes especializados:** `nba-tv.webp`, `nfl-network.webp`, `mlb-network.webp`, `nhl-tv.webp`, `golf-channel.webp`, `courtside-1891.webp`, `euroleague-tv.webp`, `rally-tv.webp`, `triller-tv.webp`, `vix-premium.webp`.
+- **Señales internacionales / regionales en WOSTI:** `espn-deportes.webp`, `espn-premium.webp`, `fox-deportes.webp`, `telemundo.webp`, `univision.webp`, `win-sports-plus.webp`, `goltv.webp`, `tigo-sports.webp`, `dsports.webp`.
+- **Alternativos / Redes:** `px-sports.webp`, `adrenalina-sports.webp`, `facebook-live.webp` (`* Facebook`), `twitch.webp` (`* Twitch`).
+
+#### Resultado de auditoría L0 — 2026-11-16
+
+- **Archivos en disco:** 95 archivos `.webp` en `agenda-web/public/images/channels/`, todos con nombre `kebab-case.webp` estricto (minúsculas ASCII, sin espacios, acentos, `+`, `/` ni `*`) y sin typos detectados.
+- **Cobertura del plan:** la unión de Listas A/B/C suma 101 nombres únicos; 95 existen en disco y 6 son reservados aún no cargados, por lo que **no hay archivos fuera del catálogo aprobado**.
+- **Lista A:** 58 archivos únicos referenciados, 57 presentes. El único ausente es `vix-premium.webp` (alternativa opcional); `ViX Premium` se resuelve por decisión de producto contra `vix.webp`.
+- **Lista B:** 21 archivos únicos, 20 presentes. Falta `espn-extra.webp`, que se renderiza con pastilla de texto limpia (sin 404).
+- **Lista C presente en disco (18):** `nba-tv`, `nfl-network`, `mlb-network`, `nhl-tv`, `golf-channel`, `courtside-1891`, `euroleague-tv`, `rally-tv`, `telemundo`, `univision`, `win-sports-plus`, `goltv`, `tigo-sports`, `dsports`, `px-sports`, `adrenalina-sports`, `facebook-live` y `twitch`.
+- **Reservados aún sin archivo (6):** `espn-extra`, `espn-deportes`, `espn-premium`, `fox-deportes`, `triller-tv` y `vix-premium`. Todos caen automáticamente al fallback de texto.
+- **Fuente de verdad en código:** `CHANNEL_ICON_FILES` en `channelCatalog.ts` replica exactamente los 95 archivos auditados; ninguna ruta de logo puede apuntar a un archivo ausente.
+
+---
+
+### Roadmap modular por sesiones — Etapa V1.2
+
+Cada fase se ejecuta en una sesión independiente (salvo L0+L1 que pueden unirse por ser ligera la auditoría de archivos), manteniendo el contexto por debajo del 70 % y cerrando siempre con validaciones, reporte y handoff.
+
+#### Fase L0 — Verificación de activos en `public/images/channels/`
+- **Estado:** **completada el 2026-11-16.** 95 archivos auditados sin typos; Listas A/B prácticamente completas y 6 nombres reservados cubiertos por fallback de texto (ver “Resultado de auditoría L0 — 2026-11-16”).
+- **Objetivo:** auditar los archivos `.webp` colocados en `agenda-web/public/images/channels/`, confirmar coincidencia exacta de nombres `kebab-case.webp` frente a las Listas A/B/C y registrar cuáles iconos están presentes en disco para que el catálogo sólo apunte a imágenes reales existentes (y use fallback limpio en las reservadas aún no cargadas).
+
+#### Fase L1 — Motor visual de canales, resolutor exacto y componente `ChannelCapsule`
+- **Estado:** **completada el 2026-11-16.** `resolveChannelsForDisplay` con coincidencia exacta, `ChannelCapsule.tsx` con fallback seguro y `channelCatalog.test.ts` con cobertura de Listas A/B/C; validaciones verdes y sin tocar los archivos reservados a L2/L3.
+- **Archivos guía:** `agenda-web/src/lib/channelCatalog.ts`, nuevo `agenda-web/src/lib/channelCatalog.test.ts` y nuevo `agenda-web/src/components/ChannelCapsule.tsx`.
+- **Acciones:**
+  - Extender el catálogo con metadatos visuales (`logo`) para todos los iconos disponibles en `public/images/channels/` y crear `resolveChannelsForDisplay(canalesStr)` con normalización exacta (distinguiendo `ESPN` / `ESPN 1..4`, `Disney+` / `Disney+ Premium`, `FOX` / `Fox One` / `FOX+` / `Fox Sports*` / `Nación Deportes*`, `Tennis TV` / `ATP Tennis TV`, `TVC Deportes 1/2` y limpiando `* youtube`).
+  - Conservar sin regresiones `isTvAbierta()`, `matchChannels()` y `eventSearch.ts`.
+  - Construir `ChannelCapsule.tsx`: icono custom `TV ((•))` en azul + cápsula oscura redondeada con logos cuadrados `1:1` redondeados por CSS, scroll horizontal oculto si hay muchos canales, fallback elegante a pastilla de texto si algún canal aún no tiene imagen en disco y estado prudente *"Por confirmar"*.
+  - Añadir pruebas unitarias exhaustivas en Vitest para todas las variantes del scraper.
+- **Criterio de salida:** pruebas verdes, TypeScript/lint/build limpios; aún no se tocan `Header`, `HomeClient`, `HomeHero` ni `SportEventCard`.
+
+#### Fase L2 — Header móvil centrado, Intro despejada, Toolbar reordenada y Letrero Digital en loop
+- **Estado:** **completada el 2026-11-16.** Header móvil centrado, Intro despejada, Toolbar en el orden aprobado y `AgendaMatchTicker` operativo; validaciones y QA multi-viewport verdes.
+- **Archivos guía:** `Header.tsx`, `HomeClient.tsx`, `AgendaQuickActions.tsx`, `AgendaFilters.tsx`, `AgendaSearch.tsx`, nuevo `agenda/AgendaMatchTicker.tsx` y `globals.css`.
+- **Acciones:**
+  - Centrar el logotipo en móvil en `Header.tsx` conservando intacta la navegación de escritorio.
+  - Centrar kicker (`● AGENDA DEPORTIVA EN VIVO`) y `<h1>` en `HomeClient.tsx`; trasladar el párrafo descriptivo, resumen de conteos y `ACTUALIZADO` al cierre del `<main>` (debajo de *Competiciones Destacadas*, antes del `Footer`).
+  - Reordenar el toolbar exactamente como `home_layout.png`: (1) `EN VIVO`, `HOY` y `FILTRAR` centrados con su nueva iconografía y acentos rojo/lima; (2) carrusel de deportes con flechas `<` `>` cuadradas y chip `Todos` con icono de checklist azul; (3) `AgendaSearch` debajo; (4) `AgendaMatchTicker` debajo del buscador operando como **letrero digital horizontal en loop continuo** con separadores `•` en lima, clicable hacia el partido, pausa en hover/foco y modo estático deslizable bajo `prefers-reduced-motion: reduce`.
+- **Criterio de salida:** *above the fold* fiel al layout en 320–1280 px, `overflow-x = 0`, teclado y foco accesibles.
+- **Resultado de implementación L2:**
+  - `Header.tsx`: logotipo centrado en móvil y navegación de escritorio intacta.
+  - `HomeClient.tsx`: Intro centrada sin párrafo/resumen; resumen y `ACTUALIZADO` reubicados al pie del `<main>`, después de Competiciones Destacadas y antes del Footer.
+  - `AgendaQuickActions.tsx`, `AgendaFilters.tsx` y `AgendaSearch.tsx`: orden acciones → deportes → buscador, acentos rojo/lima, chip `Todos` con `ListChecks` azul y controles de 44 px.
+  - `AgendaMatchTicker.tsx`: pista duplicada `aria-hidden`, separadores lima, clic hacia el modal, pausa en hover/foco y modo estático deslizable con `prefers-reduced-motion`.
+  - QA CDP en 320/375/768/1024/1280 px: `scrollWidth === clientWidth`, 0 overflow horizontal, mínimo de control 44 px, ticker presente y `animationName: none`, copia oculta y `overflow-x: auto` en movimiento reducido.
+  - Validaciones: 252 pruebas, TypeScript, lint, build 173/173 y `git diff --check` limpios.
+
+#### Fase L3 — Rediseño de `HomeHero`, compactación de `SportEventCard` y cortes de `AgendaResults`
+- **Estado:** **completada el 2026-11-16.** `HomeHero`, `SportEventCard` compacta y cortes de `AgendaResults` implementados; validaciones y QA multi-viewport verdes.
+- **Archivos guía:** `HomeHero.tsx`, `SportEventCard.tsx`, `AgendaResults.tsx`, `EventListWithModal.tsx` (revisión de herencia) y `globals.css`.
+- **Acciones:**
+  - Actualizar `HomeHero.tsx`: pastilla en vivo a la izquierda, deporte/liga en lima + icono arriba a la derecha, conector `vs` en lima, guía vertical lima en `CUÁNDO`/`DÓNDE VERLO` y fila inferior unificada con `ChannelCapsule` + `ShareButton` + botón primario cuadrado `>` en lima (`44×44 px`).
+  - Rediseñar `SportEventCard.tsx` con la nueva estructura compacta de 3 niveles (cabecera *icono/hora/fecha* izq. + *pastilla/deporte/liga* der.; enfrentamiento simétrico con iniciales o título limpio; barra inferior unificada `TV ((•)) + ChannelCapsule + Share + botón > lima` con `aria-label` accesible), cuidando su adaptación limpia en móvil, tablet y escritorio (incluyendo `/envivo` y hubs).
+  - Ajustar `AgendaResults.tsx`: contenedor con borde rojizo sutil en *En vivo ahora*, desplegable *Eventos anteriores de hoy* ubicado antes de la barra divisoria azul sólida de *Próximos eventos*, y pastilla `📅 HOY` con línea divisoria.
+- **Criterio de salida:** reducción clara de altura vertical en tarjetas, lectura instantánea de hora/rivales/logos de canal y 0 desbordes horizontales en portada, `/envivo` y hubs.
+- **Resultado de implementación L3:**
+  - `HomeHero.tsx`: estado a la izquierda, deporte/competición alineados a la derecha con icono, `vs` lima, guía vertical lima en `CUÁNDO`/`DÓNDE VERLO` y fila inferior con `ChannelCapsule + ShareButton + >` de 44 px.
+  - `SportEventCard.tsx`: ficha compacta de 3 niveles, iniciales reales por equipo, estado/deporte/competición en la cabecera superior (liga/evento centrada horizontalmente, en mayúsculas y una sola línea con truncado), espaciado vertical reducido, cápsula de canales centrada y acciones cuadradas; usada por `/envivo` y hubs mediante `EventListWithModal`.
+  - `AgendaResults.tsx`: bloque de anteriores antes del separador, barra azul sólida, encabezado de próximos y pastilla de fecha dinámica con línea extendida.
+  - `ChannelCapsule.tsx`: logos de 44 px centrados cuando sobran espacios y con scroll limpio cuando exceden; tooltip pequeño con el nombre del canal en hover, foco y clic, con cierre al tocar fuera o desplazar; icono TV y cápsula ajustados a la nueva escala.
+  - Pruebas nuevas `HomeHero.test.tsx` y `SportEventCard.test.tsx`.
+  - Validaciones: 259 pruebas, TypeScript, lint, build 173/173, `git diff --check` y QA CDP en portada, `/envivo` y `/futbol` (320/375/768/1024/1280) sin overflow, sin controles menores a 44 px y orden del bloque de anteriores verificado.
+
+#### Fase L4 — Armonización inferior, Modal/Detalle con iconos y QA integral multi-viewport
+- **Estado:** **completada y validada localmente el 2026-11-17.** Superficies inferiores, dock móvil, modal/detalle con canales y QA integral cerrados; paquete local listo para solicitar autorización de release/deploy.
+- **Archivos guía:** `HomeDestacados.tsx`, `SportEventModal.tsx`, `evento/[slug]/page.tsx`, `NavMobile.tsx` y `HomeClient.tsx` (módulos inferiores).
+- **Acciones:**
+  - Afinar detalles visuales de *Imperdibles de hoy*, *Últimas noticias*, *Competiciones destacadas*, bloque inferior de resumen/actualización y dock móvil (`NavMobile.tsx`).
+  - Integrar los iconos de canales junto a sus nombres legibles en `SportEventModal.tsx` y `evento/[slug]/page.tsx` para continuidad visual completa al abrir un evento.
+  - Ejecutar QA integral en `320`, `375`, `768`, `1024` y `1280 px`: `overflow-x = 0`, contraste AA, áreas táctiles ≥ `44 px`, teclado/Escape/retorno de foco, `prefers-reduced-motion` (especialmente en el letrero digital y hero), consola limpia y suite completa (`test`, `tsc`, `lint`, `build`, `git diff --check`).
+- **Criterio de salida:** paquete visual V1.2 verificado en local y listo para solicitar autorización explícita de release/deploy.
+- **Resultado de implementación L4:**
+  - `HomeDestacados.tsx`: “Imperdibles de hoy” muestra el nombre limpio de canales con icono TV y flecha amarilla ↗, conservando el clic completo hacia el evento.
+  - `HomeClient.tsx`: “Últimas noticias” y “Competiciones destacadas” quedan alineadas al sistema de secciones, con encabezados consistentes y metadatos; el resumen/actualización se mantiene al pie.
+  - `NavMobile.tsx`: dock revisado con `touch-manipulation`, espaciado compacto y navegación/foco existentes conservados.
+  - `SportEventModal.tsx` y `evento/[slug]/page.tsx`: `ChannelCapsule` integrada en “Dónde verlo” junto a los nombres legibles de canales y fallback de texto.
+  - QA integral CDP en portada, `/envivo`, `/futbol`, `/nba` y detalle de evento, en 320/375/768/1024/1280 px: 25 combinaciones sin overflow, sin controles menores a 44 px, modal con cápsula de canales, foco inicial y retorno correcto tras Escape, reduced motion verificado y 0 errores de consola.
+  - Validaciones finales: **265 pruebas**, TypeScript, lint, build **173/173** y `git diff --check` limpios.
+
+---
+
+### Handoff final — Etapa V1.2
+
+- **Estado:** **Etapa V1.2 completa en local el 2026-11-17. Fases L0–L4 cerradas y validadas.** 95 iconos auditados; `channelCatalog.ts` con `logo`, índice exacto de alias y `resolveChannelsForDisplay`; `ChannelCapsule.tsx` con fallback seguro, logos de 44 px y tooltip de nombre en hover/foco/clic; Header/Toolbar/Letrero Digital, HomeHero, SportEventCard compacta, AgendaResults, superficies inferiores y modal/detalle con canales integrados.
+- **Validaciones finales:** `npm run test` (**265 pruebas**), `npx tsc --noEmit`, `npm run lint`, `npm run build` (**173/173**), `git diff --check` y QA CDP en portada, `/envivo`, `/futbol`, `/nba` y detalle de evento (320/375/768/1024/1280): 25 combinaciones sin overflow, sin controles menores a 44 px, modal con foco/Escape/retorno correcto, reduced motion verificado y consola limpia.
+- **Archivos nuevos/modificados:** `channelCatalog.ts`, `channelCatalog.test.ts`, `ChannelCapsule.tsx`, `ChannelCapsule.test.tsx`, `Header.tsx`, `HomeClient.tsx`, `HomeHero.tsx`, `HomeHero.test.tsx`, `HomeDestacados.tsx`, `HomeDestacados.test.tsx`, `SportEventCard.tsx`, `SportEventCard.test.tsx`, `SportEventModal.tsx`, `NavMobile.tsx`, `evento/[slug]/page.tsx`, `AgendaQuickActions.tsx`, `AgendaFilters.tsx`, `AgendaResults.tsx`, `AgendaMatchTicker.tsx`, `AgendaMatchTicker.test.tsx` y `globals.css`. `EventListWithModal.tsx` y `AgendaSearch.tsx` no requirieron cambios internos.
+- **Sin cambios:** datos, IDs, URLs públicas, SEO/schemas, Supabase, RLS, `.env.local` ni scripts de sincronización (`scraper.py`, `subir_agenda.py`, `sync-*.mjs`).
+- **Siguiente paso:** solicitar **autorización explícita del usuario** para release/deploy. No se ha hecho push ni deploy.
+- **Recordatorio:** cualquier commit, push o deploy requiere autorización explícita del usuario.
+
+## Prompt histórico — Fase L0 + Fase L1 (ejecutada)
+
+```text
+Continuamos GuíaSports en la implementación visual y UX (Etapa V1.2 — Rediseño Home Layout, Compactación de Tarjetas y Sistema Visual de Canales).
+
+Lee primero:
+- PLAN-DISENO-UX-VISUAL-GUIASPORTS.md (especialmente la sección final "Nueva etapa V1.2")
+- agenda-web/AGENTS.md
+- agenda-web/CLAUDE.md
+
+Contexto actual:
+- Las etapas previas (Fases 0–8 y Bloque A / M1–M6 + fix móvil 39b9960) están cerradas y publicadas.
+- El Plan V1.2 está aprobado y documentado en PLAN-DISENO-UX-VISUAL-GUIASPORTS.md con referencia visual en agenda-web/public/capturas/home_layout.png.
+- Ya cargué los iconos cuadrados (.webp) independientes en la ruta única: agenda-web/public/images/channels/.
+
+Objetivo único de esta sesión (Fase L0 + Fase L1):
+1. Fase L0: Listar y auditar todos los archivos presentes en agenda-web/public/images/channels/ contra las Listas A, B y C del plan. Si detectas algún nombre con typo o variación respecto al estándar kebab-case.webp, repórtalo o mapea con precisión sólo los archivos realmente existentes en disco (para nunca generar rutas 404).
+2. Fase L1:
+   - Actualizar agenda-web/src/lib/channelCatalog.ts agregando soporte de iconos independientes (/images/channels/<archivo>.webp) y creando la función resolveChannelsForDisplay(canalesStr) con coincidencia normalizada exacta (distinguiendo ESPN vs ESPN 1/2/3/4, Disney+ vs Disney+ Premium, FOX vs Fox One vs FOX+ vs Fox Sports 1/2/3/Premium vs Nación Deportes 1/2/3/Premium, Tennis TV vs ATP Tennis TV, TVC Deportes 1/2, limpiando el prefijo '* ' en '* youtube', y manejando "Por confirmar").
+   - Conservar intactos isTvAbierta(), matchChannels() y la compatibilidad con agenda-web/src/lib/eventSearch.ts.
+   - Crear el componente reutilizable agenda-web/src/components/ChannelCapsule.tsx (icono TV con señal azul + cápsula oscura redondeada con logos cuadrados redondeados por CSS y fallback automático a pastilla de texto limpia cuando un canal no tenga archivo de imagen o falle su carga).
+   - Crear pruebas unitarias completas en agenda-web/src/lib/channelCatalog.test.ts verificando todas las variantes del scraper y confirmar que eventSearch.test.ts siga en verde.
+   - NO modificar todavía Header.tsx, HomeClient.tsx, HomeHero.tsx, SportEventCard.tsx ni AgendaResults.tsx (pertenecen a Fases L2 y L3).
+
+Guardrails estrictos:
+- Trabajar sólo en local; antes de escribir código en Next.js, leer la guía relevante en node_modules/next/dist/docs/ según agenda-web/AGENTS.md.
+- NO modificar datos, IDs, URLs, SEO, .env.local, Supabase, RLS ni scripts de sincronización (scraper.py, subir_agenda.py, sync-*.mjs).
+- NO introducir dependencias nuevas ni hacer push/deploy sin autorización explícita.
+- Ejecutar validaciones desde agenda-web/:
+  - npm run test
+  - npx tsc --noEmit
+  - npm run lint
+  - npm run build (confirmando antes que el puerto 3000 esté libre y sin otros procesos de Next; no borrar .next, locks ni fuentes)
+  - git diff --check
+- Al finalizar, actualizar el avance de L0/L1 en PLAN-DISENO-UX-VISUAL-GUIASPORTS.md y entregar Reporte de sesión, Handoff a Fase L2 y Prompt de continuidad para Fase L2.
+```
+
+## Prompt histórico — Fase L2 (ejecutada)
+
+```text
+Continuamos GuíaSports en la implementación visual y UX (Etapa V1.2 — Rediseño Home Layout, Compactación de Tarjetas y Sistema Visual de Canales).
+
+Lee primero:
+- PLAN-DISENO-UX-VISUAL-GUIASPORTS.md (especialmente “Nueva etapa V1.2”, “Resultado de auditoría L0 — 2026-11-16” y “Handoff activo — Etapa V1.2”)
+- agenda-web/AGENTS.md
+- agenda-web/CLAUDE.md
+
+Contexto actual:
+- Las etapas previas (Fases 0–8 y Bloque A / M1–M6 + fix móvil 39b9960) están cerradas y publicadas.
+- Las Fases L0 + L1 están completadas y validadas localmente: 95 iconos auditados, `resolveChannelsForDisplay` con coincidencia exacta y `ChannelCapsule.tsx` con fallback seguro (248 pruebas, TypeScript, lint, build 173/173 y git diff --check limpios).
+- `agenda-web/public/images/channels/` queda como fuente única de iconos; los 6 nombres reservados aún ausentes usan fallback de texto y no generan rutas 404.
+- No se hicieron push ni deploy.
+
+Objetivo único de esta sesión (Fase L2):
+1. Header móvil centrado (`Header.tsx`): logotipo `GuíaSports` centrado en móvil sobre `#020617` con borde inferior sutil, preservando intacta la navegación de escritorio.
+2. Intro despejada (`HomeClient.tsx`): kicker `● AGENDA DEPORTIVA EN VIVO` y `<h1>` centrados; retirar el párrafo descriptivo, conteo de eventos, “Hora local de México” y sello `ACTUALIZADO` de la parte superior y reubicarlos al pie del `<main>`, debajo de Competiciones Destacadas y antes del Footer.
+3. Toolbar reordenada (`AgendaQuickActions.tsx`, `AgendaFilters.tsx`, `AgendaSearch.tsx`): (1) `EN VIVO`, `HOY` y `FILTRAR` centrados con acentos rojo/lima; (2) carrusel de deportes con flechas `<` `>` cuadradas y chip `Todos` con checklist azul; (3) buscador debajo con lupa azul; (4) nuevo `AgendaMatchTicker.tsx` debajo del buscador.
+4. Letrero digital `AgendaMatchTicker`: loop horizontal infinito y suave con pista duplicada `aria-hidden`, separadores `•` en lima, clics hacia el evento/modal, pausa en `:hover` y `:focus-within`, y modo estático deslizable bajo `prefers-reduced-motion: reduce`. Alimentado en cliente con los eventos ya disponibles, sin consultas nuevas ni cambios en Supabase.
+5. Añadir/ajustar pruebas de los componentes o utilidades nuevas de L2 si aplica, y confirmar que la suite existente siga en verde.
+
+Fuera de alcance:
+- NO modificar todavía `HomeHero.tsx`, `SportEventCard.tsx`, `AgendaResults.tsx`, `SportEventModal.tsx`, `evento/[slug]/page.tsx` ni `NavMobile.tsx` (Fases L3/L4).
+- NO modificar datos, IDs, URLs, SEO, `.env.local`, Supabase, RLS ni scripts de sincronización (scraper.py, subir_agenda.py, sync-*.mjs).
+- NO introducir dependencias nuevas ni hacer push/deploy sin autorización explícita.
+
+Guardrails estrictos:
+- Trabajar sólo en local; antes de escribir código en Next.js, leer la guía relevante en node_modules/next/dist/docs/ según agenda-web/AGENTS.md.
+- Usar `ChannelCapsule` y `resolveChannelsForDisplay` como contrato visual de canales; no duplicar lógica de mapeo ni alterar `isTvAbierta()` / `matchChannels()` / `eventSearch.ts`.
+- Ejecutar validaciones desde agenda-web/:
+  - npm run test
+  - npx tsc --noEmit
+  - npm run lint
+  - npm run build (confirmando antes que el puerto 3000 esté libre y sin otros procesos de Next; no borrar .next, locks ni fuentes)
+  - git diff --check
+- Revisar visualmente en 320, 375, 768, 1024 y 1280 px: `overflow-x = 0`, foco/teclado, `Escape`, áreas táctiles ≥ 44 px y `prefers-reduced-motion`.
+- Al finalizar, actualizar el avance de L2 en PLAN-DISENO-UX-VISUAL-GUIASPORTS.md y entregar Reporte de sesión, Handoff a Fase L3 y Prompt de continuidad para Fase L3.
+```
+
+## Prompt histórico — Fase L3 (ejecutada)
+
+```text
+Continuamos GuíaSports en la implementación visual y UX (Etapa V1.2 — Rediseño Home Layout, Compactación de Tarjetas y Sistema Visual de Canales).
+
+Lee primero:
+- PLAN-DISENO-UX-VISUAL-GUIASPORTS.md (especialmente “Nueva etapa V1.2”, “Fase L2”, “Handoff activo — Etapa V1.2” y el catálogo visual de canales)
+- agenda-web/AGENTS.md
+- agenda-web/CLAUDE.md
+
+Contexto actual:
+- Las etapas previas (Fases 0–8 y Bloque A / M1–M6 + fix móvil 39b9960) están cerradas y publicadas.
+- Las Fases L0, L1 y L2 están completadas y validadas localmente: 95 iconos auditados, resolveChannelsForDisplay con coincidencia exacta, ChannelCapsule con fallback seguro, Header móvil centrado, Intro despejada, Toolbar reordenada y AgendaMatchTicker en loop continuo.
+- Validaciones L2: 252 pruebas, TypeScript, lint, build 173/173, git diff --check y QA CDP en 320/375/768/1024/1280 px sin overflow horizontal, controles ≥44 px y prefers-reduced-motion verificado.
+- No se hicieron push ni deploy.
+
+Objetivo único de esta sesión (Fase L3):
+1. Rediseñar HomeHero.tsx con la especificación aprobada: pastilla de estado arriba a la izquierda, deporte/competición alineados a la derecha con icono, conector “vs” en lima (#a3e635), guía vertical lima para CUÁNDO y DÓNDE VERLO, y fila inferior unificada con ChannelCapsule + ShareButton + botón primario cuadrado “>” en lima de 44×44 px.
+2. Rediseñar SportEventCard.tsx con la ficha compacta de 3 niveles:
+   - Cabecera dividida: icono del deporte + hora grande + fecha corta; pastilla de estado + deporte/competición a la derecha.
+   - Enfrentamiento simétrico con iniciales reales cuando el título contiene “ vs ”; título limpio para eventos generales.
+   - Barra inferior única: icono TV ((•)) azul + ChannelCapsule (flex-1, scroll horizontal limpio) + ShareButton cuadrado + botón “>” lima de 44×44 px con aria-label accesible.
+   - Mantener compatibilidad responsiva en móvil, tablet y escritorio, incluyendo /envivo y hubs vía EventListWithModal.tsx.
+3. Ajustar AgendaResults.tsx: marco con borde rojizo sutil para “En vivo ahora”, desplegable compacto “Eventos anteriores de hoy” antes de la barra divisoria de “Próximos eventos”, barra azul sólida y pastilla “📅 HOY” con línea extendida.
+4. Reutilizar ChannelCapsule y resolveChannelsForDisplay como contrato único de canales; no duplicar lógica de mapeo ni alterar isTvAbierta(), matchChannels() o eventSearch.ts.
+5. Añadir/ajustar pruebas de los componentes o utilidades modificadas y confirmar que toda la suite siga en verde.
+
+Fuera de alcance:
+- NO modificar todavía HomeDestacados.tsx, SportEventModal.tsx, evento/[slug]/page.tsx ni NavMobile.tsx (Fase L4).
+- NO modificar datos, IDs, URLs, SEO, .env.local, Supabase, RLS ni scripts de sincronización (scraper.py, subir_agenda.py, sync-*.mjs).
+- NO introducir dependencias nuevas ni hacer push/deploy sin autorización explícita.
+
+Guardrails estrictos:
+- Trabajar sólo en local; antes de escribir código en Next.js, leer la guía relevante en node_modules/next/dist/docs/ según agenda-web/AGENTS.md.
+- Conservar intactos los contratos de búsqueda, filtros, horarios y canales ya validados en L1/L2.
+- Ejecutar validaciones desde agenda-web/:
+  - npm run test
+  - npx tsc --noEmit
+  - npm run lint
+  - npm run build (confirmando antes que el puerto 3000 esté libre y sin otros procesos de Next; no borrar .next, locks ni fuentes)
+  - git diff --check
+- Revisar en 320, 375, 768, 1024 y 1280 px: overflow-x = 0 en portada, /envivo y hubs; foco/teclado/Escape; áreas táctiles ≥ 44 px; prefers-reduced-motion; consola limpia.
+- Al finalizar, actualizar el avance de L3 en PLAN-DISENO-UX-VISUAL-GUIASPORTS.md y entregar Reporte de sesión, Handoff a Fase L4 y Prompt de continuidad para Fase L4.
+```
+
+## Prompt histórico — Fase L4 (ejecutada)
+
+```text
+Continuamos GuíaSports en la implementación visual y UX (Etapa V1.2 — Rediseño Home Layout, Compactación de Tarjetas y Sistema Visual de Canales).
+
+Lee primero:
+- PLAN-DISENO-UX-VISUAL-GUIASPORTS.md (especialmente “Nueva etapa V1.2”, “Fase L3” y “Handoff activo — Etapa V1.2”)
+- agenda-web/AGENTS.md
+- agenda-web/CLAUDE.md
+
+Contexto actual:
+- Las etapas previas (Fases 0–8 y Bloque A / M1–M6 + fix móvil 39b9960) están cerradas y publicadas.
+- Las Fases L0, L1, L2 y L3 están completadas y validadas localmente: 95 iconos auditados, resolveChannelsForDisplay, ChannelCapsule, Header/Toolbar/Letrero Digital, HomeHero, SportEventCard compacta y cortes de AgendaResults.
+- Validaciones L3: 259 pruebas, TypeScript, lint, build 173/173, git diff --check y QA CDP en portada, /envivo y /futbol (320/375/768/1024/1280) sin overflow ni controles menores a 44 px.
+- No se hicieron push ni deploy.
+
+Objetivo único de esta sesión (Fase L4):
+1. Afinar HomeDestacados.tsx: “Imperdibles de hoy” con texto de canal y flecha amarilla ↗, manteniendo la lectura compacta y el clic hacia el evento.
+2. Pulir las superficies inferiores de HomeClient.tsx: Últimas noticias, Competiciones destacadas y bloque de resumen/actualización reubicado, sin alterar la lógica de datos ni las secciones superiores ya cerradas.
+3. Revisar y ajustar NavMobile.tsx para que el dock móvil respete la paleta, el espaciado, las áreas táctiles ≥44 px y la navegación existente.
+4. Integrar ChannelCapsule y resolveChannelsForDisplay en SportEventModal.tsx y evento/[slug]/page.tsx para mostrar iconos de canales junto a sus nombres legibles, con fallback de texto y sin duplicar lógica de mapeo.
+5. Ejecutar el QA integral final en 320, 375, 768, 1024 y 1280 px sobre portada, /envivo, hubs, modal y detalle de evento: overflow-x = 0, contraste AA, teclado/Escape/retorno de foco, prefers-reduced-motion (letrero digital y hero), consola limpia y suite completa.
+
+Fuera de alcance:
+- NO modificar datos, IDs, URLs, SEO, .env.local, Supabase, RLS ni scripts de sincronización (scraper.py, subir_agenda.py, sync-*.mjs).
+- NO introducir dependencias nuevas ni hacer push/deploy sin autorización explícita.
+- NO reabrir las fases L0–L3 salvo corrección de regresión estrictamente necesaria.
+
+Guardrails estrictos:
+- Trabajar sólo en local; antes de escribir código en Next.js, leer la guía relevante en node_modules/next/dist/docs/ según agenda-web/AGENTS.md.
+- Conservar intactos los contratos de búsqueda, filtros, horarios y canales ya validados.
+- Ejecutar validaciones desde agenda-web/:
+  - npm run test
+  - npx tsc --noEmit
+  - npm run lint
+  - npm run build (confirmando antes que el puerto 3000 esté libre y sin otros procesos de Next; no borrar .next, locks ni fuentes)
+  - git diff --check
+- Revisar visualmente con capturas locales y CDP en 320, 375, 768, 1024 y 1280 px; documentar overflow, áreas táctiles, foco y reduced motion.
+- Al finalizar, actualizar el avance de L4 en PLAN-DISENO-UX-VISUAL-GUIASPORTS.md y entregar Reporte de sesión, Handoff final de la Etapa V1.2 y Prompt de continuidad para la autorización de release/deploy.
+```
+
+## Prompt de continuidad para autorización de release/deploy
+
+```text
+Continuamos GuíaSports en el cierre de la Etapa V1.2 (Rediseño Home Layout, Compactación de Tarjetas y Sistema Visual de Canales).
+
+Lee primero:
+- PLAN-DISENO-UX-VISUAL-GUIASPORTS.md (especialmente “Nueva etapa V1.2”, “Fase L4” y “Handoff final — Etapa V1.2”)
+- agenda-web/AGENTS.md
+- agenda-web/CLAUDE.md
+
+Contexto actual:
+- Las Fases L0–L4 están completadas y validadas localmente el 2026-11-17.
+- Validaciones finales: 265 pruebas, TypeScript, lint, build 173/173, git diff --check y QA CDP integral en 320/375/768/1024/1280 px sobre portada, /envivo, /futbol, /nba y detalle de evento: 0 overflow, 0 controles <44 px, modal con foco/Escape/retorno correcto, prefers-reduced-motion verificado y consola limpia.
+- No se hicieron push ni deploy. No se modificaron datos, Supabase, RLS, .env.local, SEO/schemas ni scripts de sincronización.
+
+Objetivo único de esta sesión (autorización de release/deploy):
+1. Revisar `git status`, `git diff` y `git diff --check` para confirmar que sólo están los archivos del paquete V1.2 y que no hay secretos, datos ni cambios accidentales.
+2. Repetir las validaciones finales desde agenda-web/: npm run test, npx tsc --noEmit, npm run lint, npm run build (confirmando antes que el puerto 3000 esté libre y sin otros procesos de Next) y git diff --check.
+3. Entregar un resumen breve del paquete: cambios principales, archivos incluidos, riesgos conocidos, versión de rollback local y confirmación de que los contratos de búsqueda/filtros/horarios/canales siguen intactos.
+4. Solicitar autorización explícita del usuario para commit, push y deploy. NO ejecutar commit, push ni deploy sin esa autorización.
+5. Si el usuario autoriza, seguir el flujo de release del repositorio, publicar en la rama correspondiente, verificar producción con HTTP 200 y los marcadores visuales del paquete, y registrar el resultado en el plan. Si no autoriza, dejar el paquete local listo y documentar que queda pendiente.
+
+Guardrails estrictos:
+- Trabajar sólo en local hasta recibir autorización explícita de release/deploy.
+- NO modificar datos, IDs, URLs públicas, SEO/schemas, .env.local, Supabase, RLS ni scripts de sincronización (scraper.py, subir_agenda.py, sync-*.mjs).
+- NO introducir dependencias nuevas.
+- NO reabrir las fases L0–L4 salvo una regresión demostrable y estrictamente necesaria.
+- Antes de escribir código en Next.js, leer la guía relevante en node_modules/next/dist/docs/ según agenda-web/AGENTS.md.
+- Al finalizar, actualizar el plan con el resultado de la autorización/release y entregar Reporte de cierre y Handoff final.
 ```

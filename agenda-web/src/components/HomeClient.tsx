@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Zap, ChevronRight, Newspaper, X } from 'lucide-react';
+import { Zap, ChevronRight, Newspaper, Trophy, X } from 'lucide-react';
 import Link from 'next/link';
 import NextImage from 'next/image';
 import HomeHero from '@/components/HomeHero';
@@ -11,6 +11,7 @@ import SportEventModal from '@/components/SportEventModal';
 import AgendaSearch from '@/components/agenda/AgendaSearch';
 import AgendaQuickActions from '@/components/agenda/AgendaQuickActions';
 import AgendaFilters from '@/components/agenda/AgendaFilters';
+import AgendaMatchTicker from '@/components/agenda/AgendaMatchTicker';
 import AgendaResults from '@/components/agenda/AgendaResults';
 import { trackContentClick, trackEvent, trackFilter, trackSearch } from '@/lib/analytics';
 import { getMexicoDate, getTodayMexicoString, isEventLive, isEventPast } from '@/lib/mexicoTime';
@@ -123,6 +124,14 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
     .slice(0, 6);
 
   const eventosEnVivo = eventos.filter((e) => isEventLive(e.fecha, e.hora, nowDate));
+
+  const eventosTicker = (destacados.length > 0
+    ? destacados
+    : eventosEnVivo.length > 0
+      ? eventosEnVivo
+      : eventos.filter((e) => e.fecha >= hoyStr && !isEventPast(e.fecha, e.hora, nowDate))
+  ).slice(0, 10);
+
   let eventoHero: Evento | null = null;
   let tipoHero = "EN VIVO AHORA";
 
@@ -297,19 +306,9 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
             <h1 className="gs-home-title">
               ¿Dónde ver deportes <strong>hoy en México</strong>?
             </h1>
-            <p className="max-w-xl text-sm leading-relaxed text-slate-300">
-              Horarios y canales de TV abierta, de paga y streaming para elegir qué ver sin perder tiempo.
-            </p>
-            <div className="gs-home-summary" aria-label="Resumen de la agenda">
-              <span><strong>{eventos.length}</strong> eventos en los próximos días</span>
-              {eventosEnVivo.length > 0 && <span><strong className="text-red-300">{eventosEnVivo.length}</strong> en vivo ahora</span>}
-              <span>Hora local de México</span>
-              {initialUltimaAct && <span>{initialUltimaAct}</span>}
-            </div>
           </section>
 
           <section className="gs-home-toolbar" aria-label="Buscar y explorar la agenda">
-            <AgendaSearch value={busqueda} onChange={setBusqueda} />
             <AgendaQuickActions
               deportes={deportesUnicos}
               deporteActivo={filtroDeporte}
@@ -339,6 +338,12 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
                 />
               }
             />
+
+            <AgendaSearch value={busqueda} onChange={setBusqueda} />
+
+            {eventosTicker.length > 0 && (
+              <AgendaMatchTicker eventos={eventosTicker} onEventClick={setSelectedEvent} />
+            )}
 
             {(hasSearch || activeFiltersCount > 0) && (
               <div className="flex flex-wrap items-center gap-2 pt-1" aria-label="Criterios activos de la agenda">
@@ -426,7 +431,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
                 {noticias.slice(0, 5).map((n) => {
                   const emoji = guessSportEmoji(n.titulo);
                   return (
-                    <Link key={n.id} href={`/noticias/${n.slug}`} className="gs-home-news-card group flex w-[85vw] max-w-[21rem] flex-shrink-0 items-center gap-4 p-4 transition-colors">
+                    <Link key={n.id} href={`/noticias/${n.slug}`} aria-label={`Leer ${n.titulo}`} className="gs-home-news-card group flex w-[85vw] max-w-[21rem] flex-shrink-0 items-center gap-4 p-4 transition-colors">
                       <div className="relative flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-800">
                         {n.imagen_url ? (
                           <NextImage
@@ -477,8 +482,13 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
           )}
 
           {/* Hubs de competiciones */}
-          <section className="mb-12 w-full">
-            <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.25em] mb-3 px-2">Competiciones Destacadas</h2>
+          <section className="gs-home-section w-full" aria-labelledby="home-hubs-title">
+            <div className="gs-home-section-header">
+              <h2 id="home-hubs-title" className="gs-home-section-heading">
+                <Trophy className="h-4 w-4" aria-hidden="true" /> Competiciones destacadas
+              </h2>
+              <span className="gs-home-section-meta">Hubs por deporte</span>
+            </div>
             <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4">
               <Link
                 href="/mundial-2026"
@@ -532,6 +542,18 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
                   <div className="text-[10px] font-black uppercase text-slate-400 group-hover:text-purple-400 transition-colors whitespace-nowrap">Premier League</div>
                 </div>
               </Link>
+            </div>
+          </section>
+
+          <section className="gs-home-footer-summary" aria-label="Resumen de la agenda">
+            <p className="max-w-xl text-sm leading-relaxed text-slate-300">
+              Horarios y canales de TV abierta, de paga y streaming para elegir qué ver sin perder tiempo.
+            </p>
+            <div className="gs-home-summary">
+              <span><strong>{eventos.length}</strong> eventos en los próximos días</span>
+              {eventosEnVivo.length > 0 && <span><strong className="text-red-300">{eventosEnVivo.length}</strong> en vivo ahora</span>}
+              <span>Hora local de México</span>
+              {initialUltimaAct && <span>{initialUltimaAct}</span>}
             </div>
           </section>
         </main>

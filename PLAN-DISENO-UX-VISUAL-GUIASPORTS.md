@@ -5,7 +5,7 @@
 ## Estado actual
 
 - Fecha de inicio: 2026-09-01.
-- Estado: **Fases 0 a 8 publicadas el 2026-09-09; Ajustes UX de Agenda y Filtros completados y autorizados para deploy el 2026-09-22; Bloque A y M1–M6 aprobados el 2026-10-27; paquete `11bf3a8` publicado en producción; corrección de estabilidad móvil `39b9960` publicada el 2026-10-27; Etapa V1.2 (Rediseño Home Layout y Sistema de Iconos de Canales) aprobada el 2026-11-13 y **Fases L0–L4 completadas y validadas localmente el 2026-11-17** (iconos auditados, sistema visual de canales, Header/Toolbar/Letrero Digital, HomeHero, SportEventCard compacta, AgendaResults, superficies inferiores, modal/detalle con canales y QA integral multi-viewport); **paquete local listo para solicitar autorización explícita de release/deploy**.**
+- Estado: **Fases 0 a 8 publicadas el 2026-09-09; Ajustes UX de Agenda y Filtros completados y autorizados para deploy el 2026-09-22; Bloque A y M1–M6 aprobados el 2026-10-27; paquete `11bf3a8` publicado en producción; corrección de estabilidad móvil `39b9960` publicada el 2026-10-27; Etapa V1.2 (Rediseño Home Layout y Sistema de Iconos de Canales) aprobada el 2026-11-13, **Fases L0–L4 completadas y validadas localmente el 2026-11-17 y paquete `e195b8c` publicado en producción**, con deploy verificado.**
 - Fase de cierre pre-diseño visual: completada el 27/08/2026.
 - A8: cerrado y documentado en el plan de remediación anterior.
 - Rama local: `main`, limpia y alineada con `origin/main` al crear este documento.
@@ -721,6 +721,7 @@ Estado: **publicado en producción el 2026-09-09** (Fases 0–8); **ajustes UX d
 | 2026-11-16 | Fase L3 | `HomeHero` con contexto deportivo, `vs` lima, guía vertical y fila `ChannelCapsule + Share + >`; `SportEventCard` compacta de 3 niveles con iniciales reales, cápsula centrada y controles de 44 px; `AgendaResults` con anteriores antes de la barra azul, separador sólido y pastilla de fecha dinámica; 259 pruebas, TypeScript, lint, build 173/173, `git diff --check` y QA CDP en portada, `/envivo` y `/futbol` (320–1280, 0 overflow, 0 controles <44 px) | Sección “Fase L3 — Rediseño de `HomeHero`, compactación de `SportEventCard` y cortes de `AgendaResults`” |
 | 2026-11-17 | Ajuste visual L3 | Se alinea la ficha con `home_layout.png`: liga/evento centrada horizontalmente en la cabecera superior, en mayúsculas y **una sola línea** con truncado; se compacta el espaciado vertical de la ficha (padding, separación a la divisoria y barras internas) para reducir el scroll; logos de canales de 44 px con tooltip de nombre en hover, foco y clic; 262 pruebas, TypeScript, lint, build 173/173, `git diff --check` y QA CDP 320–1280 sin overflow ni controles <44 px | Sección “Resultado de implementación L3” |
 | 2026-11-17 | Fase L4 | `HomeDestacados` con texto limpio de canales, TV y flecha amarilla; superficies inferiores armonizadas (noticias, competiciones y resumen/actualización); dock móvil revisado con foco/touch; `ChannelCapsule` integrada en `SportEventModal` y detalle de evento junto a nombres legibles; QA integral en portada, `/envivo`, `/futbol`, `/nba` y detalle (320–1280) sin overflow ni controles <44 px, modal con foco/Escape/retorno correcto, reduced motion y consola limpia; 265 pruebas, TypeScript, lint, build 173/173 y `git diff --check` | Sección “Fase L4 — Armonización inferior, Modal/Detalle con iconos y QA integral multi-viewport” |
+| 2026-11-17 | Publicación V1.2 | Autorizada por el usuario; paquete `e195b8c` publicado en `release/v1-2-home-layout` y `main`; producción verificada con HTTP 200, iconos de canales 200, CSS con marcadores V1.2 y capturas de portada y detalle; rollback disponible en `d0515f9` | Sección “Publicación — Etapa V1.2 (2026-11-17)” |
 
 ## Nueva etapa — Auditoría y simplificación de la experiencia
 
@@ -1192,7 +1193,7 @@ Si el usuario solicita ajustes, mantente dentro del paquete publicado. Cualquier
 ### Estado y referencias de la etapa
 
 - **Fecha de aprobación del plan:** 2026-11-13.
-- **Estado actual:** **Fases L0–L4 completadas y validadas localmente el 2026-11-17. Sistema visual de canales, Header/Toolbar/Letrero Digital, HomeHero, SportEventCard compacta, AgendaResults, superficies inferiores y modal/detalle con canales integrados; 265 pruebas, build 173/173, QA integral 320–1280 sin overflow ni controles menores a 44 px, modal con foco/Escape correcto, reduced motion y consola limpia. Paquete local listo para solicitar autorización explícita de release/deploy.**
+- **Estado actual:** **Fases L0–L4 completadas, validadas y publicadas el 2026-11-17. Paquete `e195b8c` en producción (`release/v1-2-home-layout` y `main`), deploy verificado con HTTP 200, iconos de canales y CSS V1.2 en línea. 265 pruebas, build 173/173 y QA integral 320–1280 sin regresiones.**
 - **Referencia visual maestra:** `agenda-web/public/capturas/home_layout.png` (`1500×12954 px`, diseño en Illustrator).
 - **Ruta única de iconos de canales y streaming:** `agenda-web/public/images/channels/` (servida en frontend como `/images/channels/<archivo>.webp`).
 - **Alcance estricto:** ajustes exclusivamente visuales, de jerarquía, interacción y mapeo frontend de canales. **Prohibido modificar datos, tablas de Supabase, políticas RLS, `.env.local`, URLs públicas, IDs, SEO/schemas o scripts de sincronización (`scraper.py`, `subir_agenda.py`, `sync-*.mjs`).**
@@ -1411,7 +1412,7 @@ Cada fase se ejecuta en una sesión independiente (salvo L0+L1 que pueden unirse
   - Validaciones: 259 pruebas, TypeScript, lint, build 173/173, `git diff --check` y QA CDP en portada, `/envivo` y `/futbol` (320/375/768/1024/1280) sin overflow, sin controles menores a 44 px y orden del bloque de anteriores verificado.
 
 #### Fase L4 — Armonización inferior, Modal/Detalle con iconos y QA integral multi-viewport
-- **Estado:** **completada y validada localmente el 2026-11-17.** Superficies inferiores, dock móvil, modal/detalle con canales y QA integral cerrados; paquete local listo para solicitar autorización de release/deploy.
+- **Estado:** **completada, validada y publicada el 2026-11-17.** Superficies inferiores, dock móvil, modal/detalle con canales y QA integral cerrados; paquete `e195b8c` en producción con deploy verificado.
 - **Archivos guía:** `HomeDestacados.tsx`, `SportEventModal.tsx`, `evento/[slug]/page.tsx`, `NavMobile.tsx` y `HomeClient.tsx` (módulos inferiores).
 - **Acciones:**
   - Afinar detalles visuales de *Imperdibles de hoy*, *Últimas noticias*, *Competiciones destacadas*, bloque inferior de resumen/actualización y dock móvil (`NavMobile.tsx`).
@@ -1426,16 +1427,26 @@ Cada fase se ejecuta en una sesión independiente (salvo L0+L1 que pueden unirse
   - QA integral CDP en portada, `/envivo`, `/futbol`, `/nba` y detalle de evento, en 320/375/768/1024/1280 px: 25 combinaciones sin overflow, sin controles menores a 44 px, modal con cápsula de canales, foco inicial y retorno correcto tras Escape, reduced motion verificado y 0 errores de consola.
   - Validaciones finales: **265 pruebas**, TypeScript, lint, build **173/173** y `git diff --check` limpios.
 
+#### Publicación — Etapa V1.2 (2026-11-17)
+
+- **Autorización:** explícita del usuario para release/deploy.
+- **Commit publicado:** `e195b8c` (`feat(ux): rediseñar home y sistema visual de canales (V1.2)`).
+- **Ramas:** `release/v1-2-home-layout` y `main` publicadas en `origin`; `main` avanzó por fast-forward `d0515f9..e195b8c`.
+- **Deploy:** Vercel publicó el paquete; producción verificada con HTTP 200, `/images/channels/*.webp` 200, `/capturas/home_layout.png` 200 y CSS de producción con los marcadores `gs-marquee-scroll`, `gs-home-footer-summary`, `gs-results-upcoming-bar` y `gs-home-hero-primary`.
+- **Verificación visual:** capturas de producción en 375 y 1280 px (portada) y 375 px (detalle de evento) con Header/Toolbar/Letrero, hero, fichas compactas, canales y `ChannelCapsule` activos.
+- **Rollback local:** `d0515f9` (último commit estable en `main` antes del paquete V1.2).
+- **Sin cambios:** datos, IDs, URLs públicas, SEO/schemas, Supabase, RLS, `.env.local` ni scripts de sincronización.
+
 ---
 
 ### Handoff final — Etapa V1.2
 
-- **Estado:** **Etapa V1.2 completa en local el 2026-11-17. Fases L0–L4 cerradas y validadas.** 95 iconos auditados; `channelCatalog.ts` con `logo`, índice exacto de alias y `resolveChannelsForDisplay`; `ChannelCapsule.tsx` con fallback seguro, logos de 44 px y tooltip de nombre en hover/foco/clic; Header/Toolbar/Letrero Digital, HomeHero, SportEventCard compacta, AgendaResults, superficies inferiores y modal/detalle con canales integrados.
+- **Estado:** **Etapa V1.2 completa, validada y publicada el 2026-11-17.** 95 iconos auditados; `channelCatalog.ts` con `logo`, índice exacto de alias y `resolveChannelsForDisplay`; `ChannelCapsule.tsx` con fallback seguro, logos de 44 px y tooltip de nombre en hover/foco/clic; Header/Toolbar/Letrero Digital, HomeHero, SportEventCard compacta, AgendaResults, superficies inferiores y modal/detalle con canales integrados.
 - **Validaciones finales:** `npm run test` (**265 pruebas**), `npx tsc --noEmit`, `npm run lint`, `npm run build` (**173/173**), `git diff --check` y QA CDP en portada, `/envivo`, `/futbol`, `/nba` y detalle de evento (320/375/768/1024/1280): 25 combinaciones sin overflow, sin controles menores a 44 px, modal con foco/Escape/retorno correcto, reduced motion verificado y consola limpia.
 - **Archivos nuevos/modificados:** `channelCatalog.ts`, `channelCatalog.test.ts`, `ChannelCapsule.tsx`, `ChannelCapsule.test.tsx`, `Header.tsx`, `HomeClient.tsx`, `HomeHero.tsx`, `HomeHero.test.tsx`, `HomeDestacados.tsx`, `HomeDestacados.test.tsx`, `SportEventCard.tsx`, `SportEventCard.test.tsx`, `SportEventModal.tsx`, `NavMobile.tsx`, `evento/[slug]/page.tsx`, `AgendaQuickActions.tsx`, `AgendaFilters.tsx`, `AgendaResults.tsx`, `AgendaMatchTicker.tsx`, `AgendaMatchTicker.test.tsx` y `globals.css`. `EventListWithModal.tsx` y `AgendaSearch.tsx` no requirieron cambios internos.
 - **Sin cambios:** datos, IDs, URLs públicas, SEO/schemas, Supabase, RLS, `.env.local` ni scripts de sincronización (`scraper.py`, `subir_agenda.py`, `sync-*.mjs`).
-- **Siguiente paso:** solicitar **autorización explícita del usuario** para release/deploy. No se ha hecho push ni deploy.
-- **Recordatorio:** cualquier commit, push o deploy requiere autorización explícita del usuario.
+- **Estado de release:** commit `e195b8c` en `release/v1-2-home-layout` y `main`; deploy de producción verificado; rollback disponible en `d0515f9`.
+- **Recordatorio:** cualquier cambio nuevo requiere alcance y autorización explícita.
 
 ## Prompt histórico — Fase L0 + Fase L1 (ejecutada)
 
@@ -1601,7 +1612,7 @@ Guardrails estrictos:
 - Al finalizar, actualizar el avance de L4 en PLAN-DISENO-UX-VISUAL-GUIASPORTS.md y entregar Reporte de sesión, Handoff final de la Etapa V1.2 y Prompt de continuidad para la autorización de release/deploy.
 ```
 
-## Prompt de continuidad para autorización de release/deploy
+## Prompt histórico — autorización de release/deploy (ejecutado)
 
 ```text
 Continuamos GuíaSports en el cierre de la Etapa V1.2 (Rediseño Home Layout, Compactación de Tarjetas y Sistema Visual de Canales).

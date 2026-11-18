@@ -5,7 +5,7 @@
 ## Estado actual
 
 - Fecha de inicio: 2026-09-01.
-- Estado: **Fases 0 a 8 publicadas el 2026-09-09; Ajustes UX de Agenda y Filtros completados y autorizados para deploy el 2026-09-22; Bloque A y M1–M6 aprobados el 2026-10-27; paquete `11bf3a8` publicado en producción; corrección de estabilidad móvil `39b9960` publicada el 2026-10-27; Etapa V1.2 (Rediseño Home Layout y Sistema de Iconos de Canales) aprobada el 2026-11-13, **Fases L0–L4 completadas y validadas localmente el 2026-11-17 y paquete `e195b8c` publicado en producción**, con deploy verificado.**
+- Estado: **Fases 0 a 8 publicadas el 2026-09-09; Ajustes UX de Agenda y Filtros completados y autorizados para deploy el 2026-09-22; Bloque A y M1–M6 aprobados el 2026-10-27; paquete `11bf3a8` publicado en producción; corrección de estabilidad móvil `39b9960` publicada el 2026-10-27; Etapa V1.2 (Rediseño Home Layout y Sistema de Iconos de Canales) aprobada el 2026-11-13, Fases L0–L4 completadas y paquete `e195b8c` publicado el 2026-11-17; ajustes post-V1.2 de filtros móviles y acciones de canales publicados en `0f467d1` el 2026-11-18, con deploy verificado.**
 - Fase de cierre pre-diseño visual: completada el 27/08/2026.
 - A8: cerrado y documentado en el plan de remediación anterior.
 - Rama local: `main`, limpia y alineada con `origin/main` al crear este documento.
@@ -722,7 +722,7 @@ Estado: **publicado en producción el 2026-09-09** (Fases 0–8); **ajustes UX d
 | 2026-11-17 | Ajuste visual L3 | Se alinea la ficha con `home_layout.png`: liga/evento centrada horizontalmente en la cabecera superior, en mayúsculas y **una sola línea** con truncado; se compacta el espaciado vertical de la ficha (padding, separación a la divisoria y barras internas) para reducir el scroll; logos de canales de 44 px con tooltip de nombre en hover, foco y clic; 262 pruebas, TypeScript, lint, build 173/173, `git diff --check` y QA CDP 320–1280 sin overflow ni controles <44 px | Sección “Resultado de implementación L3” |
 | 2026-11-17 | Fase L4 | `HomeDestacados` con texto limpio de canales, TV y flecha amarilla; superficies inferiores armonizadas (noticias, competiciones y resumen/actualización); dock móvil revisado con foco/touch; `ChannelCapsule` integrada en `SportEventModal` y detalle de evento junto a nombres legibles; QA integral en portada, `/envivo`, `/futbol`, `/nba` y detalle (320–1280) sin overflow ni controles <44 px, modal con foco/Escape/retorno correcto, reduced motion y consola limpia; 265 pruebas, TypeScript, lint, build 173/173 y `git diff --check` | Sección “Fase L4 — Armonización inferior, Modal/Detalle con iconos y QA integral multi-viewport” |
 | 2026-11-17 | Publicación V1.2 | Autorizada por el usuario; paquete `e195b8c` publicado en `release/v1-2-home-layout` y `main`; producción verificada con HTTP 200, iconos de canales 200, CSS con marcadores V1.2 y capturas de portada y detalle; rollback disponible en `d0515f9` | Sección “Publicación — Etapa V1.2 (2026-11-17)” |
-| 2026-11-18 | Ajuste post-V1.2 | `EN VIVO` con rojo más intenso; `× Limpiar` relleno en azul como `Filtrar` activo; indicador de swipe bajo la cápsula de canales; mitigación móvil del bloqueo al filtrar con `startTransition`, retiro de `backdrop-filter` en superficies fijas y `will-change: auto` del letrero; 266 pruebas, TypeScript, lint, build 173/173, QA 25 combinaciones y flujo de filtro móvil sin errores; sin push ni deploy | Sección “Ajustes post-publicación — 2026-11-18” |
+| 2026-11-18 | Ajuste post-V1.2 | `EN VIVO` con rojo más intenso; `× Limpiar` relleno en azul como `Filtrar` activo; indicador de swipe bajo la cápsula de canales; mitigación móvil del bloqueo al filtrar con `startTransition`, retiro de `backdrop-filter` en superficies fijas y `will-change: auto` del letrero; 266 pruebas, TypeScript, lint, build 173/173, QA 25 combinaciones y flujo de filtro móvil sin errores; **publicado en `0f467d1`** con deploy verificado | Sección “Ajustes post-publicación — 2026-11-18” |
 
 ## Nueva etapa — Auditoría y simplificación de la experiencia
 
@@ -1447,9 +1447,11 @@ Cada fase se ejecuta en una sesión independiente (salvo L0+L1 que pueden unirse
   - No se logró reproducir el fallo en Chrome móvil emulado; el síntoma reportado corresponde a la terminación del proceso de renderizado de Safari iOS.
   - Se midió el filtro de deporte en local: 131 fichas / ~7,700 nodos se reducen a 1 ficha en un solo commit, con tareas largas de ~0.4–0.5 s bajo CPU 6×.
   - Mitigaciones aplicadas: actualizaciones de filtros dentro de `startTransition`, retiro de `backdrop-filter` en superficies fijas durante móvil (`header`, dock, menú, sticky ad y scroll-top) y `will-change: auto` para el letrero en móvil.
-  - Resultado local: filtro móvil sin errores de consola, sin overflow, con transición más corta; queda pendiente validar en el dispositivo iOS del usuario.
+  - Resultado local y en producción: filtro móvil sin errores de consola, sin overflow y con transición más corta; queda pendiente la confirmación final en el dispositivo iOS del usuario.
 - **Validaciones:** 266 pruebas, TypeScript, lint, build 173/173, `git diff --check` y QA de 25 combinaciones (portada, `/envivo`, `/futbol`, `/nba`, detalle × 320–1280) sin overflow ni controles menores a 44 px, modal con foco/Escape/retorno correcto, reduced motion y consola limpia.
-- **Estado de release:** cambios locales sobre `1a4cdba`; **sin push ni deploy**, pendientes de autorización explícita.
+- **Publicación:** autorizada por el usuario; commit `0f467d1` (`fix(ux): estabilizar filtros móviles y pulir acciones de canales`) publicado en `release/v1-2-ajustes` y `main`; `main` avanzó por fast-forward `1a4cdba..0f467d1`.
+- **Deploy verificado:** HTTP 200 en portada y detalle, CSS de producción con `gs-sticky-ad` y `gs-scroll-top`, y verificación CDP en 375 px: filtro `Fútbol Americano` sin errores, `× Limpiar` con `gs-button-secondary`, indicador de swipe presente y `EN VIVO` con el nuevo rojo.
+- **Rollback disponible:** `1a4cdba`.
 
 ---
 
@@ -1460,7 +1462,7 @@ Cada fase se ejecuta en una sesión independiente (salvo L0+L1 que pueden unirse
 - **Archivos nuevos/modificados:** `channelCatalog.ts`, `channelCatalog.test.ts`, `ChannelCapsule.tsx`, `ChannelCapsule.test.tsx`, `Header.tsx`, `HomeClient.tsx`, `HomeHero.tsx`, `HomeHero.test.tsx`, `HomeDestacados.tsx`, `HomeDestacados.test.tsx`, `SportEventCard.tsx`, `SportEventCard.test.tsx`, `SportEventModal.tsx`, `NavMobile.tsx`, `evento/[slug]/page.tsx`, `AgendaQuickActions.tsx`, `AgendaFilters.tsx`, `AgendaResults.tsx`, `AgendaMatchTicker.tsx`, `AgendaMatchTicker.test.tsx` y `globals.css`. `EventListWithModal.tsx` y `AgendaSearch.tsx` no requirieron cambios internos.
 - **Sin cambios:** datos, IDs, URLs públicas, SEO/schemas, Supabase, RLS, `.env.local` ni scripts de sincronización (`scraper.py`, `subir_agenda.py`, `sync-*.mjs`).
 - **Estado de release:** commit `e195b8c` (más docs `1a4cdba`) en `release/v1-2-home-layout` y `main`; deploy de producción verificado; rollback disponible en `d0515f9`.
-- **Ajustes post-publicación 2026-11-18:** rojo más intenso de `EN VIVO`, `× Limpiar` azul, indicador de swipe en canales y mitigaciones de estabilidad móvil al filtrar. Están validados localmente pero **no publicados**; requieren autorización explícita para commit/push/deploy.
+- **Ajustes post-publicación 2026-11-18:** rojo más intenso de `EN VIVO`, `× Limpiar` azul, indicador de swipe en canales y mitigaciones de estabilidad móvil al filtrar. **Publicados en `0f467d1` y verificados en producción.** Rollback local disponible en `1a4cdba`.
 - **Recordatorio:** cualquier cambio nuevo requiere alcance y autorización explícita.
 
 ## Prompt histórico — Fase L0 + Fase L1 (ejecutada)

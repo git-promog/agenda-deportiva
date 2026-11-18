@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { Tv } from 'lucide-react';
@@ -62,6 +62,8 @@ function ChannelBadge({ channel, onShowName, onHideName }: ChannelBadgeProps) {
         alt=""
         width={44}
         height={44}
+        loading="lazy"
+        decoding="async"
         className="h-full w-full rounded-md object-cover"
         onError={() => setImageFailed(true)}
       />
@@ -76,6 +78,48 @@ export default function ChannelCapsule({
 }: ChannelCapsuleProps) {
   const channels = resolveChannelsForDisplay(canales);
   const [tooltip, setTooltip] = useState<ChannelTooltip | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [scrollInfo, setScrollInfo] = useState({
+    overflow: false,
+    progress: 0,
+    thumb: 100,
+  });
+
+  const updateScrollInfo = useCallback(() => {
+    const element = scrollRef.current;
+    if (!element) return;
+
+    const maxScroll = element.scrollWidth - element.clientWidth;
+    const overflow = maxScroll > 2;
+    const progress = overflow ? element.scrollLeft / maxScroll : 0;
+    const thumb = element.scrollWidth > 0
+      ? Math.min(100, Math.max(14, (element.clientWidth / element.scrollWidth) * 100))
+      : 100;
+
+    setScrollInfo((previous) => {
+      if (
+        previous.overflow === overflow &&
+        Math.abs(previous.progress - progress) < 0.01 &&
+        Math.abs(previous.thumb - thumb) < 0.01
+      ) {
+        return previous;
+      }
+      return { overflow, progress, thumb };
+    });
+  }, []);
+
+  useEffect(() => {
+    updateScrollInfo();
+    const element = scrollRef.current;
+    const content = contentRef.current;
+    if (!element || typeof ResizeObserver === 'undefined') return;
+
+    const observer = new ResizeObserver(updateScrollInfo);
+    observer.observe(element);
+    if (content) observer.observe(content);
+    return () => observer.disconnect();
+  }, [canales, updateScrollInfo]);
 
   const showName = (nombre: string, element: HTMLElement) => {
     const rect = element.getBoundingClientRect();
@@ -125,21 +169,40 @@ export default function ChannelCapsule({
         </span>
       )}
 
-      <div
-        className="min-w-0 flex-1 overflow-x-auto rounded-full border border-sky-400/20 bg-slate-950/70 px-2 py-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        role="group"
-        aria-label="Canales de transmisión"
-      >
-        <div className="mx-auto flex w-max items-center gap-1.5">
-          {channels.map((channel) => (
-            <ChannelBadge
-              key={`${channel.id}-${channel.nombre}`}
-              channel={channel}
-              onShowName={showName}
-              onHideName={hideName}
-            />
-          ))}
+      <div className="min-w-0 flex-1">
+        <div
+          ref={scrollRef}
+          onScroll={updateScrollInfo}
+          className="min-w-0 overflow-x-auto rounded-full border border-sky-400/20 bg-slate-950/70 px-2 py-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          role="group"
+          aria-label="Canales de transmisión"
+        >
+          <div ref={contentRef} className="mx-auto flex w-max items-center gap-1.5">
+            {channels.map((channel) => (
+              <ChannelBadge
+                key={`${channel.id}-${channel.nombre}`}
+                channel={channel}
+                onShowName={showName}
+                onHideName={hideName}
+              />
+            ))}
+          </div>
         </div>
+
+        {scrollInfo.overflow && (
+          <>
+            <div className="relative mt-0.5 h-0.5 w-full overflow-hidden rounded-full bg-sky-400/15" aria-hidden="true">
+              <span
+                className="absolute top-0 h-full rounded-full bg-sky-400/70 transition-[left] duration-150"
+                style={{
+                  width: `${scrollInfo.thumb}%`,
+                  left: `${scrollInfo.progress * (100 - scrollInfo.thumb)}%`,
+                }}
+              />
+            </div>
+            <span className="sr-only">Desliza horizontalmente para ver más canales</span>
+          </>
+        )}
       </div>
 
       {tooltip &&

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { startTransition, useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Zap, ChevronRight, Newspaper, Trophy, X } from 'lucide-react';
 import Link from 'next/link';
@@ -193,12 +193,14 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   };
 
   const resetFilters = () => {
-    setFiltroDeporte("Todos");
-    setFiltroFecha("Todos");
-    setFiltroCompeticion("Todos");
-    setSoloTvAbierta(false);
-    setSoloEnVivo(false);
-    setBusqueda("");
+    startTransition(() => {
+      setFiltroDeporte("Todos");
+      setFiltroFecha("Todos");
+      setFiltroCompeticion("Todos");
+      setSoloTvAbierta(false);
+      setSoloEnVivo(false);
+      setBusqueda("");
+    });
     window.history.replaceState({}, '', window.location.pathname);
   };
 
@@ -214,16 +216,20 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
   const irAEnVivo = () => {
     trackEvent('click_en_vivo', { location: 'quick_actions' });
     const next = !soloEnVivo;
-    setSoloEnVivo(next);
-    if (next) setFiltroFecha("Todos");
+    startTransition(() => {
+      setSoloEnVivo(next);
+      if (next) setFiltroFecha("Todos");
+    });
     scrollToResults();
   };
 
   const irAHoy = () => {
     const next = filtroFecha === hoyStr ? "Todos" : hoyStr;
     trackFilter('date', next);
-    setFiltroFecha(next);
-    if (next !== "Todos") setSoloEnVivo(false);
+    startTransition(() => {
+      setFiltroFecha(next);
+      if (next !== "Todos") setSoloEnVivo(false);
+    });
     scrollToResults();
   };
 
@@ -232,35 +238,35 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
     activeFilters.push({
       key: "deporte",
       label: `Deporte: ${filtroDeporte}`,
-      onRemove: () => { trackFilter('sport', 'Todos'); setFiltroDeporte("Todos"); },
+      onRemove: () => { trackFilter('sport', 'Todos'); startTransition(() => setFiltroDeporte("Todos")); },
     });
   }
   if (filtroFecha !== "Todos") {
     activeFilters.push({
       key: "fecha",
       label: `Fecha: ${formatearLabelFecha(filtroFecha)}`,
-      onRemove: () => { trackFilter('date', 'Todos'); setFiltroFecha("Todos"); },
+      onRemove: () => { trackFilter('date', 'Todos'); startTransition(() => setFiltroFecha("Todos")); },
     });
   }
   if (filtroCompeticion !== "Todos") {
     activeFilters.push({
       key: "competicion",
       label: `Competición: ${filtroCompeticion}`,
-      onRemove: () => { trackFilter('league', 'Todos'); setFiltroCompeticion("Todos"); },
+      onRemove: () => { trackFilter('league', 'Todos'); startTransition(() => setFiltroCompeticion("Todos")); },
     });
   }
   if (soloTvAbierta) {
     activeFilters.push({
       key: "tv",
       label: "TV abierta",
-      onRemove: () => { trackFilter('tv_abierta', false); setSoloTvAbierta(false); },
+      onRemove: () => { trackFilter('tv_abierta', false); startTransition(() => setSoloTvAbierta(false)); },
     });
   }
   if (soloEnVivo) {
     activeFilters.push({
       key: "envivo",
       label: "En vivo",
-      onRemove: () => setSoloEnVivo(false),
+      onRemove: () => startTransition(() => setSoloEnVivo(false)),
     });
   }
 
@@ -312,7 +318,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
             <AgendaQuickActions
               deportes={deportesUnicos}
               deporteActivo={filtroDeporte}
-              onDeporteChange={(dep) => { trackFilter('sport', dep); setFiltroDeporte(dep); }}
+              onDeporteChange={(dep) => { trackFilter('sport', dep); startTransition(() => setFiltroDeporte(dep)); }}
               onEnVivo={irAEnVivo}
               onHoy={irAHoy}
               enVivoActivo={soloEnVivo}
@@ -324,14 +330,16 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
                   fechas={fechasUnicas}
                   onFechaChange={(f) => {
                     trackFilter('date', f);
-                    setFiltroFecha(f);
-                    if (f !== "Todos") setSoloEnVivo(false);
+                    startTransition(() => {
+                      setFiltroFecha(f);
+                      if (f !== "Todos") setSoloEnVivo(false);
+                    });
                   }}
                   filtroCompeticion={filtroCompeticion}
                   competiciones={competicionesUnicas}
-                  onCompeticionChange={(c) => { trackFilter('league', c); setFiltroCompeticion(c); }}
+                  onCompeticionChange={(c) => { trackFilter('league', c); startTransition(() => setFiltroCompeticion(c)); }}
                   soloTvAbierta={soloTvAbierta}
-                  onTvAbiertaChange={(v) => { trackFilter('tv_abierta', v); setSoloTvAbierta(v); }}
+                  onTvAbiertaChange={(v) => { trackFilter('tv_abierta', v); startTransition(() => setSoloTvAbierta(v)); }}
                   activeCount={activeFiltersCount}
                   onReset={resetFilters}
                   formatButtonFecha={formatearBotonFecha}
@@ -375,7 +383,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
                 <button
                   type="button"
                   onClick={resetFilters}
-                  className="gs-button gs-button-quiet !min-h-11 !px-3 !py-1.5 !text-[0.6875rem] !normal-case !tracking-normal"
+                  className="gs-button gs-button-secondary !min-h-11 !px-3 !py-1.5 !text-[0.6875rem] !normal-case !tracking-normal !text-white hover:!bg-blue-500"
                 >
                   <span aria-hidden="true">×</span> Limpiar
                 </button>
@@ -407,7 +415,7 @@ export default function HomeClient({ initialEventos, initialNoticias, initialUlt
               }}
               onFiltrarLiga={(liga) => {
                 trackFilter('league', liga);
-                setFiltroCompeticion(liga);
+                startTransition(() => setFiltroCompeticion(liga));
               }}
               onReset={resetFilters}
             />

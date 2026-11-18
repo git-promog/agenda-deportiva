@@ -39,4 +39,18 @@ describe('ChannelCapsule', () => {
     expect(screen.getByText('ESPN Extra')).toBeTruthy();
     expect(screen.queryByRole('tooltip')).toBeNull();
   });
+
+  it('muestra el indicador de swipe solo cuando los canales desbordan', () => {
+    render(<ChannelCapsule canales="TUDN, ESPN 2, Fox Sports" />);
+
+    const group = screen.getByRole('group', { name: 'Canales de transmisión' });
+    expect(screen.queryByText('Desliza horizontalmente para ver más canales')).toBeNull();
+
+    Object.defineProperty(group, 'scrollWidth', { configurable: true, value: 240 });
+    Object.defineProperty(group, 'clientWidth', { configurable: true, value: 120 });
+    Object.defineProperty(group, 'scrollLeft', { configurable: true, value: 60, writable: true });
+    fireEvent.scroll(group);
+
+    expect(screen.getByText('Desliza horizontalmente para ver más canales')).toBeTruthy();
+  });
 });

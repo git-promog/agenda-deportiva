@@ -45,7 +45,7 @@ export default function AgendaQuickActions({
           type="button"
           onClick={onEnVivo}
           aria-pressed={enVivoActivo}
-          className={`gs-button ${enVivoActivo ? "gs-button-live" : "gs-button-quiet !border-red-400/30 !text-red-300"}`}
+          className={`gs-button ${enVivoActivo ? "gs-button-live" : "gs-button-quiet !border-red-400/60 !bg-red-600/20 !text-red-100 hover:!bg-red-600/30 hover:!text-white"}`}
         >
           <Radio size={15} aria-hidden="true" />
           En vivo

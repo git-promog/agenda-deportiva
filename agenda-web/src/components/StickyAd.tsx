@@ -18,7 +18,7 @@ export default function StickyAd() {
 
   return (
     <div className="fixed left-0 right-0 bottom-[calc(var(--nav-mobile-h)+env(safe-area-inset-bottom))] md:bottom-4 z-[70] flex justify-center w-full px-4 pointer-events-none animate-in fade-in slide-in-from-bottom-5 duration-500">
-      <div className="relative bg-[#0f172a]/95 backdrop-blur-md border border-slate-700/50 p-2 rounded-xl shadow-2xl pointer-events-auto max-w-full sm:max-w-[320px] w-full flex flex-col items-center">
+      <div className="gs-sticky-ad relative bg-[#0f172a]/95 backdrop-blur-md border border-slate-700/50 p-2 rounded-xl shadow-2xl pointer-events-auto max-w-full sm:max-w-[320px] w-full flex flex-col items-center">
         
         {/* Close Button */}
         <button 

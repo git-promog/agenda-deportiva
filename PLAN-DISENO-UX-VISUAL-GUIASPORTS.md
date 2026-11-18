@@ -722,6 +722,7 @@ Estado: **publicado en producción el 2026-09-09** (Fases 0–8); **ajustes UX d
 | 2026-11-17 | Ajuste visual L3 | Se alinea la ficha con `home_layout.png`: liga/evento centrada horizontalmente en la cabecera superior, en mayúsculas y **una sola línea** con truncado; se compacta el espaciado vertical de la ficha (padding, separación a la divisoria y barras internas) para reducir el scroll; logos de canales de 44 px con tooltip de nombre en hover, foco y clic; 262 pruebas, TypeScript, lint, build 173/173, `git diff --check` y QA CDP 320–1280 sin overflow ni controles <44 px | Sección “Resultado de implementación L3” |
 | 2026-11-17 | Fase L4 | `HomeDestacados` con texto limpio de canales, TV y flecha amarilla; superficies inferiores armonizadas (noticias, competiciones y resumen/actualización); dock móvil revisado con foco/touch; `ChannelCapsule` integrada en `SportEventModal` y detalle de evento junto a nombres legibles; QA integral en portada, `/envivo`, `/futbol`, `/nba` y detalle (320–1280) sin overflow ni controles <44 px, modal con foco/Escape/retorno correcto, reduced motion y consola limpia; 265 pruebas, TypeScript, lint, build 173/173 y `git diff --check` | Sección “Fase L4 — Armonización inferior, Modal/Detalle con iconos y QA integral multi-viewport” |
 | 2026-11-17 | Publicación V1.2 | Autorizada por el usuario; paquete `e195b8c` publicado en `release/v1-2-home-layout` y `main`; producción verificada con HTTP 200, iconos de canales 200, CSS con marcadores V1.2 y capturas de portada y detalle; rollback disponible en `d0515f9` | Sección “Publicación — Etapa V1.2 (2026-11-17)” |
+| 2026-11-18 | Ajuste post-V1.2 | `EN VIVO` con rojo más intenso; `× Limpiar` relleno en azul como `Filtrar` activo; indicador de swipe bajo la cápsula de canales; mitigación móvil del bloqueo al filtrar con `startTransition`, retiro de `backdrop-filter` en superficies fijas y `will-change: auto` del letrero; 266 pruebas, TypeScript, lint, build 173/173, QA 25 combinaciones y flujo de filtro móvil sin errores; sin push ni deploy | Sección “Ajustes post-publicación — 2026-11-18” |
 
 ## Nueva etapa — Auditoría y simplificación de la experiencia
 
@@ -1437,6 +1438,19 @@ Cada fase se ejecuta en una sesión independiente (salvo L0+L1 que pueden unirse
 - **Rollback local:** `d0515f9` (último commit estable en `main` antes del paquete V1.2).
 - **Sin cambios:** datos, IDs, URLs públicas, SEO/schemas, Supabase, RLS, `.env.local` ni scripts de sincronización.
 
+### Ajustes post-publicación — 2026-11-18
+
+- **`EN VIVO`:** rojo más intenso en estado inactivo (`bg-red-600/20`, borde `red-400/60`, texto `red-100`) para mayor jerarquía sin competir con el estado activo.
+- **`× Limpiar`:** ahora usa `gs-button-secondary`, el mismo relleno azul del botón `Filtrar` activo, para asociar ambos controles.
+- **Indicador de swipe:** `ChannelCapsule` muestra una barra de progreso fina de 2 px bajo la cápsula cuando los logos exceden el ancho visible, con avance sincronizado al desplazamiento y texto accesible “Desliza horizontalmente para ver más canales”.
+- **Estabilidad móvil al filtrar:**
+  - No se logró reproducir el fallo en Chrome móvil emulado; el síntoma reportado corresponde a la terminación del proceso de renderizado de Safari iOS.
+  - Se midió el filtro de deporte en local: 131 fichas / ~7,700 nodos se reducen a 1 ficha en un solo commit, con tareas largas de ~0.4–0.5 s bajo CPU 6×.
+  - Mitigaciones aplicadas: actualizaciones de filtros dentro de `startTransition`, retiro de `backdrop-filter` en superficies fijas durante móvil (`header`, dock, menú, sticky ad y scroll-top) y `will-change: auto` para el letrero en móvil.
+  - Resultado local: filtro móvil sin errores de consola, sin overflow, con transición más corta; queda pendiente validar en el dispositivo iOS del usuario.
+- **Validaciones:** 266 pruebas, TypeScript, lint, build 173/173, `git diff --check` y QA de 25 combinaciones (portada, `/envivo`, `/futbol`, `/nba`, detalle × 320–1280) sin overflow ni controles menores a 44 px, modal con foco/Escape/retorno correcto, reduced motion y consola limpia.
+- **Estado de release:** cambios locales sobre `1a4cdba`; **sin push ni deploy**, pendientes de autorización explícita.
+
 ---
 
 ### Handoff final — Etapa V1.2
@@ -1445,7 +1459,8 @@ Cada fase se ejecuta en una sesión independiente (salvo L0+L1 que pueden unirse
 - **Validaciones finales:** `npm run test` (**265 pruebas**), `npx tsc --noEmit`, `npm run lint`, `npm run build` (**173/173**), `git diff --check` y QA CDP en portada, `/envivo`, `/futbol`, `/nba` y detalle de evento (320/375/768/1024/1280): 25 combinaciones sin overflow, sin controles menores a 44 px, modal con foco/Escape/retorno correcto, reduced motion verificado y consola limpia.
 - **Archivos nuevos/modificados:** `channelCatalog.ts`, `channelCatalog.test.ts`, `ChannelCapsule.tsx`, `ChannelCapsule.test.tsx`, `Header.tsx`, `HomeClient.tsx`, `HomeHero.tsx`, `HomeHero.test.tsx`, `HomeDestacados.tsx`, `HomeDestacados.test.tsx`, `SportEventCard.tsx`, `SportEventCard.test.tsx`, `SportEventModal.tsx`, `NavMobile.tsx`, `evento/[slug]/page.tsx`, `AgendaQuickActions.tsx`, `AgendaFilters.tsx`, `AgendaResults.tsx`, `AgendaMatchTicker.tsx`, `AgendaMatchTicker.test.tsx` y `globals.css`. `EventListWithModal.tsx` y `AgendaSearch.tsx` no requirieron cambios internos.
 - **Sin cambios:** datos, IDs, URLs públicas, SEO/schemas, Supabase, RLS, `.env.local` ni scripts de sincronización (`scraper.py`, `subir_agenda.py`, `sync-*.mjs`).
-- **Estado de release:** commit `e195b8c` en `release/v1-2-home-layout` y `main`; deploy de producción verificado; rollback disponible en `d0515f9`.
+- **Estado de release:** commit `e195b8c` (más docs `1a4cdba`) en `release/v1-2-home-layout` y `main`; deploy de producción verificado; rollback disponible en `d0515f9`.
+- **Ajustes post-publicación 2026-11-18:** rojo más intenso de `EN VIVO`, `× Limpiar` azul, indicador de swipe en canales y mitigaciones de estabilidad móvil al filtrar. Están validados localmente pero **no publicados**; requieren autorización explícita para commit/push/deploy.
 - **Recordatorio:** cualquier cambio nuevo requiere alcance y autorización explícita.
 
 ## Prompt histórico — Fase L0 + Fase L1 (ejecutada)

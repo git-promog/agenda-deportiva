@@ -1604,6 +1604,21 @@ body {
   }
 }
 
+@media (max-width: 767px) {
+  .gs-shell-header,
+  .gs-mobile-nav,
+  .gs-menu-panel,
+  .gs-sticky-ad,
+  .gs-scroll-top {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .gs-marquee-track {
+    will-change: auto;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .gs-home-hero-video {
     display: none;
